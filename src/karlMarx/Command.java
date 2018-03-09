@@ -16,20 +16,18 @@ public class Command {
 	static {
 		LinkedList<Command> cmds = new LinkedList<Command>();
 		for (Dir d1 : Dir.values()) {
-			 cmds.add(new Command(Type.Push, d1, d1));
             cmds.add(new Command(d1));
         }
     
-//        for (Dir d1 : Dir.values()) {
-//            for (Dir d2 : Dir.values()) {
-//                if (d1 != d2) {
-//                    cmds.add(new Command(Type.Pull, d1, d2));
-//                }
-//            }
-//        }
-//        for (Dir d : Dir.values()) {
-//            cmds.add(new Command(d));
-//        }
+        for (Dir d1 : Dir.values()) {
+            for (Dir d2 : Dir.values()) {
+				cmds.add(new Command(Type.Push, d1, d2));
+				cmds.add(new Command(Type.Pull, d1, d2));
+            } 
+        }
+        for (Dir d : Dir.values()) {
+            cmds.add(new Command(d));
+        }
 
 		EVERY = cmds.toArray(new Command[0]);
 	}
