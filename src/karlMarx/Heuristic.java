@@ -7,7 +7,6 @@ import java.util.HashSet;
 
 public abstract class Heuristic implements Comparator<Node> {
     
-    protected Goal[] goalcells;
     protected Goal[] prioritisedgoals;
     protected int[][][][] shortestDistance;
     protected int maxdist = 0;
@@ -29,9 +28,6 @@ public abstract class Heuristic implements Comparator<Node> {
 				}
 			}
 		}
-        
-		this.goalcells = new Goal[goalcells.size()];
-		goalcells.toArray(this.goalcells);
         
         // All pair shortest distances (by BFS).
         this.shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
@@ -165,7 +161,7 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentCol = n.agentCol;
         // initialise activegoals with all unsatisfied goals
         HashSet<Goal> activegoals = new HashSet<Goal>();
-        for (Goal g: goalcells) {
+        for (Goal g: Node.goalList) {
             //if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
         	Box box = null;
         	for (Box b : n.boxList) {
@@ -186,7 +182,7 @@ public abstract class Heuristic implements Comparator<Node> {
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box box : n.boxList) {
-        	if (Node.goals[box.position.row][box.position.col] == Character.toLowerCase(box.letter)) {
+        	if (Node.goals[box.position.row][box.position.col] != Character.toLowerCase(box.letter)) {
                 activeboxes.add(box);
         	}
         }
