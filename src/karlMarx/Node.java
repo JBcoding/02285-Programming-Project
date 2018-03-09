@@ -3,6 +3,7 @@ package karlMarx;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -27,9 +28,11 @@ public class Node {
 	// this.walls[row][col] is true if there's a wall at (row, col)
 	//
 
-	public static boolean[][] walls;
-	public char[][] boxes;
-	public static char[][] goals;
+	public static boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
+	public ArrayList<Box> boxList = new ArrayList<Box>();
+	public static ArrayList<Goal> goalList = new ArrayList<Goal>();
+	public static char[][] goals = new char[MAX_ROW][MAX_COL];
+	public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
 
 	public Node parent;
 	public Command action;
@@ -49,7 +52,6 @@ public class Node {
 	}
 
 	public Node(Node parent) {
-		this.boxes = new char[Node.MAX_ROW][Node.MAX_COL];
 		this.parent = parent;
 		if (parent == null) {
 			this.g = 0;
@@ -67,14 +69,18 @@ public class Node {
 	}
 
 	public boolean isGoalState() {
-		for (int row = 1; row < MAX_ROW - 1; row++) {
-			for (int col = 1; col < MAX_COL - 1; col++) {
-				char g = goals[row][col];
-				char b = Character.toLowerCase(boxes[row][col]);
-				if (g > 0 && b != g) {
-					return false;
+		goalLoop: // Lol
+		for (Goal goal : goalList) {
+			for (Box box : boxList) {
+				if (box.position.equals(goal.position)) {
+					if (Character.toLowerCase(box.letter) == goal.letter) {
+						continue goalLoop;
+					} else {
+						return false;
+					}
 				}
 			}
+			return false;
 		}
 		return true;
 	}
@@ -106,8 +112,13 @@ public class Node {
 						n.action = c;
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
-						n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
-						n.boxes[newAgentRow][newAgentCol] = 0;
+						// Change box position in boxList
+						for (Box box : n.boxList) {
+							if (box.position.equals(new Position(newAgentRow, newAgentCol))) {
+								box.position = new Position(newBoxRow, newBoxCol);
+								break;
+							}
+						}
 						expandedNodes.add(n);
 					}
 				}
@@ -122,8 +133,13 @@ public class Node {
 						n.action = c;
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
-						n.boxes[this.agentRow][this.agentCol] = this.boxes[boxRow][boxCol];
-						n.boxes[boxRow][boxCol] = 0;
+						// Change box position in boxList
+						for (Box box : n.boxList) {
+							if (box.position.equals(new Position(boxRow, boxCol))) {
+								box.position = new Position(this.agentRow, this.agentCol);
+								break;
+							}
+						}
 						expandedNodes.add(n);
 					}
 				}
@@ -134,17 +150,25 @@ public class Node {
 	}
 
 	private boolean cellIsFree(int row, int col) {
-		return !Node.walls[row][col] && this.boxes[row][col] == 0;
+		if (Node.walls[row][col]) {
+			return false;
+		}
+		return !boxAt(row, col);
 	}
 
 	private boolean boxAt(int row, int col) {
-		return this.boxes[row][col] > 0;
+		for (Box box : boxList) {
+			if (box.position.row == row && box.position.col == col) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Node ChildNode() {
 		Node copy = new Node(this);
-		for (int row = 0; row < MAX_ROW; row++) {
-			System.arraycopy(this.boxes[row], 0, copy.boxes[row], 0, MAX_COL);
+		for (Box box : boxList) {
+			copy.boxList.add(box.copy());
 		}
 		return copy;
 	}
@@ -166,7 +190,8 @@ public class Node {
 			int result = 1;
 			result = prime * result + this.agentCol;
 			result = prime * result + this.agentRow;
-			result = prime * result + Arrays.deepHashCode(this.boxes);
+			result = prime * result + Arrays.deepHashCode(Node.walls);
+			result = prime * result + boxList.hashCode();
 			this._hash = result;
 		}
 		return this._hash;
@@ -183,7 +208,7 @@ public class Node {
 		Node other = (Node) obj;
 		if (this.agentRow != other.agentRow || this.agentCol != other.agentCol)
 			return false;
-		if (!Arrays.deepEquals(this.boxes, other.boxes))
+		if (!boxList.equals(other.boxList))
 			return false;
 		return true;
 	}
@@ -195,11 +220,14 @@ public class Node {
 			if (!Node.walls[row][0]) {
 				break;
 			}
+			// TODO: Possibly recreate toString
 			for (int col = 0; col < MAX_COL; col++) {
-				if (this.boxes[row][col] > 0) {
-					s.append(this.boxes[row][col]);
-				} else if (Node.goals[row][col] > 0) {
-					s.append(Node.goals[row][col]);
+				Box box = findBox(row, col);
+				Goal goal = findGoal(row, col);
+				if (box != null) {
+					s.append(box.letter);
+				} else if (goal != null) {
+					s.append(goal.letter);
 				} else if (Node.walls[row][col]) {
 					s.append("+");
 				} else if (row == this.agentRow && col == this.agentCol) {
@@ -211,6 +239,24 @@ public class Node {
 			s.append("\n");
 		}
 		return s.toString();
+	}
+
+	private Box findBox(int row, int col) {
+		for (Box b : boxList) {
+			if (b.position.row == row && b.position.col == col) {
+				return b;
+			}
+		}
+		return null;
+	}
+
+	private Goal findGoal(int row, int col) {
+		for (Goal g : goalList) {
+			if (g.position.row == row && g.position.col == col) {
+				return g;
+			}
+		}
+		return null;
 	}
 
 }

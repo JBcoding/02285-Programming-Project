@@ -50,9 +50,15 @@ public class SearchClient {
 					this.initialState.agentRow = row;
 					this.initialState.agentCol = col;
 				} else if ('A' <= chr && chr <= 'Z') { // Box.
-					this.initialState.boxes[row][col] = chr;
-				} else if ('a' <= chr && chr <= 'z') { // Goal.
+					this.initialState.boxList.add(new Box(new Position(row, col), chr));
+				} else if ('a' <= chr && chr <= 'z') { // Goal
 					Node.goals[row][col] = chr;
+					Goal goal = new Goal(new Position(row, col), chr);
+					Node.goalList.add(goal);
+					if (!Node.goalMap.containsKey(chr)) {
+						Node.goalMap.put(chr, new ArrayList<Goal>());
+					}
+					Node.goalMap.get(chr).add(goal);
 				} else if (chr == ' ') {
 					// Free space.
 				} else {

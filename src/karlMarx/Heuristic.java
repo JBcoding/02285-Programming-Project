@@ -166,7 +166,17 @@ public abstract class Heuristic implements Comparator<Node> {
         // initialise activegoals with all unsatisfied goals
         HashSet<Goal> activegoals = new HashSet<Goal>();
         for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.row][g.col]) != g.letter) {
+            //if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
+        	Box box = null;
+        	for (Box b : n.boxList) {
+        		if (b.letter != g.letter && 
+    				b.position.row == g.position.row && 
+    				b.position.col == g.position.col) {
+        			box = b;
+        			break;
+        		}
+        	}
+            if (box != null) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2; // add between 1 and maxdist;
@@ -175,13 +185,10 @@ public abstract class Heuristic implements Comparator<Node> {
         }
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
-        for (int row = 0; row < Node.MAX_ROW; row++) {
-            for (int col = 0; col < Node.MAX_COL; col++) {
-                char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && letter != n.goals[row][col]) { // box at [row][col]
-                    activeboxes.add(new Box(row,col,letter));
-                }
-            }
+        for (Box box : n.boxList) {
+        	if (Node.goals[box.position.row][box.position.col] == Character.toLowerCase(box.letter)) {
+                activeboxes.add(box);
+        	}
         }
         while (!activegoals.isEmpty()) {
             Box nearestBox = null;
@@ -190,9 +197,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
                 int distToBox = Integer.MAX_VALUE;
                 for (Box b: activeboxes) {
-                    if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                    if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
                         nearestBox = b;
-                        distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+                        distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
                     }
                 }
                 // remove the chosen box from the list of active boxes
@@ -201,9 +208,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
                     if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.position.row][nearestBox.position.col] < distToGoal) {
                         nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.position.row][nearestBox.position.col];
                     }
                 }
             }
@@ -212,14 +219,16 @@ public abstract class Heuristic implements Comparator<Node> {
             // add to the heuristics the number of actions required to go from a
             // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
             n.h = n.h
-                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
-            currentRow = nearestGoal.row;
-            currentCol = nearestGoal.col;
+                    + this.shortestDistance[currentRow][currentCol][nearestBox.position.row][nearestBox.position.col]
+                    + this.shortestDistance[nearestBox.position.row][nearestBox.position.col][nearestGoal.position.row][nearestGoal.position.col] - 2;
+            currentRow = nearestGoal.position.row;
+            currentCol = nearestGoal.position.col;
         }
         return n.h;
     }
-    
+
+	// Not used atm
+	/*
     public int hPairingDistanceDeadlockPenalty(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -235,7 +244,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
          3) Choose more efficient data structures if possible,
          in particular the HashSet for active goals and active boxes.
-         */
+         *//*
         n.h = 1;
         // start searching from the agent position
         int currentRow = n.agentRow;
@@ -244,7 +253,7 @@ public abstract class Heuristic implements Comparator<Node> {
         HashSet<Goal> activegoals = new HashSet<Goal>();
         
         for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.row][g.col]) != g.letter) {
+            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2; // add between 1 and maxdist;
@@ -257,12 +266,12 @@ public abstract class Heuristic implements Comparator<Node> {
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && letter != n.goals[row][col]) { // box at [row][col]
+                if (letter > 0 && letter != Node.goals[row][col]) { // box at [row][col]
                     activeboxes.add(new Box(row,col,letter));
-                    if ((n.walls[row+1][col] && n.walls[row][col+1]) ||
-                       (n.walls[row-1][col] && n.walls[row][col-1]) ||
-                        (n.walls[row+1][col] && n.walls[row][col-1]) ||
-                        (n.walls[row-1][col] && n.walls[row][col+1]))
+                    if ((Node.walls[row+1][col] && Node.walls[row][col+1]) ||
+                       (Node.walls[row-1][col] && Node.walls[row][col-1]) ||
+                        (Node.walls[row+1][col] && Node.walls[row][col-1]) ||
+                        (Node.walls[row-1][col] && Node.walls[row][col+1]))
                     {
                         return Integer.MAX_VALUE;
                     }
@@ -276,9 +285,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
                 int distToBox = Integer.MAX_VALUE;
                 for (Box b: activeboxes) {
-                    if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                    if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
                         nearestBox = b;
-                        distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+                        distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
                     }
                 }
                 // remove the chosen box from the list of active boxes
@@ -287,9 +296,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
                     if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] < distToGoal) {
                         nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
                     }
                 }
             }
@@ -315,7 +324,7 @@ public abstract class Heuristic implements Comparator<Node> {
         HashSet<Goal> activegoals = new HashSet<Goal>();
         
         for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.row][g.col]) != g.letter) {
+            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2; // add between 1 and maxdist;
@@ -328,7 +337,7 @@ public abstract class Heuristic implements Comparator<Node> {
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && letter != n.goals[row][col]) { // box at [row][col]
+                if (letter > 0 && letter != Node.goals[row][col]) { // box at [row][col]
                     activeboxes.add(new Box(row,col,letter));
                 }
             }
@@ -340,9 +349,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
                 int distToBox = Integer.MAX_VALUE;
                 for (Box b: activeboxes) {
-                    if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                    if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
                         nearestBox = b;
-                        distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+                        distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
                     }
                 }
                 // remove the chosen box from the list of active boxes
@@ -351,9 +360,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 int distToGoal = 0; // Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
                     if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] > distToGoal) {
+                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] > distToGoal) {
                         furthestGoal = g;
-                        distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
                     }
                 }
             }
@@ -373,7 +382,7 @@ public abstract class Heuristic implements Comparator<Node> {
     public int hGoalCount(Node n) { // pure goal count heuristics
         n.h = 0;
         for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.row][g.col]) != g.letter) n.h = n.h + 1;
+            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) n.h = n.h + 1;
         }
         return n.h;
     }
@@ -390,7 +399,7 @@ public abstract class Heuristic implements Comparator<Node> {
         HashSet<Goal> activegoals = new HashSet<Goal>();
         
         for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.row][g.col]) != g.letter) {
+            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2*maxdist;
@@ -404,7 +413,7 @@ public abstract class Heuristic implements Comparator<Node> {
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && isgoalletter[letter-'a']==1 && letter != n.goals[row][col]) { // box at [row][col]
+                if (letter > 0 && isgoalletter[letter-'a']==1 && letter != Node.goals[row][col]) { // box at [row][col]
                     activeboxes.add(new Box(row,col,letter));
                    // System.err.print("("+col+","+row+")");
                 }
@@ -416,9 +425,9 @@ public abstract class Heuristic implements Comparator<Node> {
             // find the nearest active box to agent and find the distance to it
             int distToBox = Integer.MAX_VALUE;
             for (Box b: activeboxes) {
-                if (this.shortestDistance[b.row][b.col][n.agentRow][n.agentCol] < distToBox) {
+                if (this.shortestDistance[b.position.row][b.position.col][n.agentRow][n.agentCol] < distToBox) {
                         nearestBox = b;
-                        distToBox = this.shortestDistance[b.row][b.col][n.agentRow][n.agentCol];
+                        distToBox = this.shortestDistance[b.position.row][b.position.col][n.agentRow][n.agentCol];
                     }
                 }
                 // remove the chosen box from the list of active boxes
@@ -427,9 +436,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
                     if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] < distToGoal) {
                         nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
                     }
                 }
             }
@@ -438,13 +447,13 @@ public abstract class Heuristic implements Comparator<Node> {
                     + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 1;
         return n.h;
     }
-
+*/
     public int h(Node n) {
         //return 0;
-        // return hPairingDistance(n); // default heuristics. Best performing on warmup levels
+    	return hPairingDistance(n); // default heuristics. Best performing on warmup levels
         //return hPairingDistanceFurthestGoal(n);
         //return hPairingDistanceDeadlockPenalty(n);
-         return hGoalCount(n);
+    	//return hGoalCount(n);
         // return hGoalCountPlusNearest(n);
     }
     
