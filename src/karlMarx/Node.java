@@ -15,6 +15,7 @@ public class Node {
     public static int MAX_ROW;
     public static int MAX_COL;
 
+    public int agentId;
     public int agentRow;
     public int agentCol;
 
@@ -57,9 +58,12 @@ public class Node {
         this.parent = parent;
         if (parent == null) {
             this.g = 0;
+            this.agentId = 0;
         } else {
             this.g = parent.g() + 1;
+            this.agentId = parent.agentId;
         }
+
     }
 
     public int g() {
@@ -106,7 +110,8 @@ public class Node {
                 }
             } else if (c.actionType == Type.Push) {
                 // Make sure that there's actually a box to move
-                if (this.boxAt(newAgentRow, newAgentCol)) {
+                Box b = findBox(newAgentRow, newAgentCol);
+                if (b != null && colors.get(agentId) == colors.get(b.letter)) {
                     int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
                     int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
                     // .. and that new cell of box is free
@@ -131,7 +136,8 @@ public class Node {
                     int boxRow = this.agentRow + Command.dirToRowChange(c.dir2);
                     int boxCol = this.agentCol + Command.dirToColChange(c.dir2);
                     // .. and there's a box in "dir2" of the agent
-                    if (this.boxAt(boxRow, boxCol)) {
+                    Box b = findBox(boxRow, boxCol);
+                    if (b != null && colors.get(agentId) == colors.get(b.letter)) {
                         Node n = this.ChildNode();
                         n.action = c;
                         n.agentRow = newAgentRow;
