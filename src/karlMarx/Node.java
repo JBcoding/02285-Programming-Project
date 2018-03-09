@@ -33,6 +33,7 @@ public class Node {
     public static ArrayList<Goal> goalList = new ArrayList<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
+    public static HashMap<Character, Color> colors;
 
     public Node parent;
     public Command action;

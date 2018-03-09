@@ -15,11 +15,10 @@ import karlMarx.Heuristic.*;
 
 public class SearchClient {
     public Node initialState;
-    Map<Character, String> colors;
 
     public SearchClient(BufferedReader serverMessages) throws Exception {
 
-        colors = new HashMap<>();
+        HashMap<Character, Color> colors = new HashMap<>();
         String line, color;
 
         // Read lines specifying colors
@@ -28,9 +27,10 @@ public class SearchClient {
             color = line.split(":")[0];
 
             for (String id : line.split(":")[1].split(","))
-                colors.put(id.charAt(0), color);
+                colors.put(id.charAt(0), Color.toColor(color));
         }
 
+        Node.colors = colors;
 
         // Part of solution.
         ArrayList<String> lines = new ArrayList<String>();
