@@ -6,29 +6,29 @@ import java.util.Comparator;
 import java.util.HashSet;
 
 public abstract class Heuristic implements Comparator<Node> {
-    
+
     protected Goal[] prioritisedgoals;
     protected int[][][][] shortestDistance;
     protected int maxdist = 0;
     protected int[] isgoalletter = new int[26];
-    
-	public Heuristic(Node initialState) {
-		// Here's a chance to pre-process the static parts of the level.
-        
-		// Find all goals.
-		ArrayList<Goal> goalcells = new ArrayList<Goal>();
+
+    public Heuristic(Node initialState) {
+        // Here's a chance to pre-process the static parts of the level.
+
+        // Find all goals.
+        ArrayList<Goal> goalcells = new ArrayList<Goal>();
         ArrayList<Goal> prioritisedgoals = new ArrayList<Goal>();
-		for (int row = 0; row < Node.MAX_ROW; row++) {
-			for (int col = 0; col < Node.MAX_COL; col++) {
-				if (Node.goals[row][col] - 'a' >= 0) {
-					goalcells.add(new Goal(row, col, Node.goals[row][col]));
+        for (int row = 0; row < Node.MAX_ROW; row++) {
+            for (int col = 0; col < Node.MAX_COL; col++) {
+                if (Node.goals[row][col] - 'a' >= 0) {
+                    goalcells.add(new Goal(row, col, Node.goals[row][col]));
                     // isgoalletter is a simple array keeping track of which letters occur on goal cells,
                     // so that we can quickly discard the boxes having other letters
-                    isgoalletter[Node.goals[row][col]-'a']=1;
-				}
-			}
-		}
-        
+                    isgoalletter[Node.goals[row][col] - 'a'] = 1;
+                }
+            }
+        }
+
         // All pair shortest distances (by BFS).
         this.shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
         //int maxdist = 0;
@@ -43,10 +43,10 @@ public abstract class Heuristic implements Comparator<Node> {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 Cell c = cells[row][col];
                 if (c != null) {
-                    if (row-1 >= 0)           c.up    = cells[row-1][col];
-                    if (row+1 < Node.MAX_ROW) c.down  = cells[row+1][col];
-                    if (col-1 >= 0)           c.left  = cells[row][col-1];
-                    if (col+1 < Node.MAX_COL) c.right = cells[row][col+1];
+                    if (row - 1 >= 0) c.up = cells[row - 1][col];
+                    if (row + 1 < Node.MAX_ROW) c.down = cells[row + 1][col];
+                    if (col - 1 >= 0) c.left = cells[row][col - 1];
+                    if (col + 1 < Node.MAX_COL) c.right = cells[row][col + 1];
                 }
             }
         }
@@ -55,20 +55,20 @@ public abstract class Heuristic implements Comparator<Node> {
                 Cell root = cells[root_row][root_col];
                 if (root != null) {
                     ArrayDeque<Cell> queue = new ArrayDeque<>();
-                    
+
                     for (int row = 0; row < Node.MAX_ROW; row++) {
                         for (int col = 0; col < Node.MAX_COL; col++) {
                             Cell c = cells[row][col];
                             if (c != null) c.dist = -1;
                         }
                     }
-                    
+
                     root.dist = 0;
                     queue.add(root);
-                    
+
                     while (!queue.isEmpty()) {
                         Cell c = queue.poll();
-                        
+
                         if (c.up != null && c.up.dist == -1) {
                             c.up.dist = c.dist + 1;
                             queue.add(c.up);
@@ -86,13 +86,13 @@ public abstract class Heuristic implements Comparator<Node> {
                             queue.add(c.right);
                         }
                     }
-                    
+
                     for (int row = 0; row < Node.MAX_ROW; row++) {
                         for (int col = 0; col < Node.MAX_COL; col++) {
                             Cell c = cells[row][col];
                             if (c != null) {
                                 this.shortestDistance[root_row][root_col][row][col] = c.dist;
-                                maxdist = Math.max( maxdist, c.dist);
+                                maxdist = Math.max(maxdist, c.dist);
                             }
                         }
                     }
@@ -139,7 +139,7 @@ public abstract class Heuristic implements Comparator<Node> {
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
 
-	public int hPairingDistance(Node n) {
+    public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
          and then shortest paths can be checked for whether the contain other goal cells,
@@ -161,39 +161,38 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentCol = n.agentCol;
         // initialise activegoals with all unsatisfied goals
         HashSet<Goal> activegoals = new HashSet<Goal>();
-        for (Goal g: Node.goalList) {
+        for (Goal g : Node.goalList) {
             //if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
-        	Box box = null;
-        	for (Box b : n.boxList) {
-        		if (Character.toLowerCase(b.letter) == g.letter &&
-    				b.position.row == g.position.row && 
-    				b.position.col == g.position.col) {
-        			box = b;
-        			break;
-        		}
-        	}
+            Box box = null;
+            for (Box b : n.boxList) {
+                if (Character.toLowerCase(b.letter) == g.letter &&
+                        b.position.row == g.position.row &&
+                        b.position.col == g.position.col) {
+                    box = b;
+                    break;
+                }
+            }
             if (box == null) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2; // add between 1 and maxdist;
             }
-            
         }
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box box : n.boxList) {
-        	if (Node.goals[box.position.row][box.position.col] != Character.toLowerCase(box.letter)) {
+            if (Node.goals[box.position.row][box.position.col] != Character.toLowerCase(box.letter)) {
                 activeboxes.add(box);
-        	}
+            }
         }
 
         while (!activegoals.isEmpty()) {
             Box nearestBox = null;
             Goal nearestGoal = null;
-            while (nearestGoal==null) {
+            while (nearestGoal == null) {
                 // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
                 int distToBox = Integer.MAX_VALUE;
-                for (Box b: activeboxes) {
+                for (Box b : activeboxes) {
                     if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
                         nearestBox = b;
                         distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
@@ -203,7 +202,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 activeboxes.remove(nearestBox);
                 // find the nearest same-letter active goal to the chosen box (if exists)
                 int distToGoal = Integer.MAX_VALUE;
-                for (Goal g: activegoals) {
+                for (Goal g : activegoals) {
                     if (Character.toLowerCase(nearestBox.letter) == g.letter
                             && this.shortestDistance[g.position.row][g.position.col][nearestBox.position.row][nearestBox.position.col] < distToGoal) {
                         nearestGoal = g;
@@ -224,7 +223,7 @@ public abstract class Heuristic implements Comparator<Node> {
         return n.h;
     }
 
-	// Not used atm
+    // Not used atm
 	/*
     public int hPairingDistanceDeadlockPenalty(Node n) {
         /* to improve this further, I could e.g.:
@@ -447,69 +446,69 @@ public abstract class Heuristic implements Comparator<Node> {
 */
     public int h(Node n) {
         //return 0;
-    	return hPairingDistance(n); // default heuristics. Best performing on warmup levels
+        return hPairingDistance(n); // default heuristics. Best performing on warmup levels
         //return hPairingDistanceFurthestGoal(n);
         //return hPairingDistanceDeadlockPenalty(n);
-    	//return hGoalCount(n);
+        //return hGoalCount(n);
         // return hGoalCountPlusNearest(n);
     }
-    
-   
-	public abstract int f(Node n);
 
-	@Override
-	public int compare(Node n1, Node n2) {
-		return this.f(n1) - this.f(n2);
-	}
 
-	public static class AStar extends Heuristic {
-		public AStar(Node initialState) {
-			super(initialState);
-		}
+    public abstract int f(Node n);
 
-		@Override
-		public int f(Node n) {
-			return n.g() + this.h(n);
-		}
+    @Override
+    public int compare(Node n1, Node n2) {
+        return this.f(n1) - this.f(n2);
+    }
 
-		@Override
-		public String toString() {
-			return "A* evaluation";
-		}
-	}
+    public static class AStar extends Heuristic {
+        public AStar(Node initialState) {
+            super(initialState);
+        }
 
-	public static class WeightedAStar extends Heuristic {
-		private int W;
+        @Override
+        public int f(Node n) {
+            return n.g() + this.h(n);
+        }
 
-		public WeightedAStar(Node initialState, int W) {
-			super(initialState);
-			this.W = W;
-		}
+        @Override
+        public String toString() {
+            return "A* evaluation";
+        }
+    }
 
-		@Override
-		public int f(Node n) {
-			return n.g() + this.W * this.h(n);
-		}
+    public static class WeightedAStar extends Heuristic {
+        private int W;
 
-		@Override
-		public String toString() {
-			return String.format("WA*(%d) evaluation", this.W);
-		}
-	}
+        public WeightedAStar(Node initialState, int W) {
+            super(initialState);
+            this.W = W;
+        }
 
-	public static class Greedy extends Heuristic {
-		public Greedy(Node initialState) {
-			super(initialState);
-		}
+        @Override
+        public int f(Node n) {
+            return n.g() + this.W * this.h(n);
+        }
 
-		@Override
-		public int f(Node n) {
-			return this.h(n);
-		}
+        @Override
+        public String toString() {
+            return String.format("WA*(%d) evaluation", this.W);
+        }
+    }
 
-		@Override
-		public String toString() {
-			return "Greedy evaluation";
-		}
-	}
+    public static class Greedy extends Heuristic {
+        public Greedy(Node initialState) {
+            super(initialState);
+        }
+
+        @Override
+        public int f(Node n) {
+            return this.h(n);
+        }
+
+        @Override
+        public String toString() {
+            return "Greedy evaluation";
+        }
+    }
 }
