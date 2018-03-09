@@ -20,10 +20,6 @@ public class Box extends Position {
         this.letter = letter;
         this.color = color;
     }
-    
-    public boolean isOn(Position pos) {
-        return super.equals(pos);
-    }
 
     public Box copy() {
         return new Box(row, col, letter, color);

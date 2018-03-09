@@ -33,6 +33,10 @@ public class Position {
         }
         return false;
     }
+    
+    public boolean isOn(Position pos) {
+        return ((Position)this).equals(pos);
+    }
 
     @Override
     public int hashCode() {
