@@ -1,4 +1,4 @@
-package sokoTB;
+package karlMarx;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import sokoTB.Memory;
-import sokoTB.Strategy.*;
-import sokoTB.Heuristic.*;
+import karlMarx.Memory;
+import karlMarx.Strategy.*;
+import karlMarx.Heuristic.*;
 
 public class SearchClient {
 	public Node initialState;

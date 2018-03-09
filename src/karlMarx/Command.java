@@ -1,4 +1,4 @@
-package sokoTB;
+package karlMarx;
 
 import java.util.LinkedList;
 
