@@ -21,14 +21,13 @@ public class Command {
     
         for (Dir d1 : Dir.values()) {
             for (Dir d2 : Dir.values()) {
-                if (!isOpposite(d1, d2)) {
+				if (!isOpposite(d1, d2)) {
 					cmds.add(new Command(Type.Push, d1, d2));
-					cmds.add(new Command(Type.Pull, d1, d2));
 				}
+				if (d1 != d2) {
+                    cmds.add(new Command(Type.Pull, d1, d2));
+                }
             }
-        }
-        for (Dir d : Dir.values()) {
-            cmds.add(new Command(d));
         }
 
 		EVERY = cmds.toArray(new Command[0]);
