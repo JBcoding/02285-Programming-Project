@@ -75,7 +75,6 @@ public class Node {
 
     public boolean isGoalState() {
         goalLoop:
-        // Lol
         for (Goal goal : goalList) {
             for (Box box : boxList) {
                 if (box.isOn(goal)) {
