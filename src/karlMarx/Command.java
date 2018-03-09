@@ -23,7 +23,7 @@ public class Command {
             for (Dir d2 : Dir.values()) {
 				cmds.add(new Command(Type.Push, d1, d2));
 				cmds.add(new Command(Type.Pull, d1, d2));
-            } 
+            }
         }
         for (Dir d : Dir.values()) {
             cmds.add(new Command(d));

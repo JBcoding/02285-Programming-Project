@@ -6,37 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 
 public abstract class Heuristic implements Comparator<Node> {
-    protected static class Goal {
-        int row, col;
-        char letter;
-        
-        public Goal(int row, int col, char letter) {
-            this.row = row;
-            this.col = col;
-            this.letter = letter;
-        }
-        
-        public String toString() {
-            return "(" + this.col + "," + this.row + ")";
-        }
-    }
-    
-    protected static class Box {
-        int row, col;
-        char letter;
-        
-        public Box(int row, int col, char letter) {
-            this.row = row;
-            this.col = col;
-            this.letter = letter;
-        }
-        
-        public String toString() {
-            return "(" + this.col + "," + this.row + ")";
-        }
-    }
-    
-    
     protected static class Cell {
         int dist;
         Cell up, down, left, right;
