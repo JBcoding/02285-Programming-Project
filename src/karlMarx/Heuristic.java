@@ -138,7 +138,7 @@ public abstract class Heuristic implements Comparator<Node> {
      hGoalCountPlusNearest easily solves SAsorting, that hPairingDistance with goalcount factor 1 can't.
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
-    
+
 	public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -165,14 +165,14 @@ public abstract class Heuristic implements Comparator<Node> {
             //if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
         	Box box = null;
         	for (Box b : n.boxList) {
-        		if (b.letter != g.letter && 
+        		if (Character.toLowerCase(b.letter) == g.letter &&
     				b.position.row == g.position.row && 
     				b.position.col == g.position.col) {
         			box = b;
         			break;
         		}
         	}
-            if (box != null) {
+            if (box == null) {
                 activegoals.add(g);
                 // goal count heuristics: add maxdist for all unsatisfied goals
                 n.h = n.h + 2; // add between 1 and maxdist;
@@ -186,6 +186,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 activeboxes.add(box);
         	}
         }
+
         while (!activegoals.isEmpty()) {
             Box nearestBox = null;
             Goal nearestGoal = null;
@@ -203,7 +204,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest same-letter active goal to the chosen box (if exists)
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter
+                    if (Character.toLowerCase(nearestBox.letter) == g.letter
                             && this.shortestDistance[g.position.row][g.position.col][nearestBox.position.row][nearestBox.position.col] < distToGoal) {
                         nearestGoal = g;
                         distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.position.row][nearestBox.position.col];
