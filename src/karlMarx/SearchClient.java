@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.io.*;
 
 import karlMarx.Memory;
 import karlMarx.Strategy.*;
@@ -12,15 +15,23 @@ import karlMarx.Heuristic.*;
 
 public class SearchClient {
 	public Node initialState;
+	Map<Character,String>  colors;
 
 	public SearchClient(BufferedReader serverMessages) throws Exception {
+
+	    colors = new HashMap<>();
+		String line, color;
+
 		// Read lines specifying colors
-		String line = serverMessages.readLine();
-		if (line.matches("^[a-z]+:\\s*[0-9A-Z](\\s*,\\s*[0-9A-Z])*\\s*$")) {
-			System.err.println("Error, client does not support colors.");
-			System.exit(1);
-		}
-        
+		while ( ( line = serverMessages.readLine() ).matches( "^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$" ) ) {
+            line = line.replaceAll( "\\s", "" );
+            color = line.split( ":" )[0];
+
+            for ( String id : line.split( ":" )[1].split( "," ) )
+                colors.put( id.charAt( 0 ), color );
+        }
+
+
         // Part of solution.
         ArrayList<String> lines = new ArrayList<String>();
 		int cols = 0;
