@@ -30,8 +30,6 @@ public class SearchClient {
                 colors.put(id.charAt(0), Color.toColor(color));
         }
 
-        Node.colors = colors;
-
         // Part of solution.
         ArrayList<String> lines = new ArrayList<String>();
         int cols = 0;
@@ -51,12 +49,11 @@ public class SearchClient {
                 if (chr == '+') { // Wall.
                     Node.walls[row][col] = true;
                 } else if ('0' <= chr && chr <= '9') { // Agent.
-                    Node state = new Node(chr - '0');
-                    state.agentRow = row;
-                    state.agentCol = col;
+                    Agent agent = new Agent(row, col, chr, colors.getOrDefault(chr, Color.BLUE));
+                    Node state = new Node(agent);
                     initialStates.add(state);
                 } else if ('A' <= chr && chr <= 'Z') { // Box.
-                    boxList.add(new Box(new Position(row, col), chr));
+                    boxList.add(new Box(new Position(row, col), chr, colors.getOrDefault(chr, Color.BLUE)));
                 } else if ('a' <= chr && chr <= 'z') { // Goal
                     Node.goals[row][col] = chr;
                     Goal goal = new Goal(new Position(row, col), chr);

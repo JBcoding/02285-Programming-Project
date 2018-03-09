@@ -110,19 +110,20 @@ public class Node {
             } else if (c.actionType == Type.Push) {
                 // Make sure that there's actually a box to move
                 Box b = findBox(newAgentRow, newAgentCol);
-                if (b != null && colors.get(agentId) == colors.get(b.letter)) {
+                if (b != null && agent.color == b.color) {
                     int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
                     int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
                     // .. and that new cell of box is free
                     if (this.cellIsFree(newBoxRow, newBoxCol)) {
                         Node n = this.ChildNode();
                         n.action = c;
-                        n.agentRow = newAgentRow;
-                        n.agentCol = newAgentCol;
+                        n.agent.row = newAgentRow;
+                        n.agent.col = newAgentCol;
                         // Change box position in boxList
                         for (Box box : n.boxList) {
-                            if (box.position.equals(new Position(newAgentRow, newAgentCol))) {
-                                box.position = new Position(newBoxRow, newBoxCol);
+                            if (box.isOn(new Position(newAgentRow, newAgentCol))) {
+                                box.row = newBoxRow;
+                                box.col = newBoxCol;
                                 break;
                             }
                         }
@@ -132,19 +133,20 @@ public class Node {
             } else if (c.actionType == Type.Pull) {
                 // Cell is free where agent is going
                 if (this.cellIsFree(newAgentRow, newAgentCol)) {
-                    int boxRow = this.agentRow + Command.dirToRowChange(c.dir2);
-                    int boxCol = this.agentCol + Command.dirToColChange(c.dir2);
+                    int boxRow = this.agent.row + Command.dirToRowChange(c.dir2);
+                    int boxCol = this.agent.col + Command.dirToColChange(c.dir2);
                     // .. and there's a box in "dir2" of the agent
                     Box b = findBox(boxRow, boxCol);
-                    if (b != null && colors.get(agentId) == colors.get(b.letter)) {
+                    if (b != null && agent.color == b.color) {
                         Node n = this.ChildNode();
                         n.action = c;
-                        n.agentRow = newAgentRow;
-                        n.agentCol = newAgentCol;
+                        n.agent.row = newAgentRow;
+                        n.agent.col = newAgentCol;
                         // Change box position in boxList
                         for (Box box : n.boxList) {
-                            if (box.position.equals(new Position(boxRow, boxCol))) {
-                                box.position = new Position(this.agentRow, this.agentCol);
+                            if (box.isOn(new Position(boxRow, boxCol))) {
+                                box.row = this.agent.row;
+                                box.col = this.agent.col;
                                 break;
                             }
                         }
@@ -166,7 +168,7 @@ public class Node {
 
     private boolean boxAt(int row, int col) {
         for (Box box : boxList) {
-            if (box.position.row == row && box.position.col == col) {
+            if (box.row == row && box.col == col) {
                 return true;
             }
         }
@@ -196,8 +198,7 @@ public class Node {
         if (this._hash == 0) {
             final int prime = 31;
             int result = 1;
-            result = prime * result + this.agentCol;
-            result = prime * result + this.agentRow;
+            result = prime * result + this.agent.hashCode();
             result = prime * result + Arrays.deepHashCode(Node.walls);
             result = prime * result + boxList.hashCode();
             this._hash = result;
@@ -214,7 +215,7 @@ public class Node {
         if (this.getClass() != obj.getClass())
             return false;
         Node other = (Node) obj;
-        if (this.agentRow != other.agentRow || this.agentCol != other.agentCol)
+        if (!this.agent.equals(other.agent))
             return false;
         if (!boxList.equals(other.boxList))
             return false;
@@ -238,8 +239,8 @@ public class Node {
                     s.append(goal.letter);
                 } else if (Node.walls[row][col]) {
                     s.append("+");
-                } else if (row == this.agentRow && col == this.agentCol) {
-                    s.append("0");
+                } else if (row == this.agent.row && col == this.agent.col) {
+                    s.append(agent.id);
                 } else {
                     s.append(" ");
                 }
@@ -251,7 +252,7 @@ public class Node {
 
     private Box findBox(int row, int col) {
         for (Box b : boxList) {
-            if (b.position.row == row && b.position.col == col) {
+            if (b.row == row && b.col == col) {
                 return b;
             }
         }
@@ -260,7 +261,7 @@ public class Node {
 
     private Goal findGoal(int row, int col) {
         for (Goal g : goalList) {
-            if (g.position.row == row && g.position.col == col) {
+            if (g.row == row && g.col == col) {
                 return g;
             }
         }
