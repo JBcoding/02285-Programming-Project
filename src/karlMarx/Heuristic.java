@@ -6,37 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 
 public abstract class Heuristic implements Comparator<Node> {
-    protected static class Goal {
-        int row, col;
-        char letter;
-        
-        public Goal(int row, int col, char letter) {
-            this.row = row;
-            this.col = col;
-            this.letter = letter;
-        }
-        
-        public String toString() {
-            return "(" + this.col + "," + this.row + ")";
-        }
-    }
-    
-    protected static class Box {
-        int row, col;
-        char letter;
-        
-        public Box(int row, int col, char letter) {
-            this.row = row;
-            this.col = col;
-            this.letter = letter;
-        }
-        
-        public String toString() {
-            return "(" + this.col + "," + this.row + ")";
-        }
-    }
-    
-    
     protected static class Cell {
         int dist;
         Cell up, down, left, right;
@@ -58,7 +27,8 @@ public abstract class Heuristic implements Comparator<Node> {
 			for (int col = 0; col < Node.MAX_COL; col++) {
 				if (Node.goals[row][col] - 'a' >= 0) {
 					goalcells.add(new Goal(row, col, Node.goals[row][col]));
-                    // isgoalletter is a simple array keeping track of which letters occur on goal cells, so that we can quickly discard the boxes having other letters
+                    // isgoalletter is a simple array keeping track of which letters occur on goal cells,
+                    // so that we can quickly discard the boxes having other letters
                     isgoalletter[Node.goals[row][col]-'a']=1;
 				}
 			}
@@ -140,16 +110,58 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     /* Below are some heuristics:
-     1) hPairingDistance sums the distance of the agent to the nearest relevant box, the distance from that box to the nearest relevant goal, the distance from that goal to the next nearest relevant box, etc. It hence computes a pairing of boxes with goals and computes the total distance required to put all boxes into the designated goals (assuming shortest distances are always available, that is, that no other objects block the shortest paths). It adds a goal count heuristics which either adds 1 for each unsatisfied goal or maxdist for each unsatisfied goal. Adding maxdist gives a very high penalty for moving a box away from a corresponding goal cell. It gives quicker and shorter solutions when there are no potentiel conflicts and all boxes can immediately be moved straight to their corresponding goals. However, it sometimes breaks down when there are conflicts and fulfilled goals can potentially block for other goals. Adding maxdist for every unfulfilled goal makes warmup/SALazarus unsolvable in 150s and 8GB, whereas adding 1 for every fulfilled goal makes it solvable in under 1s. With goal count factor 1, a level like SAsorting can however not be solved. Goal count factor 5 makes it solvable, but makes SAbispebjergHospital unsolvable. A goal count factor of 2 seems to be the sweet spot.
-     2) hGoalCount is a simple goal count of unfulfilled goals. It is mainly there for pedagogical purposes. Running greedy on this heuristics makes the client do a random walk until getting a box into a goal and then it starts doing another random walk to find the next box (leaving the original one in its goal position). It works acceptably on small, relatively simple levels (like SACrunch) and levels that are not too big and have no conflicts (like SAsoko3_12 and SAanagram). It can't solve bigger soko3 levels or something like SALazarus.
-     3) hGoalCountPlusNearest is a simplification of hPairingDistance where only the distance to the nearest relevant box and its distance to a relevant goal is added to the goal count. None of the heuristics are admissible, so it doesn't really make sense to compare them in terms of which one dominates the other. They each have strengths and weaknesses on different types of levels. hGoalCountPlusNearest easily solves SAsorting, that hPairingDistance with goalcount factor 1 can't. But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
+     1) hPairingDistance sums the distance of the agent to the nearest relevant box,
+     the distance from that box to the nearest relevant goal,
+     the distance from that goal to the next nearest relevant box, etc.
+     It hence computes a pairing of boxes with goals
+     and computes the total distance required to put all boxes into the designated goals
+     (assuming shortest distances are always available, that is, that no other objects block the shortest paths).
+     It adds a goal count heuristics which either adds 1 for each unsatisfied goal or maxdist for each unsatisfied goal.
+     Adding maxdist gives a very high penalty for moving a box away from a corresponding goal cell.
+     It gives quicker and shorter solutions when there are no potentiel conflicts
+     and all boxes can immediately be moved straight to their corresponding goals.
+     However, it sometimes breaks down when there are conflicts
+     and fulfilled goals can potentially block for other goals.
+     Adding maxdist for every unfulfilled goal makes warmup/SALazarus unsolvable in 150s and 8GB,
+     whereas adding 1 for every fulfilled goal makes it solvable in under 1s.
+     With goal count factor 1, a level like SAsorting can however not be solved.
+     Goal count factor 5 makes it solvable, but makes SAbispebjergHospital unsolvable.
+     A goal count factor of 2 seems to be the sweet spot.
+
+     2) hGoalCount is a simple goal count of unfulfilled goals.
+     It is mainly there for pedagogical purposes.
+     Running greedy on this heuristics makes the client do a random walk until getting a box into a goal
+     and then it starts doing another random walk to find the next box
+     (leaving the original one in its goal position).
+     It works acceptably on small, relatively simple levels (like SACrunch)
+     and levels that are not too big and have no conflicts (like SAsoko3_12 and SAanagram).
+     It can't solve bigger soko3 levels or something like SALazarus.
+
+
+     3) hGoalCountPlusNearest is a simplification of hPairingDistance
+     where only the distance to the nearest relevant box and its distance to a relevant goal is added to the goal count.
+     None of the heuristics are admissible,
+     so it doesn't really make sense to compare them in terms of which one dominates the other.
+     They each have strengths and weaknesses on different types of levels.
+     hGoalCountPlusNearest easily solves SAsorting, that hPairingDistance with goalcount factor 1 can't.
+     But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
     
 	public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
-         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths, and then shortest paths can be checked for whether the contain other goal cells, e.g. The current heuristics work very well when there are no conflicts, but breaks down when there is a lot of conflicts between subgoals.
-         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals. This can be computed by checking whether putting a box on the goal would make some unfulfilled goals be in a connected component distinct from the one containing the agent. This would however require computing connected components in each state, that is, run a BFS or DFS, which might turn out to be too computationally expensive.
-         3) Choose more efficient data structures if possible, in particular the HashSet for active goals and active boxes.
+         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
+         and then shortest paths can be checked for whether the contain other goal cells,
+         e.g. The current heuristics work very well when there are no conflicts,
+         but breaks down when there is a lot of conflicts between subgoals.
+
+         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals.
+         This can be computed by checking whether putting a box on the goal
+         would make some unfulfilled goals be in a connected component distinct from the one containing the agent.
+         This would however require computing connected components in each state,
+         that is, run a BFS or DFS, which might turn out to be too computationally expensive.
+
+         3) Choose more efficient data structures if possible,
+         in particular the HashSet for active goals and active boxes.
          */
         n.h = 1;
         // start searching from the agent position
@@ -192,7 +204,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest same-letter active goal to the chosen box (if exists)
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                    if (nearestBox.letter == g.letter
+                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
                         nearestGoal = g;
                         distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
                     }
@@ -200,8 +213,11 @@ public abstract class Heuristic implements Comparator<Node> {
             }
             // remove the chosen goal from the list of active goals
             activegoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col] + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+            // add to the heuristics the number of actions required to go from a
+            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+            n.h = n.h
+                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
         }
@@ -210,9 +226,19 @@ public abstract class Heuristic implements Comparator<Node> {
     
     public int hPairingDistanceDeadlockPenalty(Node n) {
         /* to improve this further, I could e.g.:
-         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths, and then shortest paths can be checked for whether the contain other goal cells, e.g. The current heuristics work very well when there are no conflicts, but breaks down when there is a lot of conflicts between subgoals.
-         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals. This can be computed by checking whether putting a box on the goal would make some unfulfilled goals be in a connected component distinct from the one containing the agent. This would however require computing connected components in each state, that is, run a BFS or DFS, which might turn out to be too computationally expensive.
-         3) Choose more efficient data structures if possible, in particular the HashSet for active goals and active boxes.
+         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
+         and then shortest paths can be checked for whether the contain other goal cells,
+         e.g. The current heuristics work very well when there are no conflicts,
+         but breaks down when there is a lot of conflicts between subgoals.
+
+         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals.
+         This can be computed by checking whether putting a box on the goal
+         would make some unfulfilled goals be in a connected component distinct from the one containing the agent.
+         This would however require computing connected components in each state,
+         that is, run a BFS or DFS, which might turn out to be too computationally expensive.
+
+         3) Choose more efficient data structures if possible,
+         in particular the HashSet for active goals and active boxes.
          */
         n.h = 1;
         // start searching from the agent position
@@ -264,7 +290,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest same-letter active goal to the chosen box (if exists)
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                    if (nearestBox.letter == g.letter
+                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
                         nearestGoal = g;
                         distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
                     }
@@ -272,8 +299,11 @@ public abstract class Heuristic implements Comparator<Node> {
             }
             // remove the chosen goal from the list of active goals
             activegoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col] + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+            // add to the heuristics the number of actions required to go from a
+            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+            n.h = n.h
+                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
         }
@@ -324,7 +354,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the furtherst away same-letter active goal to the chosen box (if exists)
                 int distToGoal = 0; // Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] > distToGoal) {
+                    if (nearestBox.letter == g.letter
+                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] > distToGoal) {
                         furthestGoal = g;
                         distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
                     }
@@ -332,8 +363,11 @@ public abstract class Heuristic implements Comparator<Node> {
             }
             // remove the chosen goal from the list of active goals
             activegoals.remove(furthestGoal);
-            // add to the heuristics the number of actions required to go from a cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col] + this.shortestDistance[nearestBox.row][nearestBox.col][furthestGoal.row][furthestGoal.col] - 2;
+            // add to the heuristics the number of actions required to go from a
+            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+            n.h = n.h
+                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                    + this.shortestDistance[nearestBox.row][nearestBox.col][furthestGoal.row][furthestGoal.col] - 2;
             currentRow = furthestGoal.row;
             currentCol = furthestGoal.col;
         }
@@ -350,7 +384,8 @@ public abstract class Heuristic implements Comparator<Node> {
     
     public int hGoalCountPlusNearest(Node n) {
         // this heuristics adds:
-        // 1) a goal count multiplied by 2*maxdist, the maximal number of actions required to take a box to a goal if the path is not blocked
+        // 1) a goal count multiplied by 2*maxdist,
+        // the maximal number of actions required to take a box to a goal if the path is not blocked
         // 2) the distance to the nearest relevant box and its distance to the nearest relevant goal
         // It has not been optimised for performance (e.g. choice of data structures)
         if (n.isGoalState()) return n.h = 0;
@@ -395,13 +430,16 @@ public abstract class Heuristic implements Comparator<Node> {
                 // find the nearest same-letter active goal to the chosen box (if exists)
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                    if (nearestBox.letter == g.letter
+                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
                         nearestGoal = g;
                         distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
                     }
                 }
             }
-            n.h = n.h + this.shortestDistance[n.agentRow][n.agentCol][nearestBox.row][nearestBox.col] + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 1;
+            n.h = n.h
+                    + this.shortestDistance[n.agentRow][n.agentCol][nearestBox.row][nearestBox.col]
+                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 1;
         return n.h;
     }
 
