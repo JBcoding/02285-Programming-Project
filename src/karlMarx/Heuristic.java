@@ -6,10 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 
 public abstract class Heuristic implements Comparator<Node> {
-    protected static class Cell {
-        int dist;
-        Cell up, down, left, right;
-    }
     
     protected Goal[] goalcells;
     protected Goal[] prioritisedgoals;
