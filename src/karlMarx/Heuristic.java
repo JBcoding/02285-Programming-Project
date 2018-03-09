@@ -441,11 +441,11 @@ public abstract class Heuristic implements Comparator<Node> {
 
     public int h(Node n) {
         //return 0;
-        // return hPairingDistance(n); // default heuristics. Best performing on warmup levels
+        return hPairingDistance(n); // default heuristics. Best performing on warmup levels
         //return hPairingDistanceFurthestGoal(n);
         //return hPairingDistanceDeadlockPenalty(n);
-         return hGoalCount(n);
-        // return hGoalCountPlusNearest(n);
+        //return hGoalCount(n);
+        //return hGoalCountPlusNearest(n);
     }
     
    
