@@ -10,6 +10,11 @@ public class Position {
         this.col = col;
     }
 
+    public Position(Position position) {
+        this.row = position.row;
+        this.col = position.col;
+    }
+
     public Position copy() {
         return new Position(row, col);
     }

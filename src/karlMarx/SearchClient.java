@@ -14,9 +14,9 @@ import karlMarx.Strategy.*;
 import karlMarx.Heuristic.*;
 
 public class SearchClient {
-    public Node initialState;
-
+    ArrayList<Node> initialStates = new ArrayList<Node>();
     public SearchClient(BufferedReader serverMessages) throws Exception {
+        ArrayList<Box> boxList = new ArrayList<Box>();
 
         HashMap<Character, Color> colors = new HashMap<>();
         String line, color;
@@ -43,8 +43,6 @@ public class SearchClient {
         }
         Node.setSize(lines.size(), cols);
 
-        boolean agentFound = false;
-        this.initialState = new Node(null);
         for (int row = 0; row < lines.size(); row++) {
             line = lines.get(row);
             for (int col = 0; col < line.length(); col++) {
@@ -53,15 +51,12 @@ public class SearchClient {
                 if (chr == '+') { // Wall.
                     Node.walls[row][col] = true;
                 } else if ('0' <= chr && chr <= '9') { // Agent.
-                    if (agentFound) {
-                        System.err.println("Error, not a single agent level");
-                        System.exit(1);
-                    }
-                    agentFound = true;
-                    this.initialState.agentRow = row;
-                    this.initialState.agentCol = col;
+                    Node state = new Node(chr - '0');
+                    state.agentRow = row;
+                    state.agentCol = col;
+                    initialStates.add(state);
                 } else if ('A' <= chr && chr <= 'Z') { // Box.
-                    this.initialState.boxList.add(new Box(new Position(row, col), chr));
+                    boxList.add(new Box(new Position(row, col), chr));
                 } else if ('a' <= chr && chr <= 'z') { // Goal
                     Node.goals[row][col] = chr;
                     Goal goal = new Goal(new Position(row, col), chr);
@@ -78,11 +73,18 @@ public class SearchClient {
                 }
             }
         }
+        for (Node state : initialStates) {
+            ArrayList<Box> boxListCopy = new ArrayList<Box>();
+            for (Box box : boxList) {
+                boxListCopy.add(box.copy());
+            }
+            state.boxList = boxListCopy;
+        }
     }
 
-    public LinkedList<Node> Search(Strategy strategy) throws IOException {
+    public LinkedList<Node> Search(Strategy strategy, Node initialState) throws IOException {
         System.err.format("Search starting with strategy %s.\n", strategy.toString());
-        strategy.addToFrontier(this.initialState);
+        strategy.addToFrontier(initialState);
 
         int iterations = 0;
         while (true) {
@@ -120,6 +122,8 @@ public class SearchClient {
         // Read level and create the initial state of the problem
         SearchClient client = new SearchClient(serverMessages);
 
+        Node initialState = client.initialStates.get(0); // temp TODO
+        
         Strategy strategy;
         if (args.length > 0) {
             switch (args[0].toLowerCase()) {
@@ -130,14 +134,14 @@ public class SearchClient {
                     strategy = new StrategyDFS();
                     break;
                 case "-astar":
-                    strategy = new StrategyBestFirst(new AStar(client.initialState));
+                    strategy = new StrategyBestFirst(new AStar(initialState));
                     break;
                 case "-wastar":
                     // You're welcome to test WA* out with different values, but for the report you must at least indicate benchmarks for W = 5.
-                    strategy = new StrategyBestFirst(new WeightedAStar(client.initialState, 5));
+                    strategy = new StrategyBestFirst(new WeightedAStar(initialState, 5));
                     break;
                 case "-greedy":
-                    strategy = new StrategyBestFirst(new Greedy(client.initialState));
+                    strategy = new StrategyBestFirst(new Greedy(initialState));
                     break;
                 default:
                     strategy = new StrategyBFS();
@@ -150,7 +154,7 @@ public class SearchClient {
 
         LinkedList<Node> solution;
         try {
-            solution = client.Search(strategy);
+            solution = client.Search(strategy, initialState); // ezpzlmnsqz
         } catch (OutOfMemoryError ex) {
             System.err.println("Maximum memory usage exceeded.");
             solution = null;

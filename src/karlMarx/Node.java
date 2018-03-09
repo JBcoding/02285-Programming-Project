@@ -15,9 +15,7 @@ public class Node {
     public static int MAX_ROW;
     public static int MAX_COL;
 
-    public int agentId;
-    public int agentRow;
-    public int agentCol;
+    public Agent agent;
 
     // Arrays are indexed from the top-left of the level, with first index being row and second being column.
     // Row 0: (0,0) (0,1) (0,2) (0,3) ...
@@ -34,8 +32,7 @@ public class Node {
     public static ArrayList<Goal> goalList = new ArrayList<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
-    public static HashMap<Character, Color> colors;
-
+    
     public Node parent;
     public Command action;
 
@@ -53,17 +50,19 @@ public class Node {
         Node.walls = new boolean[rows][cols];
         Node.goals = new char[rows][cols];
     }
+    
+    public Node(Agent agent) {
+        this((Node)null);
+        this.g = 0;
+        this.agent = agent;
+    }
 
-    public Node(Node parent) {
+    private Node(Node parent) {
         this.parent = parent;
-        if (parent == null) {
-            this.g = 0;
-            this.agentId = 0;
-        } else {
+        if (parent != null) {
             this.g = parent.g() + 1;
-            this.agentId = parent.agentId;
-        }
-
+            this.agent = parent.agent.copy();
+        }        
     }
 
     public int g() {
@@ -79,7 +78,7 @@ public class Node {
         // Lol
         for (Goal goal : goalList) {
             for (Box box : boxList) {
-                if (box.position.equals(goal.position)) {
+                if (box.isOn(goal)) {
                     if (Character.toLowerCase(box.letter) == goal.letter) {
                         continue goalLoop;
                     } else {
@@ -96,16 +95,16 @@ public class Node {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
         for (Command c : Command.EVERY) {
             // Determine applicability of action
-            int newAgentRow = this.agentRow + Command.dirToRowChange(c.dir1);
-            int newAgentCol = this.agentCol + Command.dirToColChange(c.dir1);
+            int newAgentRow = this.agent.row + Command.dirToRowChange(c.dir1);
+            int newAgentCol = this.agent.col + Command.dirToColChange(c.dir1);
 
             if (c.actionType == Type.Move) {
                 // Check if there's a wall or box on the cell to which the agent is moving
                 if (this.cellIsFree(newAgentRow, newAgentCol)) {
                     Node n = this.ChildNode();
                     n.action = c;
-                    n.agentRow = newAgentRow;
-                    n.agentCol = newAgentCol;
+                    n.agent.row = newAgentRow;
+                    n.agent.col = newAgentCol;
                     expandedNodes.add(n);
                 }
             } else if (c.actionType == Type.Push) {

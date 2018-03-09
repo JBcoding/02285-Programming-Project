@@ -162,12 +162,12 @@ public abstract class Heuristic implements Comparator<Node> {
         // initialise activegoals with all unsatisfied goals
         HashSet<Goal> activegoals = new HashSet<Goal>();
         for (Goal g : Node.goalList) {
-            //if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
             Box box = null;
             for (Box b : n.boxList) {
                 if (Character.toLowerCase(b.letter) == g.letter &&
                         b.position.row == g.position.row &&
-                        b.position.col == g.position.col) {
+                        b.position.col == g.position.col &&
+                        b.co) {
                     box = b;
                     break;
                 }

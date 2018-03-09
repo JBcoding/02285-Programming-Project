@@ -1,20 +1,19 @@
 package karlMarx;
 
-public class Goal {
-    Position position;
+public class Goal extends Position {
     char letter;
 
     public Goal(int row, int col, char letter) {
-        position = new Position(row, col);
+        super(row, col);
         this.letter = letter;
     }
 
     public Goal(Position position, char letter) {
-        this.position = position.copy();
+        super(position);
         this.letter = letter;
     }
 
     public String toString() {
-        return "(" + position.col + "," + position.row + ")";
+        return "(" + col + "," + row + ")";
     }
 }
