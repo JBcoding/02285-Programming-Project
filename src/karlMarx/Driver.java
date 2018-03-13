@@ -22,8 +22,15 @@ public class Driver {
             strategy = args[0];
         }
 
-        SearchClient searchClient = new SearchClient();
+        SearchClient searchClient;
+        if (initialStates.size() == 1) {
+            searchClient = new SASearchClient();            
+        } else {
+            searchClient = new MASearchClient();                    
+        }
+        
         LinkedList<Node> solution;
+        
         try {
             solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
         } catch (OutOfMemoryError ex) {
