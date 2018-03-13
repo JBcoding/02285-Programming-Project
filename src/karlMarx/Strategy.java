@@ -46,138 +46,51 @@ public abstract class Strategy {
     @Override
     public abstract String toString();
 
-    public static class StrategyBFS extends Strategy {
-        private ArrayDeque<Node> frontier;
-        private HashSet<Node> frontierSet;
 
-        public StrategyBFS() {
-            super();
-            frontier = new ArrayDeque<Node>();
-            frontierSet = new HashSet<Node>();
-        }
+}
 
-        @Override
-        public Node getAndRemoveLeaf() {
-            Node n = frontier.pollFirst();
-            frontierSet.remove(n);
-            return n;
-        }
+class StrategyBestFirst extends Strategy {
+    private Heuristic heuristic;
+    private PriorityQueue<Node> frontier;
+    private HashSet<Node> frontierSet;
 
-        @Override
-        public void addToFrontier(Node n) {
-            frontier.addLast(n);
-            frontierSet.add(n);
-        }
-
-        @Override
-        public int countFrontier() {
-            return frontier.size();
-        }
-
-        @Override
-        public boolean frontierIsEmpty() {
-            return frontier.isEmpty();
-        }
-
-        @Override
-        public boolean inFrontier(Node n) {
-            return frontierSet.contains(n);
-        }
-
-        @Override
-        public String toString() {
-            return "Breadth-first Search";
-        }
+    public StrategyBestFirst(Heuristic h) {
+        super();
+        heuristic = h;
+        frontier = new PriorityQueue<Node>(h);
+        frontierSet = new HashSet<Node>();
     }
 
-    public static class StrategyDFS extends Strategy {
-        private ArrayDeque<Node> frontier;
-        private HashSet<Node> frontierSet;
-
-        public StrategyDFS() {
-            super();
-            frontier = new ArrayDeque<Node>();
-            frontierSet = new HashSet<Node>();
-        }
-
-        @Override
-        public Node getAndRemoveLeaf() {
-            Node n = frontier.pop();
-            frontierSet.remove(n);
-            return n;
-        }
-
-        @Override
-        public void addToFrontier(Node n) {
-            frontier.push(n);
-            frontierSet.add(n);
-        }
-
-        @Override
-        public int countFrontier() {
-            return frontier.size();
-        }
-
-        @Override
-        public boolean frontierIsEmpty() {
-            return frontier.isEmpty();
-        }
-
-        @Override
-        public boolean inFrontier(Node n) {
-            return frontierSet.contains(n);
-        }
-
-        @Override
-        public String toString() {
-            return "Depth-first Search";
-        }
+    @Override
+    public Node getAndRemoveLeaf() {
+        Node n = frontier.poll();
+        frontierSet.remove(n);
+        return n;
     }
 
-    // Ex 3: Best-first Search uses a priority queue (Java contains no implementation of a Heap data structure)
-    public static class StrategyBestFirst extends Strategy {
-        private Heuristic heuristic;
-        private PriorityQueue<Node> frontier;
-        private HashSet<Node> frontierSet;
+    @Override
+    public void addToFrontier(Node n) {
+        frontier.add(n);
+        frontierSet.add(n);
+    }
 
-        public StrategyBestFirst(Heuristic h) {
-            super();
-            heuristic = h;
-            frontier = new PriorityQueue<Node>(h);
-            frontierSet = new HashSet<Node>();
-        }
+    @Override
+    public int countFrontier() {
+        return frontier.size();
+    }
 
-        @Override
-        public Node getAndRemoveLeaf() {
-            Node n = frontier.poll();
-            frontierSet.remove(n);
-            return n;
-        }
+    @Override
+    public boolean frontierIsEmpty() {
+        return frontier.isEmpty();
+    }
 
-        @Override
-        public void addToFrontier(Node n) {
-            frontier.add(n);
-            frontierSet.add(n);
-        }
+    @Override
+    public boolean inFrontier(Node n) {
+        return frontierSet.contains(n);
+    }
 
-        @Override
-        public int countFrontier() {
-            return frontier.size();
-        }
-
-        @Override
-        public boolean frontierIsEmpty() {
-            return frontier.isEmpty();
-        }
-
-        @Override
-        public boolean inFrontier(Node n) {
-            return frontierSet.contains(n);
-        }
-
-        @Override
-        public String toString() {
-            return "Best-first Search (PriorityQueue) using " + this.heuristic.toString();
-        }
+    @Override
+    public String toString() {
+        return "Best-first Search (PriorityQueue) using " + this.heuristic.toString();
     }
 }
