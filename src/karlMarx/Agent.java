@@ -44,4 +44,8 @@ public class Agent extends Position {
         return this._hash;
     }
 
+    public String toString() {
+        return "Agent at (" + col + "," + row + ")";
+    }
+
 }

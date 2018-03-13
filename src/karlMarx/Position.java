@@ -33,12 +33,9 @@ public class Position {
         }
         return false;
     }
-    
+
     public boolean isOn(Position pos) {
-        if (pos == null) {
-            return false; // TODO: is this nice?
-        }
-        return pos.equals(this);
+        return row == pos.row && col == pos.col;
     }
 
     @Override

@@ -21,16 +21,20 @@ public class SASearchClient extends SearchClient {
         System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
         
         Node currentState = initialStates.get(0);
-        Goal currentGoal = BDI.getGoal(currentState);
-        List<Goal> currentGoals = new ArrayList<Goal>();
-        currentGoals.add(currentGoal);
+        Goal currentGoal;
+        List<Goal> currentGoals;
         
-        List<Node> solution = new LinkedList<Node>();
-        
+        List<Node> solution = new LinkedList<Node>();        
         while (!currentState.isGoalState()) {
+            currentGoal = BDI.getGoal(currentState);
+            currentGoals = new ArrayList<Goal>();
+            currentGoals.add(currentGoal);
+            
             Deque<Node> plan = getPlan(currentState, currentGoals);
             solution.addAll(plan);
             currentState = plan.getLast();
+            // This is a new initialState so it must not have a parent for isInitialState method to work
+            currentState.parent = null;
         }
         
         return solution;
@@ -54,7 +58,6 @@ public class SASearchClient extends SearchClient {
             }
             
             if (strategy.frontierIsEmpty()) {
-                System.err.println();
                 return null;
             }
 
