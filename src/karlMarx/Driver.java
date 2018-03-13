@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Driver {
 
@@ -29,7 +30,7 @@ public class Driver {
             searchClient = new MASearchClient();                    
         }
         
-        LinkedList<Node> solution;
+        List<Node> solution;
         
         try {
             solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz

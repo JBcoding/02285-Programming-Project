@@ -72,7 +72,7 @@ public class Node {
         return isGoalState(goalList);
     }
 
-    public boolean isGoalState(ArrayList<Goal> goals) {
+    public boolean isGoalState(List<Goal> goals) {
         goalLoop:
         for (Goal goal : goals) {
             for (Box box : boxList) {

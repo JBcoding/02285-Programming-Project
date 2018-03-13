@@ -35,7 +35,10 @@ public class Position {
     }
     
     public boolean isOn(Position pos) {
-        return ((Position)this).equals(pos);
+        if (pos == null) {
+            return false; // TODO: is this nice?
+        }
+        return pos.equals(this);
     }
 
     @Override

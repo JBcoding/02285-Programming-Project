@@ -7,9 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MASearchClient extends SearchClient {
+    
+    private Strategy[] strategies;
 
     @Override
-    public LinkedList<Node> Search(String strategyArg, List<Node> initialStates) throws IOException {
+    public List<Node> Search(String strategyArg, List<Node> initialStates) throws IOException {
         strategies = new Strategy[initialStates.size()];
         Collections.sort(initialStates, new Comparator<Node>() {
             @Override
@@ -69,6 +71,20 @@ public class MASearchClient extends SearchClient {
             }
             iterations++;
         }
+    }
+
+    @Override
+    public String searchStatus() { {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < strategies.length; i++) {
+            Strategy strategy = strategies[i];
+            s.append("Status for agent ");
+            s.append(i);
+            s.append(": ");
+            s.append(strategy.searchStatus());
+        }
+        return s.toString();
+    }
     }
 
 }
