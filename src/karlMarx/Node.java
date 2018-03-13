@@ -1,11 +1,6 @@
 package karlMarx;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 import karlMarx.Command.Type;
 
@@ -74,8 +69,12 @@ public class Node {
     }
 
     public boolean isGoalState() {
+        return isGoalState(goalList);
+    }
+
+    public boolean isGoalState(ArrayList<Goal> goals) {
         goalLoop:
-        for (Goal goal : goalList) {
+        for (Goal goal : goals) {
             for (Box box : boxList) {
                 if (box.isOn(goal)) {
                     if (Character.toLowerCase(box.letter) == goal.letter) {
@@ -85,8 +84,10 @@ public class Node {
                     }
                 }
             }
+
             return false;
         }
+
         return true;
     }
 
