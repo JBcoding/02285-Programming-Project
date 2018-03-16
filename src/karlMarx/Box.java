@@ -17,7 +17,7 @@ public class Box extends Position {
     }
 
     public String toString() {
-        return "Box at (" + col + "," + row + ")";
+        return color + " box " + letter + " at (" + col + "," + row + ")";
     }
 
     public Box(Position position, char letter, Color color) {

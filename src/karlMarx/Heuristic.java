@@ -178,7 +178,7 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals = new HashSet<Goal>();
+        Set<Goal> activegoals = new HashSet<Goal>();
         
         if (currentGoals == null) { // Multi agent
             activegoals.addAll(Node.goalSet);
@@ -194,7 +194,6 @@ public abstract class Heuristic implements Comparator<Node> {
             n.h += 2;
         }
 
-
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box box : n.boxList) {
@@ -204,57 +203,53 @@ public abstract class Heuristic implements Comparator<Node> {
             }
         }
 
-        while (!activegoals.isEmpty()) {
-            Box nearestBox = null;
-            Goal nearestGoal = null;
-            while (nearestGoal == null) {
-                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
-                int distToBox = Integer.MAX_VALUE;
-                for (Box b : activeboxes) {
-                    if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
-                        nearestBox = b;
-                        distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+        ArrayList<Pair<Set<Goal>, Set<Box>>> iterators = new ArrayList<Pair<Set<Goal>, Set<Box>>>();
+        iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(activegoals), new HashSet<Box>(activeboxes)));
+        iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(Node.goalSet), new HashSet<Box>(n.boxList)));
+        
+        for (Pair<Set<Goal>, Set<Box>> pair : iterators) {
+            Set<Goal> tempActiveGoals = pair.a;
+            Set<Box> tempActiveBoxes = pair.b;
+            
+            while (!tempActiveGoals.isEmpty()) {
+                Box nearestBox = null;
+                Goal nearestGoal = null;
+                while (nearestGoal == null) {
+                    // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
+                    int distToBox = Integer.MAX_VALUE;
+                    for (Box b : tempActiveBoxes) {
+                        if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                            nearestBox = b;
+                            distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+                        }
                     }
-                }
 
-                // remove the chosen box from the list of active boxes
-                activeboxes.remove(nearestBox);
-                // find the nearest same-letter active goal to the chosen box (if exists)
-                int distToGoal = Integer.MAX_VALUE;
-                for (Goal g : activegoals) {
-                    if (Character.toLowerCase(nearestBox.letter) == g.letter
-                            && nearestBox.color == n.agent.color
-                            && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
-                        nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                    // remove the chosen box from the list of active boxes
+                    tempActiveBoxes.remove(nearestBox);
+                    // find the nearest same-letter active goal to the chosen box (if exists)
+                    int distToGoal = Integer.MAX_VALUE;
+                    for (Goal g : tempActiveGoals) {
+                        if (Character.toLowerCase(nearestBox.letter) == g.letter
+                                && nearestBox.color == n.agent.color
+                                && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                            nearestGoal = g;
+                            distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                        }
                     }
                 }
+                // remove the chosen goal from the list of active goals
+                tempActiveGoals.remove(nearestGoal);
+                // add to the heuristics the number of actions required to go from a
+                // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+                n.h = n.h
+                        + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                        + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+                currentRow = nearestGoal.row;
+                currentCol = nearestGoal.col;
             }
-            // remove the chosen goal from the list of active goals
-            activegoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a
-            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h
-                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
-            currentRow = nearestGoal.row;
-            currentCol = nearestGoal.col;
+            n.h *= 2; // TODO: Is this nice?
         }
-        n.h *= 5; // Scale the weight of regular goals
-        
-        // Add weight for getting any box closer to its goal
-        activeboxes = new HashSet<Box>();
-        for (Box b : n.boxList) {
-            if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
-                activeboxes.remove(b);
-            }
-        }
-        for (Box b : activeboxes) {
-            Node.goalSet.stream()
-                .filter(g -> Character.toLowerCase(b.letter) == g.letter)
-                .forEach(g -> n.h += this.shortestDistance[b.row][b.col][g.row][g.col]);
-        }
-        
+
         return n.h;
     }
 
