@@ -1,14 +1,18 @@
 package karlMarx;
 
+import karlMarx.Map.level;
+
 import java.io.BufferedReader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class LevelReader {
 
+
+
     public static ArrayList<Node> readLevel(BufferedReader serverMessages) throws Exception {
-        ArrayList<Node> initialStates = new ArrayList<Node>();
-        ArrayList<Box> boxList = new ArrayList<Box>();
+        ArrayList<Node> initialStates = new ArrayList<>();
+        ArrayList<Box> boxList = new ArrayList<>();
+        List<Agent> agentList = new LinkedList<>();
 
         HashMap<Character, Color> colors = new HashMap<>();
         String line, color;
@@ -42,6 +46,7 @@ public class LevelReader {
                     Node.walls[row][col] = true;
                 } else if ('0' <= chr && chr <= '9') { // Agent.
                     Agent agent = new Agent(row, col, chr - '0', colors.getOrDefault(chr, Color.BLUE));
+                    agentList.add(agent);
                     Node state = new Node(agent);
                     initialStates.add(state);
                 } else if ('A' <= chr && chr <= 'Z') { // Box.
@@ -62,6 +67,9 @@ public class LevelReader {
                 }
             }
         }
+        boxList.forEach(box -> level.getBoxColors().put(box.id,box.color));
+        agentList.forEach(agent -> level.getColorToAgents().get(agent.color).add(agent));
+
         for (Node state : initialStates) {
             ArrayList<Box> boxListCopy = new ArrayList<Box>();
             for (Box box : boxList) {
