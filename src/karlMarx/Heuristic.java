@@ -10,7 +10,7 @@ public abstract class Heuristic implements Comparator<Node> {
     protected int[] isgoalletter = new int[26];
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
-    protected List<Goal> currentGoals;
+    protected Set<Goal> currentGoals;
 
     public Heuristic(Node initialState) {
         // Here's a chance to pre-process the static parts of the level.
@@ -32,7 +32,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
         solvableByColor = new HashMap<>();
 
-        for (Goal g : Node.goalList) {
+        for (Goal g : Node.goalSet) {
             HashSet<Color> colors = solvableByColor.get(g);
             if (colors == null) {
                 colors = new HashSet<>();
@@ -178,39 +178,20 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals;
-        if (currentGoals == null) {
-            activegoals = new HashSet<Goal>();
-            for (Goal g : Node.goalList) {
-                Box box = null;
-                for (Box b : n.boxList) {
-                    if (Character.toLowerCase(b.letter) == g.letter &&
-                            b.row == g.row &&
-                            b.col == g.col) {
-                        box = b;
-                        break;
-                    }
-                }
-
-                if (box == null && solvableByColor.get(g).contains(n.agent.color)) {
-                    activegoals.add(g);
-                    // goal count heuristics: add maxdist for all unsatisfied goals
-                    n.h = n.h + 2; // add between 1 and maxdist;
-                }
+        HashSet<Goal> activegoals = new HashSet<Goal>();
+        
+        if (currentGoals == null) { // Multi agent
+            activegoals.addAll(Node.goalSet);
+        } else { // Single agent 
+            activegoals.addAll(currentGoals);
+        }
+        for (Box b : n.boxList) {
+            if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
+                activegoals.remove(new Goal(b.row, b.col, Character.toLowerCase(b.letter)));
             }
-        } else {
-            activegoals = new HashSet<Goal>();
-            for (Goal g : currentGoals) {
-                boolean addGoal = true;
-                for (Box b : n.boxList) {
-                    if (b.isOn(g) && Character.toLowerCase(b.letter) == g.letter) {
-                        addGoal = false;
-                    }
-                }
-                if (addGoal) {
-                    activegoals.add(g);
-                }
-            }
+        }
+        for (Goal g : activegoals) {
+            n.h += 2;
         }
 
 
@@ -259,6 +240,21 @@ public abstract class Heuristic implements Comparator<Node> {
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
         }
+        n.h *= 5; // Scale the weight of regular goals
+        
+        // Add weight for getting any box closer to its goal
+        activeboxes = new HashSet<Box>();
+        for (Box b : n.boxList) {
+            if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
+                activeboxes.remove(b);
+            }
+        }
+        for (Box b : activeboxes) {
+            Node.goalSet.stream()
+                .filter(g -> Character.toLowerCase(b.letter) == g.letter)
+                .forEach(g -> n.h += this.shortestDistance[b.row][b.col][g.row][g.col]);
+        }
+        
         return n.h;
     }
 
@@ -503,7 +499,7 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, List<Goal> currentGoals) {
+    public AStar(Node initialState, Set<Goal> currentGoals) {
         this(initialState);
         this.currentGoals = currentGoals;
     }
@@ -526,7 +522,7 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, List<Goal> currentGoals) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals) {
         this(initialState, W);
         this.currentGoals = currentGoals;
     }
@@ -548,7 +544,7 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, List<Goal> currentGoals) {
+    public Greedy(Node initialState, Set<Goal> currentGoals) {
         this(initialState);
         this.currentGoals = currentGoals;
     }

@@ -24,7 +24,7 @@ public class Node {
 
     public static boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
     public ArrayList<Box> boxList = new ArrayList<Box>();
-    public static ArrayList<Goal> goalList = new ArrayList<Goal>();
+    public static Set<Goal> goalSet = new HashSet<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
     
@@ -69,10 +69,10 @@ public class Node {
     }
 
     public boolean isGoalState() {
-        return isGoalState(goalList);
+        return isGoalState(goalSet);
     }
 
-    public boolean isGoalState(List<Goal> goals) {
+    public boolean isGoalState(Set<Goal> goals) {
         goalLoop:
         for (Goal goal : goals) {
             for (Box box : boxList) {
@@ -89,6 +89,15 @@ public class Node {
         }
 
         return true;
+    }
+    
+    public boolean isGoalState(Set<Goal> goals, Set<Pair<Box, Position>> boxPositionGoals) {
+        for (Pair<Box, Position> goal : boxPositionGoals) {
+            if (!goal.a.isOn(goal.b)) {
+                return false;
+            }
+        }
+        return isGoalState(goals);
     }
 
     public ArrayList<Node> getExpandedNodes() {
@@ -260,7 +269,7 @@ public class Node {
     }
 
     private Goal findGoal(int row, int col) {
-        for (Goal g : goalList) {
+        for (Goal g : goalSet) {
             if (g.row == row && g.col == col) {
                 return g;
             }
