@@ -50,7 +50,7 @@ public class Driver {
 
             for (Node n : solution) {
                 String act = n.action.toString();
-                System.err.println(act);
+//                System.err.println(act);
                 System.out.println(act);
                 String response = serverMessages.readLine();
                 if (response.contains("false")) {

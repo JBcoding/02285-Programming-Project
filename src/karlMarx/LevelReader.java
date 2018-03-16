@@ -54,7 +54,7 @@ public class LevelReader {
                 } else if ('a' <= chr && chr <= 'z') { // Goal
                     Node.goals[row][col] = chr;
                     Goal goal = new Goal(new Position(row, col), chr);
-                    Node.goalList.add(goal);
+                    Node.goalSet.add(goal);
                     if (!Node.goalMap.containsKey(chr)) {
                         Node.goalMap.put(chr, new ArrayList<Goal>());
                     }

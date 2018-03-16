@@ -42,12 +42,12 @@ public class BDI {
                 {true, false, true, false, true, false, true},
                 {true, true, true, true, true, true, true}
         };
-        Node.goalList = new ArrayList<>();
-        Node.goalList.add(new Goal(2, 5, 'a'));
-        Node.goalList.add(new Goal(3, 5, 'b'));
-        Node.goalList.add(new Goal(4, 5, 'c'));
-        Node.goalList.add(new Goal(5, 5, 'd'));
-        Node.goalList.add(new Goal(6, 5, 'e'));
+        Node.goalSet = new HashSet<>();
+        Node.goalSet.add(new Goal(2, 5, 'a'));
+        Node.goalSet.add(new Goal(3, 5, 'b'));
+        Node.goalSet.add(new Goal(4, 5, 'c'));
+        Node.goalSet.add(new Goal(5, 5, 'd'));
+        Node.goalSet.add(new Goal(6, 5, 'e'));
         n.boxList = new ArrayList<>();
         n.boxList.add(new Box(2, 1, 'D', Color.BLUE));
         n.boxList.add(new Box(3, 1, 'B', Color.BLUE));
@@ -64,7 +64,7 @@ public class BDI {
                 map[i][j] = (Node.walls[i][j] ? '+' : ' ');
             }
         }
-        for (Goal g : Node.goalList) {
+        for (Goal g : Node.goalSet) {
             map[g.row][g.col] = g.letter;
         }
         for (Box b : n.boxList) {
@@ -74,7 +74,7 @@ public class BDI {
                 map[b.row][b.col] = 'o';
             }
         }
-        for (Goal g : Node.goalList) {
+        for (Goal g : Node.goalSet) {
             if (map[g.row][g.col] == g.letter) {
                 map[g.row][g.col] = 'o';
             }
@@ -86,7 +86,7 @@ public class BDI {
         int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         Goal bestGoal = null;
         int bestGoalScore = 0;
-        for (Goal g : Node.goalList) {
+        for (Goal g : Node.goalSet) {
             // Run BFS from g
             if (originalMap[g.row][g.col] == ' ') {
                 continue;
@@ -142,7 +142,7 @@ public class BDI {
                 bestGoal = g;
             }
         }
-
+        
         return bestGoal;
     }
 }

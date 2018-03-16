@@ -3,8 +3,10 @@ package karlMarx;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class SASearchClient extends SearchClient {
 
@@ -22,7 +24,7 @@ public class SASearchClient extends SearchClient {
         
         Node currentState = initialStates.get(0);
         Goal currentGoal;
-        List<Goal> currentGoals = new ArrayList<Goal>();
+        Set<Goal> currentGoals = new HashSet<Goal>();
         
         List<Node> solution = new LinkedList<Node>();
         while (!currentState.isGoalState()) {
@@ -39,7 +41,7 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Deque<Node> getPlan(Node state, List<Goal> currentGoals) {
+    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals) {
         switch (strategyArg) {
         case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals)); break;
         case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals)); break;
