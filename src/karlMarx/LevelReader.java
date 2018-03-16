@@ -68,7 +68,10 @@ public class LevelReader {
             }
         }
         boxList.forEach(box -> levelInfo.getBoxIdToColors().put(box.id,box.color));
-        agentList.forEach(agent -> levelInfo.getColorToAgents().get(agent.color).add(agent));
+        agentList.forEach(agent -> {
+            levelInfo.getColorToAgents().putIfAbsent(agent.color, new HashSet<>());
+            levelInfo.getColorToAgents().get(agent.color).add(agent);
+        });
 
         for (Node state : initialStates) {
             ArrayList<Box> boxListCopy = new ArrayList<Box>();
