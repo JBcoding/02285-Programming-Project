@@ -1,6 +1,8 @@
 package karlMarx;
 
 public class Box extends Position {
+    protected static int idCount = 0;
+    public int id;
     char letter;
     Color color;
     private int _hash;
@@ -9,6 +11,9 @@ public class Box extends Position {
         super(row, col);
         this.letter = letter;
         this.color = color;
+
+        // Update box id
+        this.id = idCount++;
     }
 
     public String toString() {
