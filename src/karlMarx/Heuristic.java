@@ -240,10 +240,9 @@ public abstract class Heuristic implements Comparator<Node> {
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
         }
-        n.h *= 5; // Scale the weight of regular goals
-        
+
         // Add weight for getting any box closer to its goal
-        activeboxes = new HashSet<Box>();
+        /*activeboxes = new HashSet<Box>();
         for (Box b : n.boxList) {
             if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
                 activeboxes.remove(b);
@@ -253,7 +252,7 @@ public abstract class Heuristic implements Comparator<Node> {
             Node.goalSet.stream()
                 .filter(g -> Character.toLowerCase(b.letter) == g.letter)
                 .forEach(g -> n.h += this.shortestDistance[b.row][b.col][g.row][g.col]);
-        }
+        }*/
         
         return n.h;
     }
