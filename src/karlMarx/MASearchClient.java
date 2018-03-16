@@ -3,7 +3,6 @@ package karlMarx;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class MASearchClient extends SearchClient {

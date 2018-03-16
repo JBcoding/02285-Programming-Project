@@ -10,6 +10,8 @@ public abstract class Heuristic implements Comparator<Node> {
     protected int[] isgoalletter = new int[26];
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
+    protected List<Goal> currentGoals;
+
     public Heuristic(Node initialState) {
         // Here's a chance to pre-process the static parts of the level.
 
@@ -176,24 +178,42 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals = new HashSet<Goal>();
-        for (Goal g : Node.goalList) {
-            Box box = null;
-            for (Box b : n.boxList) {
-                if (Character.toLowerCase(b.letter) == g.letter &&
-                        b.row == g.row &&
-                        b.col == g.col) {
-                    box = b;
-                    break;
+        HashSet<Goal> activegoals;
+        if (currentGoals == null) {
+            activegoals = new HashSet<Goal>();
+            for (Goal g : Node.goalList) {
+                Box box = null;
+                for (Box b : n.boxList) {
+                    if (Character.toLowerCase(b.letter) == g.letter &&
+                            b.row == g.row &&
+                            b.col == g.col) {
+                        box = b;
+                        break;
+                    }
+                }
+
+                if (box == null && solvableByColor.get(g).contains(n.agent.color)) {
+                    activegoals.add(g);
+                    // goal count heuristics: add maxdist for all unsatisfied goals
+                    n.h = n.h + 2; // add between 1 and maxdist;
                 }
             }
-
-            if (box == null && solvableByColor.get(g).contains(n.agent.color)) {
-                activegoals.add(g);
-                // goal count heuristics: add maxdist for all unsatisfied goals
-                n.h = n.h + 2; // add between 1 and maxdist;
+        } else {
+            activegoals = new HashSet<Goal>();
+            for (Goal g : currentGoals) {
+                boolean addGoal = true;
+                for (Box b : n.boxList) {
+                    if (b.isOn(g) && Character.toLowerCase(b.letter) == g.letter) {
+                        addGoal = false;
+                    }
+                }
+                if (addGoal) {
+                    activegoals.add(g);
+                }
             }
         }
+
+
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box box : n.boxList) {
@@ -215,6 +235,7 @@ public abstract class Heuristic implements Comparator<Node> {
                         distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
                     }
                 }
+
                 // remove the chosen box from the list of active boxes
                 activeboxes.remove(nearestBox);
                 // find the nearest same-letter active goal to the chosen box (if exists)
@@ -482,6 +503,11 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
+    public AStar(Node initialState, List<Goal> currentGoals) {
+        this(initialState);
+        this.currentGoals = currentGoals;
+    }
+
     public AStar(Node initialState) {
         super(initialState);
     }
@@ -500,6 +526,11 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
+    public WeightedAStar(Node initialState, int W, List<Goal> currentGoals) {
+        this(initialState, W);
+        this.currentGoals = currentGoals;
+    }
+
     public WeightedAStar(Node initialState, int W) {
         super(initialState);
         this.W = W;
@@ -517,6 +548,11 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
+    public Greedy(Node initialState, List<Goal> currentGoals) {
+        this(initialState);
+        this.currentGoals = currentGoals;
+    }
+
     public Greedy(Node initialState) {
         super(initialState);
     }

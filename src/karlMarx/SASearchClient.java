@@ -22,14 +22,13 @@ public class SASearchClient extends SearchClient {
         
         Node currentState = initialStates.get(0);
         Goal currentGoal;
-        List<Goal> currentGoals;
+        List<Goal> currentGoals = new ArrayList<Goal>();
         
-        List<Node> solution = new LinkedList<Node>();        
+        List<Node> solution = new LinkedList<Node>();
         while (!currentState.isGoalState()) {
             currentGoal = BDI.getGoal(currentState);
-            currentGoals = new ArrayList<Goal>();
+            System.err.println("####" + currentGoal);
             currentGoals.add(currentGoal);
-            
             Deque<Node> plan = getPlan(currentState, currentGoals);
             solution.addAll(plan);
             currentState = plan.getLast();
@@ -42,10 +41,10 @@ public class SASearchClient extends SearchClient {
 
     private Deque<Node> getPlan(Node state, List<Goal> currentGoals) {
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals));
         }
         
         strategy.addToFrontier(state);
