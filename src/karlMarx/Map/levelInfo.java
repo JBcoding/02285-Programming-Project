@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class level {
+public class levelInfo {
     private static Map<Integer, Color> boxIdToColors;
     private static Map<Color, Set<Agent>> colorToAgents;
 
@@ -17,14 +17,15 @@ public class level {
     }
 
     public static Set<Agent> getAgentsFromColor(Color color) {
-        return colorToAgents.getOrDefault(color, new HashSet<>());
+        return (colorToAgents.containsKey(color))
+                ? colorToAgents.get(color) : colorToAgents.put(color,new HashSet<>());
     }
 
     public static Map<Color, Set<Agent>> getColorToAgents() {
         return colorToAgents = (colorToAgents == null) ? new HashMap<>() : colorToAgents;
     }
 
-    public static Map<Integer, Color> getBoxColors() {
+    public static Map<Integer, Color> getBoxIdToColors() {
         return boxIdToColors = (boxIdToColors == null) ? new HashMap<>() : boxIdToColors;
     }
 }

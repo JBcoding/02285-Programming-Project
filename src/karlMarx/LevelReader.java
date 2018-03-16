@@ -1,6 +1,6 @@
 package karlMarx;
 
-import karlMarx.Map.level;
+import karlMarx.Map.levelInfo;
 
 import java.io.BufferedReader;
 import java.util.*;
@@ -62,13 +62,13 @@ public class LevelReader {
                 } else if (chr == ' ') {
                     // Free space.
                 } else {
-                    System.err.println("Error, read invalid level character: " + (int) chr);
+                    System.err.println("Error, read invalid levelInfo character: " + (int) chr);
                     System.exit(1);
                 }
             }
         }
-        boxList.forEach(box -> level.getBoxColors().put(box.id,box.color));
-        agentList.forEach(agent -> level.getColorToAgents().get(agent.color).add(agent));
+        boxList.forEach(box -> levelInfo.getBoxIdToColors().put(box.id,box.color));
+        agentList.forEach(agent -> levelInfo.getColorToAgents().get(agent.color).add(agent));
 
         for (Node state : initialStates) {
             ArrayList<Box> boxListCopy = new ArrayList<Box>();
