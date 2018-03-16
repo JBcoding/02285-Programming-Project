@@ -1,7 +1,7 @@
 package karlMarx;
 
 public class Agent extends Position {
-    int id;
+    public int id;
     Color color;
     private int _hash;
 
