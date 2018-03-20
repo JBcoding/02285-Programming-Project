@@ -34,7 +34,7 @@ public class BDI {
         /*
 
          */
-        Node n = new Node(new Agent(3, 6, 0, Color.BLUE));
+        /*Node n = new Node(new Agent(3, 6, 0, Color.BLUE));
         Node.walls = new boolean[][]{{false, true, true, true, true, true, false, true, true, true, true, true, true, false, false},
                 {false, true, false, false, false, true, true, true, false, false, false, false, true, false, false},
                 {false, true, true, false, false, false, false, false, true, false, false, true, false, true, false},
@@ -81,10 +81,40 @@ public class BDI {
         //n.boxList.add(new Box(4, 12, 'S', Color.BLUE));
         //n.boxList.add(new Box(5, 13, 'S', Color.BLUE));
         //n.boxList.add(new Box(4, 13, 'S', Color.BLUE));
-        System.out.println(getGoal(n));
+        System.out.println(getGoal(n));*/
+
+
+        Node n = new Node(new Agent(1, 3, 0, Color.BLUE));
+        Node.walls = new boolean[][]{
+                {true, true, true, true, true, true, true},
+                {true, false, false, false, false, false, true},
+                {true, false, true, false, true, false, true},
+                {true, false, true, false, true, false, true},
+                {true, false, true, false, true, false, true},
+                {true, false, true, false, true, false, true},
+                {true, false, true, false, true, false, true},
+                {true, true, true, true, true, true, true}
+        };
+        Node.goalSet = new HashSet<>();
+        Node.goalSet.add(new Goal(2, 5, 'a'));
+        Node.goalSet.add(new Goal(3, 5, 'b'));
+        Node.goalSet.add(new Goal(4, 5, 'c'));
+        Node.goalSet.add(new Goal(5, 5, 'd'));
+        Node.goalSet.add(new Goal(6, 5, 'e'));
+        n.boxList = new ArrayList<>();
+        n.boxList.add(new Box(2, 1, 'D', Color.BLUE));
+        n.boxList.add(new Box(3, 1, 'B', Color.BLUE));
+        n.boxList.add(new Box(4, 1, 'A', Color.BLUE));
+        n.boxList.add(new Box(5, 1, 'C', Color.BLUE));
+        n.boxList.add(new Box(6, 1, 'E', Color.BLUE));
+        Goal g = getGoal(n);
+        System.out.println(g);
+        System.out.println(boxToMove(n, g));
     }
 
-    public static char[][] recreateMap(Node n) {
+    public static final int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    private static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
@@ -95,33 +125,156 @@ public class BDI {
             map[g.row][g.col] = g.letter;
         }
         for (Box b : n.boxList) {
-            if (Character.toLowerCase(b.letter) == map[b.row][b.col]) { // goal already fulfilled
+            if (Character.toLowerCase(b.letter) == map[b.row][b.col] && makeCorrectlyPlacedGoalsToWalls) { // goal already fulfilled
                 map[b.row][b.col] = '+';
             } else {
                 map[b.row][b.col] = 'o';
+                if (differentiateBoxesAndGoals) {
+                    map[b.row][b.col] = b.letter;
+                }
             }
         }
-        for (Goal g : Node.goalSet) {
-            if (map[g.row][g.col] == g.letter) {
-                map[g.row][g.col] = 'o';
+        if (!differentiateBoxesAndGoals) {
+            for (Goal g : Node.goalSet) {
+                if (map[g.row][g.col] == g.letter) {
+                    map[g.row][g.col] = 'o';
+                }
+            }
+        }
+        if (ignoreGoals) {
+            for (Goal g : Node.goalSet) {
+                if (map[g.row][g.col] != '+') {
+                    map[g.row][g.col] = ' ';
+                }
             }
         }
         return map;
     }
 
-    public static int boxToMove(Node n) {
-        char[][] map = recreateMap(n);
+    public static Pair<List<Box>, int[][]> boxToMove(Node n, Goal g) {
+        List<Box> boxes = getBoxesToGoal(g, n);
+        if (boxes.size() == 1) {
+            Pair<List<Box>, Set<Position>> data = boxesOnThePathToGoal(g, boxes.get(0), n);
+            List<Box> boxesToMove = data.a;
+            Set<Position> IllegalPositions = data.b;
+            int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions);
+            return new Pair(boxesToMove, penaltyMap);
+        } // TODO: handle more than one box to each goal, find the correct box for the goal
+        return null;
+    }
 
-        return -1;
+    private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions) {
+        char[][] map = new char[Node.walls.length][Node.walls[0].length];
+        int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
+        Queue<Position> queue = new ArrayDeque<>();
+        for (int i = 0; i < Node.walls.length; i++) {
+            for (int j = 0; j < Node.walls[i].length; j++) {
+                map[i][j] = (Node.walls[i][j] ? '+' : ' ');
+                if (map[i][j] == ' ' && !illegalPositions.contains(new Position(i, j))) {
+                    if (i == 0 || j == 0 || i == Node.walls.length - 1 || j == Node.walls[i].length - 1) {
+                        continue;
+                    }
+                    queue.add(new Position(i, j));
+                    map[i][j] = '0';
+                    penaltyMap[i][j] = 0;
+                }
+            }
+        }
+        Position nullPos = new Position(-1, -1);
+        queue.add(nullPos);
+        int penalty = 1;
+        while (!queue.isEmpty()) {
+            Position pos = queue.poll();
+            if (pos == nullPos && queue.isEmpty()) {
+                break;
+            }
+            if (pos == nullPos) {
+                penalty ++;
+                queue.add(nullPos);
+                continue;
+            }
+            for (int j = 0; j < 4; j++) {
+                int dr = deltas[j][0]; // delta row
+                int dc = deltas[j][1]; // delta col
+                if (map[pos.row + dr][pos.col + dc] == ' ') {
+                    penaltyMap[pos.row + dr][pos.col + dc] = penalty;
+                    map[pos.row + dr][pos.col + dc] = '0';
+                    queue.add(new Position(pos.row + dr, pos.col + dc));
+                }
+            }
+        }
+        return penaltyMap;
+    }
+
+    private static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Box b, Node n) {
+        char[][] map = recreateMap(n, true, true, true);
+        Queue<Position>[] queues = new Queue[n.boxList.size() + 1];
+        queues[0] = new ArrayDeque<>();
+        queues[0].add(new Position(g));
+        for (int i = 0; i < n.boxList.size(); i++) {
+            if (queues[i] == null) {
+                break;
+            }
+            while (!queues[i].isEmpty()) {
+                Position pos = queues[i].poll();
+                for (int j = 0; j < 4; j++) {
+                    int dr = deltas[j][0]; // delta row
+                    int dc = deltas[j][1]; // delta col
+                    int queueIndex = i;
+                    if (Character.isAlphabetic(map[pos.row + dr][pos.col + dc])) {
+                        queueIndex ++;
+                        map[pos.row + dr][pos.col + dc] = ' ';
+                    }
+                    if (map[pos.row + dr][pos.col + dc] == ' ') {
+                        if (queues[queueIndex] == null) {
+                            queues[queueIndex] = new ArrayDeque<>();
+                        }
+                        map[pos.row + dr][pos.col + dc] = (char) (48 + (dr + 1) + 3 * (dc + 1));
+                        queues[queueIndex].add(new Position(pos.row + dr, pos.col + dc));
+                    }
+                }
+            }
+        }
+        // backtrack route
+        Position p = new Position(b);
+        List<Box> boxesOnThePath = new ArrayList<>();
+        char[][] originalMap = recreateMap(n, true, true, true);
+        Set<Position> IllegalPositions = new HashSet<>();
+        IllegalPositions.add(new Position(p));
+        while (!p.equals(g)) {
+            int direction = map[p.row][p.col];
+            int dr = ((direction - 48) % 3) - 1;
+            int dc = ((direction - 48) / 3) - 1;
+            p.row -= dr;
+            p.col -= dc;
+            if (Character.isAlphabetic(originalMap[p.row][p.col])) {
+                for (Box box : n.boxList) {
+                    if (p.equals(box)) {
+                        boxesOnThePath.add(box);
+                    }
+                }
+            }
+            IllegalPositions.add(new Position(p));
+        }
+        return new Pair<>(boxesOnThePath, IllegalPositions);
+    }
+
+    private static List<Box> getBoxesToGoal(Goal g, Node n) {
+        List<Box> boxes = new ArrayList<>();
+        for (Box b : n.boxList) {
+            if (Character.toLowerCase(b.letter) == g.letter) {
+                boxes.add(b);
+            }
+        }
+        return boxes;
     }
 
     public static Goal getGoal(Node n) {
-        char[][] map = recreateMap(n);
+        char[][] map = recreateMap(n, false, false, true);
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
             System.arraycopy(map[i], 0, originalMap[i], 0, map[i].length);
         }
-        int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         Goal bestGoal = null;
         double bestGoalScore = 0;
         for (Goal g : Node.goalSet) {
@@ -151,7 +304,6 @@ public class BDI {
                 }
                 while (!queue.isEmpty()) {
                     Position pos = queue.poll();
-                    map[pos.row][pos.col] = '0';
                     for (int j = 0; j < 4; j++) {
                         int dr = deltas[j][0]; // delta row
                         int dc = deltas[j][1]; // delta col
@@ -161,6 +313,7 @@ public class BDI {
                         }
                         if (map[pos.row + dr][pos.col + dc] == ' ') {
                             queue.add(new Position(pos.row + dr, pos.col + dc));
+                            map[pos.row + dr][pos.col + dc] = '0';
                         }
                     }
                 }

@@ -69,10 +69,10 @@ public class Node {
     }
 
     public boolean isGoalState() {
-        return isGoalState(goalSet);
+        return isGoalState(goalSet, null, null);
     }
 
-    public boolean isGoalState(Set<Goal> goals) {
+    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap) {
         goalLoop:
         for (Goal goal : goals) {
             for (Box box : boxList) {
@@ -88,6 +88,18 @@ public class Node {
             return false;
         }
 
+        if (boxesToMove != null) {
+            for (Box b1 : boxesToMove) {
+                for (Box b2 : this.boxList) {
+                    if (b1.id == b2.id) {
+                        if (penaltyMap[b2.row][b2.col] != 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
         return true;
     }
     
@@ -97,7 +109,7 @@ public class Node {
                 return false;
             }
         }
-        return isGoalState(goals);
+        return isGoalState(goals, null, null);
     }
 
     public ArrayList<Node> getExpandedNodes() {

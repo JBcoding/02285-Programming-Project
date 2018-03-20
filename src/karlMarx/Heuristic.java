@@ -11,6 +11,8 @@ public abstract class Heuristic implements Comparator<Node> {
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
     protected Set<Goal> currentGoals;
+    protected List<Box> boxesToMove;
+    protected int[][] penaltyMap;
 
     public Heuristic(Node initialState) {
         // Here's a chance to pre-process the static parts of the level.
@@ -239,6 +241,16 @@ public abstract class Heuristic implements Comparator<Node> {
                     + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
+        }
+
+        if (boxesToMove != null) {
+            for (Box b1 : boxesToMove) {
+                for (Box b2 : n.boxList) {
+                    if (b1.id == b2.id) {
+                        n.h += penaltyMap[b2.row][b2.col];
+                    }
+                }
+            }
         }
 
         // Add weight for getting any box closer to its goal
@@ -498,9 +510,11 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, Set<Goal> currentGoals) {
+    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public AStar(Node initialState) {
@@ -521,9 +535,11 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState, W);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public WeightedAStar(Node initialState, int W) {
@@ -543,9 +559,11 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, Set<Goal> currentGoals) {
+    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public Greedy(Node initialState) {
