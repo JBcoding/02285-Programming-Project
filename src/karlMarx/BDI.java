@@ -157,13 +157,13 @@ public class BDI {
             Pair<List<Box>, Set<Position>> data = boxesOnThePathToGoal(g, boxes.get(0), n);
             List<Box> boxesToMove = data.a;
             Set<Position> IllegalPositions = data.b;
-            int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions);
+            int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
             return new Pair(boxesToMove, penaltyMap);
         } // TODO: handle more than one box to each goal, find the correct box for the goal
         return null;
     }
 
-    private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions) {
+    private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
         Queue<Position> queue = new ArrayDeque<>();
@@ -174,9 +174,16 @@ public class BDI {
                     if (i == 0 || j == 0 || i == Node.walls.length - 1 || j == Node.walls[i].length - 1) {
                         continue;
                     }
-                    queue.add(new Position(i, j));
-                    map[i][j] = '0';
-                    penaltyMap[i][j] = 0;
+                    for (int k = 0; k < 4; k++) {
+                        int dr = deltas[k][0]; // delta row
+                        int dc = deltas[k][1]; // delta col
+                        if (illegalPositions.contains(new Position(i + dr, j + dc))) {
+                            queue.add(new Position(i, j));
+                            map[i][j] = '0';
+                            penaltyMap[i][j] = 0;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -200,6 +207,14 @@ public class BDI {
                     penaltyMap[pos.row + dr][pos.col + dc] = penalty;
                     map[pos.row + dr][pos.col + dc] = '0';
                     queue.add(new Position(pos.row + dr, pos.col + dc));
+                }
+            }
+        }
+        for (int i = 0; i < Node.walls.length; i++) {
+            for (int j = 0; j < Node.walls[i].length; j++) {
+                if (!illegalPositions.contains(new Position(i, j))) {
+                    penaltyMap[i][j] *= -1;
+                    penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }
             }
         }

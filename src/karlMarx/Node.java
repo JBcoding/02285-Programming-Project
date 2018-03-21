@@ -92,7 +92,7 @@ public class Node {
             for (Box b1 : boxesToMove) {
                 for (Box b2 : this.boxList) {
                     if (b1.id == b2.id) {
-                        if (penaltyMap[b2.row][b2.col] != 0) {
+                        if (penaltyMap[b2.row][b2.col] > 0) {
                             return false;
                         }
                     }
