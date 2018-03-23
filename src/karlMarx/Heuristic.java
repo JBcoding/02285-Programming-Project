@@ -11,16 +11,18 @@ public abstract class Heuristic implements Comparator<Node> {
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
     protected Set<Goal> currentGoals;
+    protected List<Box> boxesToMove;
+    protected int[][] penaltyMap;
 
     public Heuristic(Node initialState) {
         // Here's a chance to pre-process the static parts of the level.
 
         // Find all goals.
-        ArrayList<Goal> goalcells = new ArrayList<Goal>();
-        ArrayList<Goal> prioritisedgoals = new ArrayList<Goal>();
+        ArrayList<Goal> goalcells = new ArrayList<>();
+        ArrayList<Goal> prioritisedgoals = new ArrayList<>();
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
-                if (Node.goals[row][col] - 'a' >= 0) {
+                if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
                     goalcells.add(new Goal(row, col, Node.goals[row][col]));
                     // isgoalletter is a simple array keeping track of which letters occur on goal cells,
                     // so that we can quickly discard the boxes having other letters
@@ -250,6 +252,29 @@ public abstract class Heuristic implements Comparator<Node> {
             n.h *= 2; // TODO: Is this nice?
         }
 
+        if (boxesToMove != null) {
+            for (Box b1 : boxesToMove) {
+                for (Box b2 : n.boxList) {
+                    if (b1.id == b2.id) {
+                        n.h += penaltyMap[b2.row][b2.col];
+                    }
+                }
+            }
+        }
+
+        // Add weight for getting any box closer to its goal
+        /*activeboxes = new HashSet<Box>();
+        for (Box b : n.boxList) {
+            if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
+                activeboxes.remove(b);
+            }
+        }
+        for (Box b : activeboxes) {
+            Node.goalSet.stream()
+                .filter(g -> Character.toLowerCase(b.letter) == g.letter)
+                .forEach(g -> n.h += this.shortestDistance[b.row][b.col][g.row][g.col]);
+        }*/
+        
         return n.h;
     }
 
@@ -494,9 +519,11 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, Set<Goal> currentGoals) {
+    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public AStar(Node initialState) {
@@ -517,9 +544,11 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState, W);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public WeightedAStar(Node initialState, int W) {
@@ -539,9 +568,11 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, Set<Goal> currentGoals) {
+    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
         this(initialState);
         this.currentGoals = currentGoals;
+        this.boxesToMove = boxesToMove;
+        this.penaltyMap = penaltyMap;
     }
 
     public Greedy(Node initialState) {

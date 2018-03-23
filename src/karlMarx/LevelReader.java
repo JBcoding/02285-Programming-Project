@@ -1,6 +1,6 @@
 package karlMarx;
 
-import karlMarx.Map.level;
+import karlMarx.Map.LevelInfo;
 
 import java.io.BufferedReader;
 import java.util.*;
@@ -53,6 +53,7 @@ public class LevelReader {
                     boxList.add(new Box(new Position(row, col), chr, colors.getOrDefault(chr, Color.BLUE)));
                 } else if ('a' <= chr && chr <= 'z') { // Goal
                     Node.goals[row][col] = chr;
+                    LevelInfo.addGoal(row, col, chr);
                     Goal goal = new Goal(new Position(row, col), chr);
                     Node.goalSet.add(goal);
                     if (!Node.goalMap.containsKey(chr)) {
@@ -62,13 +63,20 @@ public class LevelReader {
                 } else if (chr == ' ') {
                     // Free space.
                 } else {
-                    System.err.println("Error, read invalid level character: " + (int) chr);
+                    System.err.println("Error, read invalid LevelInfo character: " + (int) chr);
                     System.exit(1);
                 }
             }
         }
+
 //        boxList.forEach(box -> level.getBoxColors().put(box.id,box.color));
 //        agentList.forEach(agent -> level.getColorToAgents().get(agent.color).add(agent));
+
+        boxList.forEach(box -> LevelInfo.getBoxIdToColors().put(box.id,box.color));
+        agentList.forEach(agent -> {
+            LevelInfo.getColorToAgents().putIfAbsent(agent.color, new HashSet<>());
+            LevelInfo.getColorToAgents().get(agent.color).add(agent);
+        });
 
         for (Node state : initialStates) {
             ArrayList<Box> boxListCopy = new ArrayList<Box>();

@@ -16,6 +16,11 @@ public class Box extends Position {
         this.id = idCount++;
     }
 
+    public Box(int row, int col, char letter, Color color, int id) {
+        this(row, col, letter, color);
+        this.id = id;
+    }
+
     public String toString() {
         return color + " box " + letter + " at (" + col + "," + row + ")";
     }
@@ -27,7 +32,7 @@ public class Box extends Position {
     }
 
     public Box copy() {
-        return new Box(row, col, letter, color);
+        return new Box(row, col, letter, color, id);
     }
 
     @Override
