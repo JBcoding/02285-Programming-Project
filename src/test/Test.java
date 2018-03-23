@@ -41,7 +41,7 @@ public class Test {
             "-c", 
             "\"java -Xmx4g -Xms4g -cp src karlMarx.Driver\"", 
             "-g",
-                    "-30",
+            "-30",
             "-t", 
             "300" 
         };
@@ -67,9 +67,7 @@ public class Test {
                        int solutionLength = Integer.parseInt(s);
                        totalSolved++;
                        totalSolutionLength += solutionLength;
-                   } catch (NumberFormatException e) {
-                       System.out.println("Could not parse: " + s);
-                   }
+                   } catch (NumberFormatException e) {}
                }
            } catch (IOException x) {
                // IOException can never be thrown by the iteration.
@@ -114,7 +112,6 @@ public class Test {
         }
         proc.destroy();
         proc.destroyForcibly();
-        
         return "";
     }
 

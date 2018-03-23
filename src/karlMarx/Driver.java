@@ -46,14 +46,15 @@ public class Driver {
         if (solution == null) {
             System.err.println(searchClient.searchStatus());
             System.err.println("Unable to solve level.");
+            System.out.println(NO_SOLUTION);
         } else {
             System.err.println("\nSummary for " + strategy.toString());
             System.err.println("Found solution of length " + solution.size());
             System.err.println(searchClient.searchStatus());
+            System.err.println(solution.size());
 
             for (Node n : solution) {
                 String act = n.action.toString();
-//                System.err.println(act);
                 System.out.println(act);
                 String response = serverMessages.readLine();
                 if (response.contains("false")) {
@@ -63,8 +64,5 @@ public class Driver {
                 }
             }
         }
-        // Print stuff finally for tests to read
-        System.err.println(solution == null ? NO_SOLUTION : solution.size());
-        System.exit(0);
     }
 }
