@@ -14,7 +14,7 @@ import karlMarx.Driver;
 import java.nio.file.*;
 import java.util.Arrays;
 
-public class SATest {
+public class Test {
     
     public static void main(String[] args) {
         String arg = "";
