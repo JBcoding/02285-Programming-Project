@@ -10,18 +10,31 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.Test;
 
 import karlMarx.Driver;
 
 import java.nio.file.*;
 import java.util.Arrays;
 
-class SATest {
+public class SATest {
+    
+    public static void main(String[] args) {
+        String arg = "";
+        if (args.length > 0) {
+            switch (args[1].toLowerCase()) {
+            case "-sa": arg = "SA"; break;
+            case "-ma": arg = "MA"; break;
+            }
+        }
+        try {
+            testAllLevels(arg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     //private final String[] INIT = new String[] { "javac", "%s" };
-    private final String[] COMMAND = new String[] {
+    private static final String[] COMMAND = new String[] {
             "java", 
             "-jar", 
             "environment\\server.jar", 
@@ -35,8 +48,7 @@ class SATest {
             "300" 
         };
     
-    @Test
-    void testAllLevels() throws Exception {
+    private static void testAllLevels(String saOrMa) throws Exception {
         String topDir = new java.io.File( "." ).getCanonicalPath();
         COMMAND[2] = String.format(COMMAND[2], topDir);
         
@@ -48,7 +60,7 @@ class SATest {
         
         long before = System.currentTimeMillis();
         try (DirectoryStream<Path> stream =
-           Files.newDirectoryStream(currPath, "SAsimple1.lvl")) {
+           Files.newDirectoryStream(currPath, saOrMa + "*.lvl")) {
                for (Path entry: stream) {
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
@@ -74,7 +86,7 @@ class SATest {
         System.out.println("Total time used (ms): " + (after - before));
     }
     
-    private String runJob(String... job) throws IOException {
+    private static String runJob(String... job) throws IOException {
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(job);
 
