@@ -28,7 +28,7 @@ class SATest {
             "-l", 
             "\"%s\"", 
             "-c", 
-            "\"java -Xmx4g -Xms4g -cp environment karlMarx.Driver\"", 
+            "\"java -Xmx4g -Xms4g -cp src karlMarx.Driver\"", 
             "-g",
             "-30",
             "-t", 
