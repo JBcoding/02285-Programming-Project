@@ -18,11 +18,11 @@ public abstract class Heuristic implements Comparator<Node> {
         // Here's a chance to pre-process the static parts of the level.
 
         // Find all goals.
-        ArrayList<Goal> goalcells = new ArrayList<Goal>();
-        ArrayList<Goal> prioritisedgoals = new ArrayList<Goal>();
+        ArrayList<Goal> goalcells = new ArrayList<>();
+        ArrayList<Goal> prioritisedgoals = new ArrayList<>();
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
-                if (Node.goals[row][col] - 'a' >= 0) {
+                if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
                     goalcells.add(new Goal(row, col, Node.goals[row][col]));
                     // isgoalletter is a simple array keeping track of which letters occur on goal cells,
                     // so that we can quickly discard the boxes having other letters
