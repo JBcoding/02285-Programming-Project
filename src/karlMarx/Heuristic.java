@@ -187,11 +187,15 @@ public abstract class Heuristic implements Comparator<Node> {
         } else { // Single agent 
             activegoals.addAll(currentGoals);
         }
+
         for (Box b : n.boxList) {
             if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
                 activegoals.remove(new Goal(b.row, b.col, Character.toLowerCase(b.letter)));
             }
         }
+
+        activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
+
         for (Goal g : activegoals) {
             n.h += 2;
         }
