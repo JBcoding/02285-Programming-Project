@@ -41,7 +41,7 @@ public class Test {
             "-c", 
             "\"java -Xmx4g -Xms4g -cp src karlMarx.Driver\"", 
             "-g",
-            "-30",
+                    "-30",
             "-t", 
             "300" 
         };
@@ -50,7 +50,7 @@ public class Test {
         String topDir = new java.io.File( "." ).getCanonicalPath();
         COMMAND[2] = String.format(COMMAND[2], topDir);
         
-        String levelDir = "\\environment\\levels\\";
+        String levelDir = "/environment/levels/";
         Path currPath = Paths.get(topDir + levelDir);
         
         int totalSolved = 0;
@@ -88,10 +88,8 @@ public class Test {
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(job);
 
-        BufferedReader stdInput = new BufferedReader(new 
-             InputStreamReader(proc.getInputStream()));
-        BufferedReader stdError = new BufferedReader(new 
-             InputStreamReader(proc.getErrorStream()));
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         BufferedWriter stdOutput = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
         try {
 
@@ -99,7 +97,6 @@ public class Test {
             String next = null;
             while ((next = stdError.readLine()) != null) {
                 s = next;
-                System.out.println(s);
                 s = s.substring("[Client said] ".length());
                 try {
                     if (s.charAt(0) == Driver.NO_SOLUTION) {
@@ -115,6 +112,9 @@ public class Test {
             stdError.close();
             stdOutput.close();
         }
+        proc.destroy();
+        proc.destroyForcibly();
+        
         return "";
     }
 
