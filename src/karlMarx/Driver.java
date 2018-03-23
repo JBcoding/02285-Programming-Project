@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 public class Driver {
 
+    public static final char NO_SOLUTION = '\u0000';
 
     public static void main(String[] args) throws Exception {
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
@@ -42,7 +46,6 @@ public class Driver {
         if (solution == null) {
             System.err.println(searchClient.searchStatus());
             System.err.println("Unable to solve level.");
-            System.exit(0);
         } else {
             System.err.println("\nSummary for " + strategy.toString());
             System.err.println("Found solution of length " + solution.size());
@@ -60,5 +63,8 @@ public class Driver {
                 }
             }
         }
+        // Print stuff finally for tests to read
+        System.err.println(solution == null ? NO_SOLUTION : solution.size());
+        System.exit(0);
     }
 }
