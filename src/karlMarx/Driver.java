@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 public class Driver {
 
+    public static final char NO_SOLUTION = '\u0000';
 
     public static void main(String[] args) throws Exception {
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
@@ -54,6 +58,9 @@ public class Driver {
                         break;
                     }
                 }
+
+                System.err.println(solution == null ? NO_SOLUTION : solution.size());
+                System.exit(0);
             }
         } else {
             MASearchClient searchClient = new MASearchClient();
@@ -102,6 +109,10 @@ public class Driver {
                     }
                 }
             }
+
+            // Print stuff finally for tests to read
+            System.err.println(solutions == null ? NO_SOLUTION : solutions.size());
+            System.exit(0);
         }
     }
 }
