@@ -19,7 +19,7 @@ public class Test {
     public static void main(String[] args) {
         String arg = "";
         if (args.length > 0) {
-            switch (args[1].toLowerCase()) {
+            switch (args[0].toLowerCase()) {
             case "-sa": arg = "SA"; break;
             case "-ma": arg = "MA"; break;
             }
