@@ -27,42 +27,97 @@ public class Driver {
             strategy = args[0];
         }
 
-        SearchClient searchClient;
         if (initialStates.size() == 1) {
-            searchClient = new SASearchClient();            
-        } else {
-            searchClient = new MASearchClient();                    
-        }
-        
-        List<Node> solution;
-        
-        try {
-            solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
-        } catch (OutOfMemoryError ex) {
-            System.err.println("Maximum memory usage exceeded.");
-            solution = null;
-        }
+            SASearchClient searchClient = new SASearchClient();
 
-        if (solution == null) {
-            System.err.println(searchClient.searchStatus());
-            System.err.println("Unable to solve level.");
-            System.out.println(NO_SOLUTION);
-        } else {
-            System.err.println("\nSummary for " + strategy.toString());
-            System.err.println("Found solution of length " + solution.size());
-            System.err.println(searchClient.searchStatus());
-            System.err.println(solution.size());
+            List<Node> solution;
 
-            for (Node n : solution) {
-                String act = n.action.toString();
-                System.out.println(act);
-                String response = serverMessages.readLine();
-                if (response.contains("false")) {
-                    System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
-                    System.err.format("%s was attempted in \n%s\n", act, n.toString());
-                    break;
+            try {
+                solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
+            } catch (OutOfMemoryError ex) {
+                System.err.println("Maximum memory usage exceeded.");
+                solution = null;
+            }
+
+            if (solution == null) {
+                System.err.println(searchClient.searchStatus());
+                System.err.println("Unable to solve level.");
+                System.err.println(NO_SOLUTION);
+                System.exit(0);
+            } else {
+                System.err.println("\nSummary for " + strategy);
+                System.err.println("Found solution of length " + solution.size());
+                System.err.println(searchClient.searchStatus());
+                System.err.println(solution.size());
+
+                for (Node n : solution) {
+                    String act = "[" + n.action.toString() + "]";
+                    System.out.println(act);
+                    String response = serverMessages.readLine();
+                    if (response.contains("false")) {
+                        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
+                        System.err.format("%s was attempted in \n%s\n", act, n.toString());
+                        break;
+                    }
                 }
             }
+        } else {
+            MASearchClient searchClient = new MASearchClient();
+
+            ArrayList<List<Node>> solutions;
+
+            try {
+                solutions = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
+            } catch (OutOfMemoryError ex) {
+                System.err.println("Maximum memory usage exceeded.");
+                solutions = null;
+            }
+
+            if (solutions == null) {
+                System.err.println(searchClient.searchStatus());
+                System.err.println("Unable to solve level.");
+                System.out.println(NO_SOLUTION);
+                System.exit(0);
+            } else {
+                System.err.println("\nSummary for " + strategy);
+                System.err.println("Found solution of length " + solutions.size());
+                System.err.println(searchClient.searchStatus());
+                int solutionLength = 0;
+                for (List<Node> sol : solutions) {
+                    solutionLength += sol.size();
+                }
+                System.err.println(solutionLength);
+
+                for (int i = 0; i < solutions.size(); i++) {
+                    for (Node n : solutions.get(i)) {
+                        StringBuilder act = new StringBuilder();
+                        act.append('[');
+                        for (int j = 0; j < i; j++) {
+                            act.append("NoOp, ");
+                        }
+
+                        act.append(n.action.toString());
+
+                        for (int j = i+1; j < solutions.size(); j++) {
+                            act.append(", NoOp");
+                        }
+                        act.append(']');
+
+                        System.out.println(act);
+                        System.err.println(act);
+                        String response = serverMessages.readLine();
+                        if (response.contains("false")) {
+                            System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
+                            System.err.format("%s was attempted in \n%s\n", act, n.toString());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Print stuff finally for tests to read
+            System.err.println(solutions == null ? NO_SOLUTION : solutions.size());
+            System.exit(0);
         }
     }
 }
