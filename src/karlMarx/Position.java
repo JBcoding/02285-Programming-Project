@@ -38,6 +38,17 @@ public class Position {
         return row == pos.row && col == pos.col;
     }
 
+    public Position[] getNeighbours() {
+        Position[] neighbours = new Position[4];
+
+        neighbours[0] = new Position(row + 1, col);
+        neighbours[1] = new Position(row - 1, col);
+        neighbours[2] = new Position(row, col + 1);
+        neighbours[3] = new Position(row, col - 1);
+
+        return neighbours;
+    }
+
     @Override
     public int hashCode() {
         if (this._hash == 0) {

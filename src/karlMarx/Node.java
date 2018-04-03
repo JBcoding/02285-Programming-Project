@@ -1,11 +1,14 @@
 package karlMarx;
 
+import java.io.CharArrayReader;
 import java.util.*;
 
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(1);
+    private static final Random RND = new Random(2);
+
+    public static boolean IS_SINGLE = true;
 
     public static int MAX_ROW;
     public static int MAX_COL;
@@ -176,14 +179,87 @@ public class Node {
                 }
             }
         }
+
+        if (!IS_SINGLE && false) {
+            ArrayDeque<Position> queue = new ArrayDeque<>();
+
+            queue.add(this.agent);
+
+            HashSet<Position> seen = new HashSet<>();
+
+            HashSet<Goal> goals = new HashSet<>();
+            HashSet<Box> boxes = new HashSet<>();
+
+            while (!queue.isEmpty()) {
+                Position curr = queue.poll();
+
+                if (Node.goals[curr.row][curr.col] >= 'a' && Node.goals[curr.row][curr.col] <= 'z') {
+                    Goal goal = findGoal(curr.row, curr.col);
+                    goals.add(goal);
+                }
+
+                for (Position pos : curr.getNeighbours()) {
+                    Box maybeBox = findBox(pos.row, pos.col);
+                    if (maybeBox != null && !boxes.contains(maybeBox)) {
+                        boxes.add(maybeBox);
+                    }
+
+                    if (inBounds(pos) && cellIsFree(pos.row, pos.col) && !seen.contains(pos)) {
+                        queue.add(pos);
+                        seen.add(pos);
+                    }
+                }
+            }
+
+            boolean solved = true;
+
+            for (Goal goal : goals) {
+                Box assigned = null;
+                for (Box box : boxes) {
+                    if (Character.toLowerCase(box.letter) == goal.letter && box.isOn(goal)) {
+                        assigned = box;
+                        break;
+                    }
+                }
+
+                if (assigned == null) {
+                    solved = false;
+                } else {
+                    boxes.remove(assigned);
+                }
+            }
+
+            if (solved) {
+                for (Box box : boxes) {
+                    Node n = this.ChildNode();
+                    n.action = new Command(box);
+                    n.agent.row = agent.row;
+                    n.agent.col = agent.col;
+                    //n.boxList.remove(box);
+                    expandedNodes.add(n);
+
+                    System.err.println("NEED HELP MOVING: " + box);
+                }
+            }
+
+        }
+
         Collections.shuffle(expandedNodes, RND);
         return expandedNodes;
+    }
+
+    public static boolean inBounds(Position pos) {
+        return pos.row >= 0 &&
+                pos.row < MAX_ROW &&
+                pos.col >= 0 &&
+                pos.row < MAX_COL;
     }
 
     private boolean cellIsFree(int row, int col) {
         if (Node.walls[row][col]) {
             return false;
         }
+
         return !boxAt(row, col);
     }
 
@@ -271,7 +347,7 @@ public class Node {
         return s.toString();
     }
 
-    private Box findBox(int row, int col) {
+    public Box findBox(int row, int col) {
         for (Box b : boxList) {
             if (b.row == row && b.col == col) {
                 return b;
@@ -280,7 +356,7 @@ public class Node {
         return null;
     }
 
-    private Goal findGoal(int row, int col) {
+    public static Goal findGoal(int row, int col) {
         for (Goal g : goalSet) {
             if (g.row == row && g.col == col) {
                 return g;

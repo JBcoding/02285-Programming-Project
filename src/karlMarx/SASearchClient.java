@@ -9,6 +9,8 @@ public class SASearchClient extends SearchClient {
     private Strategy strategy;
 
     public List<Node> Search(String strategyArg, List<Node> initialStates) throws IOException {
+        Node.IS_SINGLE = true;
+
         if (initialStates.size() != 1) {
             throw new IllegalArgumentException("There can only be one initial state in single agent levels.");
         }
@@ -23,6 +25,8 @@ public class SASearchClient extends SearchClient {
         
         List<Node> solution = new LinkedList<Node>();
         while (!currentState.isGoalState()) {
+            System.err.println(currentState);
+
             currentGoal = BDI.getGoal(currentState);
             System.err.println("NEXT GOAL: " + currentGoal);
             while (true) {

@@ -158,7 +158,7 @@ public class BDI {
             List<Box> boxesToMove = data.a;
             Set<Position> IllegalPositions = data.b;
             int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
-            return new Pair(boxesToMove, penaltyMap);
+            return new Pair<>(boxesToMove, penaltyMap);
         } // TODO: handle more than one box to each goal, find the correct box for the goal
         return null;
     }
@@ -313,6 +313,10 @@ public class BDI {
     }
 
     public static Goal getGoal(Node n) {
+        return getGoal(n, Node.goalSet);
+    }
+
+    public static Goal getGoal(Node n, Set<Goal> goalSet) {
         char[][] map = recreateMap(n, false, false, true);
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
@@ -320,7 +324,7 @@ public class BDI {
         }
         Goal bestGoal = null;
         double bestGoalScore = 0;
-        for (Goal g : Node.goalSet) {
+        for (Goal g : goalSet) {
             // Run BFS from g
             if (originalMap[g.row][g.col] == '+') {
                 continue;
