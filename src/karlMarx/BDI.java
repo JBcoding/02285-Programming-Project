@@ -163,6 +163,29 @@ public class BDI {
         return null;
     }
 
+    private static char[][] getWallsWithExtra(Node n) {
+        char[][] map = new char[Node.walls.length][Node.walls[0].length];
+        for (int i = 0; i < Node.walls.length; i++) {
+            for (int j = 0; j < Node.walls[i].length; j++) {
+                map[i][j] = (Node.walls[i][j] ? '+' : ' ');
+                for (Box b : n.boxList) {
+                    if (b.row == i && b.col == j && Character.toLowerCase(b.letter) == Node.goals[i][j]) {
+                        map[i][j] = '+';
+                    }
+                }
+            }
+        }
+        // all completed goals are now walls
+        // now make all unreachable fields walls
+        Queue<Position> queue = new ArrayDeque<>();
+        queue.add(new Position(n.agent.row, n.agent.col));
+        Set<Position> boxes = new HashSet<>();
+        for (Box b : n.boxList) {
+            boxes.add(new Position(b.row, b.col));
+        }
+        return null;
+    }
+
     private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
@@ -170,6 +193,11 @@ public class BDI {
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 map[i][j] = (Node.walls[i][j] ? '+' : ' ');
+                for (Box b : n.boxList) {
+                    if (b.row == i && b.col == j && Character.toLowerCase(b.letter) == Node.goals[i][j]) {
+                        map[i][j] = '+';
+                    }
+                }
                 if (map[i][j] == ' ' && !illegalPositions.contains(new Position(i, j))) {
                     if (i == 0 || j == 0 || i == Node.walls.length - 1 || j == Node.walls[i].length - 1) {
                         continue;
@@ -274,7 +302,7 @@ public class BDI {
         return new Pair<>(boxesOnThePath, IllegalPositions);
     }
 
-    private static List<Box> getBoxesToGoal(Goal g, Node n) {
+    public static List<Box> getBoxesToGoal(Goal g, Node n) {
         List<Box> boxes = new ArrayList<>();
         for (Box b : n.boxList) {
             if (Character.toLowerCase(b.letter) == g.letter) {

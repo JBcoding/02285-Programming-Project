@@ -22,13 +22,11 @@ public class Box extends Position {
     }
 
     public String toString() {
-        return "Box at (" + col + "," + row + ")";
+        return "Box at (" + col + "," + row + ") with letter " + letter + " - " + id;
     }
 
     public Box(Position position, char letter, Color color) {
-        super(position.row, position.col);
-        this.letter = letter;
-        this.color = color;
+        this(position.row, position.col, letter, color);
     }
 
     public Box copy() {
