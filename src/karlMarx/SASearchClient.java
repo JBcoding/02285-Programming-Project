@@ -45,6 +45,7 @@ public class SASearchClient extends SearchClient {
                     break;
                 }
             }
+            System.err.println(currentState);
             System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
             Deque<Node> plan = getPlan(currentState, currentGoals, null, null, null);

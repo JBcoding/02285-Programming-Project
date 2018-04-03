@@ -212,7 +212,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
         ArrayList<Pair<Set<Goal>, Set<Box>>> iterators = new ArrayList<Pair<Set<Goal>, Set<Box>>>();
         iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(activegoals), new HashSet<Box>(activeboxes)));
-        iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(Node.goalSet), new HashSet<Box>(n.boxList)));
+        //iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(Node.goalSet), new HashSet<Box>(n.boxList)));
         
         for (Pair<Set<Goal>, Set<Box>> pair : iterators) {
             Set<Goal> tempActiveGoals = pair.a;
@@ -266,7 +266,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 }
             }
         }
-        if (boxesNotToMoveMuch != null) {
+
+        /*if (boxesNotToMoveMuch != null) {
             for (Box b1 : boxesNotToMoveMuch) {
                 for (Box b2 : n.boxList) {
                     if (b1.id == b2.id) {
@@ -274,7 +275,7 @@ public abstract class Heuristic implements Comparator<Node> {
                     }
                 }
             }
-        }
+        }*/
 
         // Add weight for getting any box closer to its goal
         /*activeboxes = new HashSet<Box>();
