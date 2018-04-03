@@ -212,8 +212,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
         ArrayList<Pair<Set<Goal>, Set<Box>>> iterators = new ArrayList<Pair<Set<Goal>, Set<Box>>>();
         iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(activegoals), new HashSet<Box>(activeboxes)));
-        iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(Node.goalSet), new HashSet<Box>(n.boxList)));
-        
+
         for (Pair<Set<Goal>, Set<Box>> pair : iterators) {
             Set<Goal> tempActiveGoals = pair.a;
             Set<Box> tempActiveBoxes = pair.b;
