@@ -153,14 +153,28 @@ public class BDI {
 
     public static Pair<List<Box>, int[][]> boxToMove(Node n, Goal g) {
         List<Box> boxes = getBoxesToGoal(g, n);
+        Box box;
+
+
         if (boxes.size() == 1) {
-            Pair<List<Box>, Set<Position>> data = boxesOnThePathToGoal(g, boxes.get(0), n);
-            List<Box> boxesToMove = data.a;
-            Set<Position> IllegalPositions = data.b;
-            int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
-            return new Pair<>(boxesToMove, penaltyMap);
-        } // TODO: handle more than one box to each goal, find the correct box for the goal
-        return null;
+            box = boxes.get(0);
+        } else {
+            ArrayList<Box> possibleBoxes = new ArrayList<>();
+
+            for (Box b : boxes) {
+                if (Character.toLowerCase(b.letter) != Node.goals[b.row][b.col]) {
+                    possibleBoxes.add(b);
+                }
+            }
+
+            box = possibleBoxes.get(0);
+        }
+
+        Pair<List<Box>, Set<Position>> data = boxesOnThePathToGoal(g, box, n);
+        List<Box> boxesToMove = data.a;
+        Set<Position> IllegalPositions = data.b;
+        int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
+        return new Pair<>(boxesToMove, penaltyMap);
     }
 
     private static char[][] getWallsWithExtra(Node n) {

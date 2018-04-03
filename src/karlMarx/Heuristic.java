@@ -183,9 +183,9 @@ public abstract class Heuristic implements Comparator<Node> {
         // initialise activegoals with all unsatisfied goals
         Set<Goal> activegoals = new HashSet<Goal>();
         
-        if (currentGoals == null) { // Multi agent
+        if (currentGoals == null) {
             activegoals.addAll(Node.goalSet);
-        } else { // Single agent 
+        } else {
             activegoals.addAll(currentGoals);
         }
 
@@ -204,8 +204,19 @@ public abstract class Heuristic implements Comparator<Node> {
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box box : n.boxList) {
-            if (Node.goals[box.row][box.col] != Character.toLowerCase(box.letter) &&
-                    box.color == n.agent.color) {
+            if (box.color != n.agent.color) {
+                continue;
+            }
+
+            boolean isUsed = false;
+
+            for (Goal goal : currentGoals) {
+                if (goal.row == box.row && goal.col == box.col && goal.letter == Character.toLowerCase(box.letter)) {
+                    isUsed = true;
+                }
+            }
+
+            if (!isUsed) {
                 activeboxes.add(box);
             }
         }
@@ -250,11 +261,14 @@ public abstract class Heuristic implements Comparator<Node> {
                 n.h = n.h
                         + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
                         + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+                // System.err.println(nearestGoal + " " + nearestBox);
                 currentRow = nearestGoal.row;
                 currentCol = nearestGoal.col;
             }
             n.h *= 2; // TODO: Is this nice?
         }
+        // System.err.println(currentGoals);
+        // System.err.println();
 
         if (boxesToMove != null) {
             for (Box b1 : boxesToMove) {
@@ -265,6 +279,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 }
             }
         }
+
+        /*
         if (boxesNotToMoveMuch != null) {
             for (Box b1 : boxesNotToMoveMuch) {
                 for (Box b2 : n.boxList) {
@@ -274,6 +290,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 }
             }
         }
+        */
 
         // Add weight for getting any box closer to its goal
         /*activeboxes = new HashSet<Box>();
