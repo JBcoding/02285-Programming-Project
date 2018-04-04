@@ -114,68 +114,76 @@ public class Node {
         return isGoalState(goals, null, null);
     }
 
-    public ArrayList<Node> getExpandedNodes() {
-        ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
-        for (Command c : Command.EVERY) {
-            // Determine applicability of action
-            int newAgentRow = this.agent.row + Command.dirToRowChange(c.dir1);
-            int newAgentCol = this.agent.col + Command.dirToColChange(c.dir1);
+    public Node getNodeFromCommand(Command c) {
+        // Determine applicability of action
+        int newAgentRow = this.agent.row + Command.dirToRowChange(c.dir1);
+        int newAgentCol = this.agent.col + Command.dirToColChange(c.dir1);
 
-            if (c.actionType == Type.Move) {
-                // Check if there's a wall or box on the cell to which the agent is moving
-                if (this.cellIsFree(newAgentRow, newAgentCol)) {
+        if (c.actionType == Type.Move) {
+            // Check if there's a wall or box on the cell to which the agent is moving
+            if (this.cellIsFree(newAgentRow, newAgentCol)) {
+                Node n = this.ChildNode();
+                n.action = c;
+                n.agent.row = newAgentRow;
+                n.agent.col = newAgentCol;
+                return n;
+            }
+        } else if (c.actionType == Type.Push) {
+            // Make sure that there's actually a box to move
+            Box b = findBox(newAgentRow, newAgentCol);
+            if (b != null && agent.color == b.color) {
+                int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
+                int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
+                // .. and that new cell of box is free
+                if (this.cellIsFree(newBoxRow, newBoxCol)) {
                     Node n = this.ChildNode();
                     n.action = c;
                     n.agent.row = newAgentRow;
                     n.agent.col = newAgentCol;
-                    expandedNodes.add(n);
+                    // Change box position in boxList
+                    for (Box box : n.boxList) {
+                        if (box.isOn(new Position(newAgentRow, newAgentCol))) {
+                            box.row = newBoxRow;
+                            box.col = newBoxCol;
+                            break;
+                        }
+                    }
+                    return n;
                 }
-            } else if (c.actionType == Type.Push) {
-                // Make sure that there's actually a box to move
-                Box b = findBox(newAgentRow, newAgentCol);
+            }
+        } else if (c.actionType == Type.Pull) {
+            // Cell is free where agent is going
+            if (this.cellIsFree(newAgentRow, newAgentCol)) {
+                int boxRow = this.agent.row + Command.dirToRowChange(c.dir2);
+                int boxCol = this.agent.col + Command.dirToColChange(c.dir2);
+                // .. and there's a box in "dir2" of the agent
+                Box b = findBox(boxRow, boxCol);
                 if (b != null && agent.color == b.color) {
-                    int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
-                    int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
-                    // .. and that new cell of box is free
-                    if (this.cellIsFree(newBoxRow, newBoxCol)) {
-                        Node n = this.ChildNode();
-                        n.action = c;
-                        n.agent.row = newAgentRow;
-                        n.agent.col = newAgentCol;
-                        // Change box position in boxList
-                        for (Box box : n.boxList) {
-                            if (box.isOn(new Position(newAgentRow, newAgentCol))) {
-                                box.row = newBoxRow;
-                                box.col = newBoxCol;
-                                break;
-                            }
+                    Node n = this.ChildNode();
+                    n.action = c;
+                    n.agent.row = newAgentRow;
+                    n.agent.col = newAgentCol;
+                    // Change box position in boxList
+                    for (Box box : n.boxList) {
+                        if (box.isOn(new Position(boxRow, boxCol))) {
+                            box.row = this.agent.row;
+                            box.col = this.agent.col;
+                            break;
                         }
-                        expandedNodes.add(n);
                     }
+                    return n;
                 }
-            } else if (c.actionType == Type.Pull) {
-                // Cell is free where agent is going
-                if (this.cellIsFree(newAgentRow, newAgentCol)) {
-                    int boxRow = this.agent.row + Command.dirToRowChange(c.dir2);
-                    int boxCol = this.agent.col + Command.dirToColChange(c.dir2);
-                    // .. and there's a box in "dir2" of the agent
-                    Box b = findBox(boxRow, boxCol);
-                    if (b != null && agent.color == b.color) {
-                        Node n = this.ChildNode();
-                        n.action = c;
-                        n.agent.row = newAgentRow;
-                        n.agent.col = newAgentCol;
-                        // Change box position in boxList
-                        for (Box box : n.boxList) {
-                            if (box.isOn(new Position(boxRow, boxCol))) {
-                                box.row = this.agent.row;
-                                box.col = this.agent.col;
-                                break;
-                            }
-                        }
-                        expandedNodes.add(n);
-                    }
-                }
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Node> getExpandedNodes() {
+        ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
+        for (Command c : Command.EVERY) {
+            Node n = getNodeFromCommand(c);
+            if (n != null) {
+                expandedNodes.add(n);
             }
         }
 
@@ -271,7 +279,7 @@ public class Node {
         return false;
     }
 
-    private Node ChildNode() {
+    protected Node ChildNode() {
         Node copy = new Node(this);
         for (Box box : boxList) {
             copy.boxList.add(box.copy());
@@ -363,5 +371,4 @@ public class Node {
         }
         return null;
     }
-
 }

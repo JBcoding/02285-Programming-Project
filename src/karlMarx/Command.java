@@ -10,7 +10,7 @@ public class Command {
     ;
 
     public static enum Type {
-        Move, Push, Pull, Help;
+        Move, Push, Pull, Help, NoOp;
 
     }
     ;
@@ -42,6 +42,7 @@ public class Command {
     }
 
     public static int dirToRowChange(Dir d) {
+        if (d == null) {return 0;}
         // South is down one row (1), north is up one row (-1).
         switch (d) {
             case S:
@@ -54,6 +55,7 @@ public class Command {
     }
 
     public static int dirToColChange(Dir d) {
+        if (d == null) {return 0;}
         // East is right one column (1), west is left one column (-1).
         switch (d) {
             case E:
@@ -91,6 +93,13 @@ public class Command {
         this.box = box;
     }
 
+    public Command() {
+        this.actionType = Type.NoOp;
+        this.dir1 = null;
+        this.dir2 = null;
+        this.box = null;
+    }
+
     @Override
     public String toString() {
         switch (this.actionType) {
@@ -101,6 +110,8 @@ public class Command {
                 return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
             case Help:
                 return String.format("%s(%s)", this.actionType.toString(), this.box.toString());
+            case NoOp:
+                return this.actionType.toString();
             default:
                 return null;
         }

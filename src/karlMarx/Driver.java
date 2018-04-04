@@ -3,6 +3,7 @@ package karlMarx;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -64,59 +65,41 @@ public class Driver {
         } else {
             MASearchClient searchClient = new MASearchClient();
 
-            ArrayList<List<Node>> solutions;
+            Command[][] solution;
 
             try {
-                solutions = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
+                solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
             } catch (OutOfMemoryError ex) {
                 System.err.println("Maximum memory usage exceeded.");
-                solutions = null;
+                solution = null;
             }
 
-            if (solutions == null) {
+            if (solution == null) {
                 System.err.println(searchClient.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.out.println(NO_SOLUTION);
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
-                System.err.println("Found solution of length " + solutions.size());
+                System.err.println("Found solution of length " + solution.length);
                 System.err.println(searchClient.searchStatus());
-                int solutionLength = 0;
-                for (List<Node> sol : solutions) {
-                    solutionLength += sol.size();
-                }
-                System.err.println(solutionLength);
 
-                for (int i = 0; i < solutions.size(); i++) {
-                    for (Node n : solutions.get(i)) {
-                        StringBuilder act = new StringBuilder();
-                        act.append('[');
-                        for (int j = 0; j < i; j++) {
-                            act.append("NoOp, ");
-                        }
+                for (Command[] arr : solution) {
+                    String act = Arrays.toString(arr);
 
-                        act.append(n.action.toString());
-
-                        for (int j = i+1; j < solutions.size(); j++) {
-                            act.append(", NoOp");
-                        }
-                        act.append(']');
-
-                        System.out.println(act);
-                        System.err.println(act);
-                        String response = serverMessages.readLine();
-                        if (response.contains("false")) {
-                            System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
-                            System.err.format("%s was attempted in \n%s\n", act, n.toString());
-                            break;
-                        }
+                    System.out.println(act);
+                    System.err.println(act);
+                    String response = serverMessages.readLine();
+                    if (response.contains("false")) {
+                        System.err.format("Server responded with %s to the inapplicable action: %s\n", response, act);
+                        System.err.format("%s was attempted\n", act);
+                        break;
                     }
                 }
             }
 
             // Print stuff finally for tests to read
-            System.err.println(solutions == null ? NO_SOLUTION : solutions.size());
+            System.err.println(solution == null ? NO_SOLUTION : solution.length);
             System.exit(0);
         }
     }

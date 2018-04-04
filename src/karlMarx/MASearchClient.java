@@ -8,7 +8,7 @@ public class MASearchClient {
     private Strategy[] strategies;
     private String strategyArg;
 
-    public ArrayList<List<Node>> Search(String strategyArg, List<Node> initialStates) throws IOException {
+    public Command[][] Search(String strategyArg, List<Node> initialStates) throws IOException {
         Node.IS_SINGLE = false;
         this.strategyArg = strategyArg;
 
@@ -66,6 +66,8 @@ public class MASearchClient {
             Node.walls[initialState.agent.row][initialState.agent.col] = true;
         }
 
+
+        MAPlanMerger pm = new MAPlanMerger(initialStates.get(0), initialStates.size(), initialStates);
         for (Node currentState : initialStates) {
             System.err.println("Agent color: " + currentState.agent.color);
 
@@ -153,6 +155,7 @@ public class MASearchClient {
                     return null;
                 }
                 solution.addAll(plan);
+                pm.mergePlan(currentState.agent.id, plan);
 
                 currentState = plan.getLast();
                 // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -171,7 +174,7 @@ public class MASearchClient {
         }
 
 
-        return solutions;
+        return pm.getPlan();
     }
 
     private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
