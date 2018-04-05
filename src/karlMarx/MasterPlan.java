@@ -75,6 +75,7 @@ public class MasterPlan {
                 for (Position p : oldPositions) {
                     Node.walls[p.row][p.col] = true;
                 }
+                Node oldN = n;
                 n = n.getNodeFromCommand(c);
                 for (int j = 0; j < numberOfAgents; j++) {
                     if (j != i) {
@@ -86,6 +87,11 @@ public class MasterPlan {
                 }
                 if (n == null) {
                     throw new conflictException(stepsTaken);
+                }
+                for (int j = 0; j < oldN.boxList.size(); j++) {
+                    if (oldN.boxList.get(j).col != n.boxList.get(j).col || oldN.boxList.get(j).row != n.boxList.get(j).row) {
+                        oldPositions.add(new Position(oldN.boxList.get(j)));
+                    }
                 }
                 oldPositions.add(positions[i]);
                 positions[i] = new Position(n.agent);
