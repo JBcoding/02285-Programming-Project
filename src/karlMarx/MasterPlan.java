@@ -85,7 +85,7 @@ public class MasterPlan {
                     Node.walls[p.row][p.col] = false;
                 }
                 if (n == null) {
-                    throw new conflictException();
+                    throw new conflictException(stepsTaken);
                 }
                 oldPositions.add(positions[i]);
                 positions[i] = new Position(n.agent);
