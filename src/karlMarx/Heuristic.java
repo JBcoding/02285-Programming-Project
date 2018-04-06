@@ -274,12 +274,8 @@ public abstract class Heuristic implements Comparator<Node> {
         // System.err.println();
 
         if (boxesToMove != null) {
-            for (Box b1 : boxesToMove) {
-                for (Box b2 : n.boxList) {
-                    if (b1.id == b2.id) {
-                        n.h += 5 * penaltyMap[b2.row][b2.col];
-                    }
-                }
+            for (Box b2 : n.boxList) {
+                n.h += 5 * penaltyMap[b2.row][b2.col];
             }
         }
 

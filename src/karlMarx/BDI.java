@@ -260,19 +260,35 @@ public class BDI {
                 }
             }
         }
+        ArrayList<Integer> negativeNumbers = new ArrayList<>();
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
+                    /*if (penaltyMap[i][j] < 0) {
+                        negativeNumbers.add(penaltyMap[i][j]);
+                    }*/
                     penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }
             }
         }
+        /*
+        Collections.sort(negativeNumbers, Collections.reverseOrder());
+        numberOfBoxesToMove = Math.min(numberOfBoxesToMove + 2, negativeNumbers.size() - 1);
+        int limit = negativeNumbers.get(numberOfBoxesToMove);
+        for (int i = 0; i < Node.walls.length; i++) {
+            for (int j = 0; j < Node.walls[i].length; j++) {
+                if (penaltyMap[i][j] < limit) {
+                    penaltyMap[i][j] = 0;
+                }
+            }
+        }
+        */
         return penaltyMap;
     }
 
     private static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Box b, Node n) {
-        char[][] map = recreateMap(n, true, true, true);
+        char[][] map = recreateMap(n, true, true, false);
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];
         queues[0] = new ArrayDeque<>();
         queues[0].add(new Position(g));
@@ -303,7 +319,7 @@ public class BDI {
         // backtrack route
         Position p = new Position(b);
         List<Box> boxesOnThePath = new ArrayList<>();
-        char[][] originalMap = recreateMap(n, true, true, true);
+        char[][] originalMap = recreateMap(n, true, true, false);
         Set<Position> IllegalPositions = new HashSet<>();
         IllegalPositions.add(new Position(p));
         while (!p.equals(g)) {
