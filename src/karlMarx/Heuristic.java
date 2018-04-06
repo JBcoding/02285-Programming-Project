@@ -238,9 +238,9 @@ public abstract class Heuristic implements Comparator<Node> {
                     // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
                     int distToBox = Integer.MAX_VALUE;
                     for (Box b : tempActiveBoxes) {
-                        if (this.shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                        if (shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
                             nearestBox = b;
-                            distToBox = this.shortestDistance[b.row][b.col][currentRow][currentCol];
+                            distToBox = shortestDistance[b.row][b.col][currentRow][currentCol];
                         }
                     }
 
@@ -251,9 +251,9 @@ public abstract class Heuristic implements Comparator<Node> {
                     for (Goal g : tempActiveGoals) {
                         if (Character.toLowerCase(nearestBox.letter) == g.letter
                                 && nearestBox.color == n.agent.color
-                                && this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                                && shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
                             nearestGoal = g;
-                            distToGoal = this.shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                            distToGoal = shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
                         }
                     }
                 }
@@ -262,8 +262,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 // add to the heuristics the number of actions required to go from a
                 // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
                 n.h = n.h
-                        + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                        + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+                        + shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                        + shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
                 // System.err.println(nearestGoal + " " + nearestBox);
                 currentRow = nearestGoal.row;
                 currentCol = nearestGoal.col;
