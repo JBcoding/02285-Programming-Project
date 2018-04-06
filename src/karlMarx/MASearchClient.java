@@ -3,6 +3,8 @@ package karlMarx;
 import java.io.IOException;
 import java.util.*;
 
+import util.Pair;
+
 public class MASearchClient {
 
     private Strategy[] strategies;
@@ -144,9 +146,22 @@ public class MASearchClient {
                     }
                 }
 
+<<<<<<< d29ba6caa96fb39ceebacc4a8235c60d831a70c8
                 HashSet<Position> illegals = illegalPositions.get(currentState.agent.id);
                 if (!illegals.isEmpty()) {
                     Deque<Node> plan = getAwayPlan(currentState, currentGoals, illegals);
+=======
+            List<Node> solution = new LinkedList<Node>();
+            while (!currentState.isGoalState(solvableGoals, null, null, -1, null)) {
+                currentGoal = BDI.getGoal(currentState, solvableGoals);
+                Pair<List<Box>, int[][]> data = BDI.boxesToRemoveFromPathToGoal(currentState, currentGoal);
+                System.err.println("NEXT GOAL: " + currentGoal);
+                if (data != null && data.a.size() > 0) {
+                    List<Box> boxesToMove = data.a;
+                    int[][] penaltyMap = data.b;
+                    System.err.println("MOVE BOXES: " + boxesToMove);
+                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+>>>>>>> Temp commit for several penalty maps
                     if (plan == null) {
                         System.err.println("UNABLE TO MOVE AWAY FROM: " + illegals);
                         return null;

@@ -4,6 +4,7 @@ import java.io.CharArrayReader;
 import java.util.*;
 
 import karlMarx.Command.Type;
+import util.Pair;
 
 public class Node {
     private static final Random RND = new Random(2);
@@ -72,10 +73,10 @@ public class Node {
     }
 
     public boolean isGoalState() {
-        return isGoalState(goalSet, null, null);
+        return isGoalState(goalSet, null, null, -1);
     }
 
-    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap) {
+    public boolean isGoalState(Set<Goal> goals, Goal currentGoal, Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps, int boxId) {
         goalLoop:
         for (Goal goal : goals) {
             for (Box box : boxList) {
@@ -89,14 +90,28 @@ public class Node {
             }
             return false;
         }
+    
+        if (boxId >= 0 && boxId < boxList.size()) {
+            Box box = boxList.get(boxId);
 
-        if (boxesToMove != null) {
-            for (Box b1 : boxesToMove) {
-                for (Box b2 : this.boxList) {
-                    if (b1.id == b2.id) {
-                        if (penaltyMap[b2.row][b2.col] > 0) {
-                            return false;
-                        }
+            Pair<Set<Position>, int[][]> data;
+            Position pos = new Position(box);
+            if (penaltyMaps.containsKey(pos)) {
+                data = penaltyMaps.get(new Position(pos));
+            } else {
+                Pair<List<Box>, Set<Position>> boxesOnPathAndIllegalPositions = BDI.boxesOnThePathToGoal(currentGoal, box, this);
+                int[][] map = BDI.calculatePenaltyMap(this, boxesOnPathAndIllegalPositions.b, boxesOnPathAndIllegalPositions.a.size());
+                data = new Pair<Set<Position>, int[][]>(boxesOnPathAndIllegalPositions.b, map);
+                penaltyMaps.put(pos, data);
+            }
+            Set<Position> illegalPositions = data.a;
+            int[][] penaltyMap = data.b;
+            
+            for (Box b : this.boxList) {
+                if (illegalPositions.contains(new Position(b))) {
+                    if (penaltyMap[b.row][b.col] > 0) {
+//                        System.err.println("Not goal state because of penalty map");
+                        return false;
                     }
                 }
             }
@@ -111,7 +126,7 @@ public class Node {
                 return false;
             }
         }
-        return isGoalState(goals, null, null);
+        return isGoalState(goals, null, null, -1);
     }
 
     public Node getNodeFromCommand(Command c) {
@@ -369,5 +384,14 @@ public class Node {
             }
         }
         return null;
+    }
+
+    public static void addGoal(Goal goal) {
+        goalSet.add(goal);
+        goals[goal.row][goal.col] = goal.letter;
+        if (!Node.goalMap.containsKey(goal.letter)) {
+            Node.goalMap.put(goal.letter, new ArrayList<Goal>());
+        }
+        Node.goalMap.get(goal.letter).add(goal);
     }
 }

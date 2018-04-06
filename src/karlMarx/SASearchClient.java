@@ -3,6 +3,8 @@ package karlMarx;
 import java.io.IOException;
 import java.util.*;
 
+import util.Pair;
+
 public class SASearchClient extends SearchClient {
 
     private String strategyArg;
@@ -29,46 +31,55 @@ public class SASearchClient extends SearchClient {
 
             currentGoal = BDI.getGoal(currentState);
             System.err.println("NEXT GOAL: " + currentGoal);
-            List<Box> boxesToMove = null;
-            int[][] penaltyMap = null;
-            while (true) {
-                Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
-                if (data != null && data.a.size() > 0) {
-                    boxesToMove = data.a;
-                    penaltyMap = data.b;
-                    System.err.println(currentState);
-                    for (int[] arr : penaltyMap) {
-                        System.err.println(Arrays.toString(arr));
+            
+            List<Box> boxesForCurrentGoal = BDI.getBoxesForGoal(currentGoal, currentState);
+            
+            final Position currentGoalPos = currentGoal.copy();
+            
+            boxesForCurrentGoal.sort(new Comparator<Box>() {
+                @Override
+                public int compare(Box b1, Box b2) {
+                    int distB1 = Heuristic.shortestDistance[b1.row][b1.col][currentGoalPos.row][currentGoalPos.col];
+                    int distB2 = Heuristic.shortestDistance[b2.row][b2.col][currentGoalPos.row][currentGoalPos.col];
+                    if (distB1 == -1 && distB2 != -1) {
+                        return Integer.MAX_VALUE;
                     }
-                    System.err.println("MOVE BOXES: " + boxesToMove);
-                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    if (distB2 == -1 && distB1 != -1) {
+                        return Integer.MIN_VALUE;
+                    }
+                    return distB1 - distB2;
+                }
+            });
+            Deque<Box> boxesForCurrentGoalDeque = new ArrayDeque<Box>(boxesForCurrentGoal);
+                            
+            while (!boxesForCurrentGoalDeque.isEmpty()) {
+                Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps = new HashMap<Position, Pair<Set<Position>, int[][]>>();
+                Box boxForGoal = boxesForCurrentGoalDeque.poll();
+                Deque<Node> plan = getPlan(currentState, currentGoals, penaltyMaps, boxForGoal, currentGoal);
+                if (plan != null) {
                     solution.addAll(plan);
+                    currentGoals.add(currentGoal);
                     currentState = plan.getLast();
-                    // This is a new initialState so it must not have a parent for isInitialState method to work
+                    // This is a new initialState so it is not allowed to have a parent for isInitialState method to work
                     currentState.parent = null;
-                } else {
                     break;
                 }
             }
-            System.err.println(currentState);
-            System.err.println("SOLVE GOAL: " + currentGoal);
-            currentGoals.add(currentGoal);
-            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
-            solution.addAll(plan);
-            currentState = plan.getLast();
-            // This is a new initialState so it must not have a parent for isInitialState method to work
-            currentState.parent = null;
+            
+            if (currentState.parent != null) { // i.e. no solution found
+                return null;
+            }
         }
         
         return solution;
     }
 
-    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
+    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps, Box box, Goal currentGoal) {
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, penaltyMaps, box, currentGoal)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, penaltyMaps, box, currentGoal)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, penaltyMaps, box, currentGoal));
         }
         
         strategy.addToFrontier(state);
@@ -86,7 +97,7 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
+            if (leafNode.isGoalState(currentGoals, currentGoal, penaltyMaps, box.id)) {
                 return leafNode.extractPlan();
             }
 

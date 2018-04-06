@@ -1,4 +1,4 @@
-package karlMarx;
+package util;
 
 public class Pair<A, B> {
 

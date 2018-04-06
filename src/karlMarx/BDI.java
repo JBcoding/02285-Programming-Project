@@ -2,6 +2,8 @@ package karlMarx;
 
 import java.util.*;
 
+import util.Pair;
+
 public class BDI {
     public static void main(String[] args) {
         /*
@@ -95,12 +97,14 @@ public class BDI {
                 {true, false, true, false, true, false, true},
                 {true, true, true, true, true, true, true}
         };
-        Node.goalSet = new HashSet<>();
-        Node.goalSet.add(new Goal(2, 5, 'a'));
-        Node.goalSet.add(new Goal(3, 5, 'b'));
-        Node.goalSet.add(new Goal(4, 5, 'c'));
-        Node.goalSet.add(new Goal(5, 5, 'd'));
-        Node.goalSet.add(new Goal(6, 5, 'e'));
+        Node.MAX_ROW = Node.walls.length;
+        Node.MAX_COL = Node.walls[0].length;
+        Node.goals = new char[Node.MAX_ROW][Node.MAX_COL];
+        Node.addGoal(new Goal(2, 5, 'a'));
+        Node.addGoal(new Goal(3, 5, 'b'));
+        Node.addGoal(new Goal(4, 5, 'c'));
+        Node.addGoal(new Goal(5, 5, 'd'));
+        Node.addGoal(new Goal(6, 5, 'e'));
         n.boxList = new ArrayList<>();
         n.boxList.add(new Box(2, 1, 'D', Color.BLUE));
         n.boxList.add(new Box(3, 1, 'B', Color.BLUE));
@@ -109,7 +113,6 @@ public class BDI {
         n.boxList.add(new Box(6, 1, 'E', Color.BLUE));
         Goal g = getGoal(n);
         System.out.println(g);
-        System.out.println(boxToMove(n, g));
     }
 
     public static final int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -151,6 +154,7 @@ public class BDI {
         return map;
     }
 
+    /*
     public static Pair<List<Box>, int[][]> boxToMove(Node n, Goal g) {
         List<Box> boxes = getBoxesToGoal(g, n);
         Box box;
@@ -184,6 +188,7 @@ public class BDI {
         int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
         return new Pair<>(boxesToMove, penaltyMap);
     }
+    */
 
     private static char[][] getWallsWithExtra(Node n) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
@@ -208,7 +213,7 @@ public class BDI {
         return null;
     }
 
-    private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
+    public static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
         Queue<Position> queue = new ArrayDeque<>();
@@ -291,7 +296,9 @@ public class BDI {
         return penaltyMap;
     }
 
-    private static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Box b, Node n) {
+    // Returns the boxes that are currently in the way of the box' path to goal
+    // as well as all positions that boxes are not allowed to be placed on
+    static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Box b, Node n) {
         char[][] map = recreateMap(n, true, true, false);
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];
         queues[0] = new ArrayDeque<>();
@@ -320,12 +327,14 @@ public class BDI {
                 }
             }
         }
+        
         // backtrack route
         Position p = new Position(b);
         List<Box> boxesOnThePath = new ArrayList<>();
         char[][] originalMap = recreateMap(n, true, true, false);
         Set<Position> IllegalPositions = new HashSet<>();
         IllegalPositions.add(new Position(p));
+        
         while (!p.equals(g)) {
             int direction = map[p.row][p.col];
             int dr = ((direction - 48) % 3) - 1;
@@ -344,7 +353,8 @@ public class BDI {
         return new Pair<>(boxesOnThePath, IllegalPositions);
     }
 
-    public static List<Box> getBoxesToGoal(Goal g, Node n) {
+    // Get a list of boxes that could fit onto the goal
+    public static List<Box> getBoxesForGoal(Goal g, Node n) {
         List<Box> boxes = new ArrayList<>();
         for (Box b : n.boxList) {
             if (Character.toLowerCase(b.letter) == g.letter) {

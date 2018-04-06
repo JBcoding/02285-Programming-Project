@@ -52,14 +52,9 @@ public class LevelReader {
                 } else if ('A' <= chr && chr <= 'Z') { // Box.
                     boxList.add(new Box(new Position(row, col), chr, colors.getOrDefault(chr, Color.BLUE)));
                 } else if ('a' <= chr && chr <= 'z') { // Goal
-                    Node.goals[row][col] = chr;
                     LevelInfo.addGoal(row, col, chr);
                     Goal goal = new Goal(new Position(row, col), chr);
-                    Node.goalSet.add(goal);
-                    if (!Node.goalMap.containsKey(chr)) {
-                        Node.goalMap.put(chr, new ArrayList<Goal>());
-                    }
-                    Node.goalMap.get(chr).add(goal);
+                   Node.addGoal(goal);
                 } else if (chr == ' ') {
                     // Free space.
                 } else {
@@ -85,6 +80,13 @@ public class LevelReader {
             }
             state.boxList = boxListCopy;
         }
+        
+        boxList.sort(new Comparator<Box>() {
+            @Override
+            public int compare(Box b0, Box b1) {
+                return b0.id - b1.id;
+            }
+        });
         
         return initialStates;
     }
