@@ -34,6 +34,10 @@ public class SASearchClient extends SearchClient {
                 if (data != null && data.a.size() > 0) {
                     List<Box> boxesToMove = data.a;
                     int[][] penaltyMap = data.b;
+                    System.err.println(currentState);
+                    for (int[] arr : penaltyMap) {
+                        System.err.println(Arrays.toString(arr));
+                    }
                     List<Box> boxesNotToMoveMuch = BDI.getBoxesToGoal(currentGoal, currentState);
                     System.err.println("MOVE BOXES: " + boxesToMove);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch);
