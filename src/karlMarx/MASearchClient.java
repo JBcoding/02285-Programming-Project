@@ -90,7 +90,6 @@ public class MASearchClient {
 
             ArrayList<Box> boxList = new ArrayList<>();
 
-            System.err.println("BEFORE LOOP");
             while (!queue.isEmpty()) {
                 Position curr = queue.poll();
 

@@ -155,19 +155,27 @@ public class BDI {
         List<Box> boxes = getBoxesToGoal(g, n);
         Box box;
 
-
         if (boxes.size() == 1) {
             box = boxes.get(0);
         } else {
-            ArrayList<Box> possibleBoxes = new ArrayList<>();
+            Box closestBox = null;
+            int distance = Integer.MAX_VALUE;
 
             for (Box b : boxes) {
                 if (Character.toLowerCase(b.letter) != Node.goals[b.row][b.col]) {
-                    possibleBoxes.add(b);
+                    int dist = Heuristic.shortestDistance[b.row][b.col][g.row][g.col];
+                    if (dist > -1 && dist < distance) {
+                        closestBox = b;
+                        distance = dist;
+                    }
                 }
             }
 
-            box = possibleBoxes.get(0);
+            if (closestBox == null) {
+                throw new IllegalStateException("TODO: No closest box.");
+            }
+
+            box = closestBox;
         }
 
         Pair<List<Box>, Set<Position>> data = boxesOnThePathToGoal(g, box, n);

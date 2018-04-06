@@ -5,8 +5,8 @@ import java.util.*;
 public abstract class Heuristic implements Comparator<Node> {
 
     protected Goal[] prioritisedgoals;
-    protected int[][][][] shortestDistance;
-    protected int maxdist = 0;
+    public static int[][][][] shortestDistance;
+    protected static int maxdist = 0;
     protected int[] isgoalletter = new int[26];
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
@@ -15,44 +15,10 @@ public abstract class Heuristic implements Comparator<Node> {
     protected int[][] penaltyMap;
     protected List<Box> boxesNotToMoveMuch;
 
-    public Heuristic(Node initialState) {
-        // Here's a chance to pre-process the static parts of the level.
-
-        // Find all goals.
-        ArrayList<Goal> goalcells = new ArrayList<>();
-        ArrayList<Goal> prioritisedgoals = new ArrayList<>();
-        for (int row = 0; row < Node.MAX_ROW; row++) {
-            for (int col = 0; col < Node.MAX_COL; col++) {
-                if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
-                    goalcells.add(new Goal(row, col, Node.goals[row][col]));
-                    // isgoalletter is a simple array keeping track of which letters occur on goal cells,
-                    // so that we can quickly discard the boxes having other letters
-                    isgoalletter[Node.goals[row][col] - 'a'] = 1;
-
-                }
-            }
-        }
-
-        solvableByColor = new HashMap<>();
-
-        for (Goal g : Node.goalSet) {
-            HashSet<Color> colors = solvableByColor.get(g);
-            if (colors == null) {
-                colors = new HashSet<>();
-            }
-
-            for (Box b : initialState.boxList) {
-                if (Character.toLowerCase(b.letter) == g.letter) {
-                    colors.add(b.color);
-                }
-            }
-
-            solvableByColor.put(g, colors);
-        }
-
+    static {
         // All pair shortest distances (by BFS).
-        this.shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
-        //int maxdist = 0;
+
+        shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
         Cell[][] cells = new Cell[Node.MAX_ROW][Node.MAX_COL];
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
@@ -112,7 +78,7 @@ public abstract class Heuristic implements Comparator<Node> {
                         for (int col = 0; col < Node.MAX_COL; col++) {
                             Cell c = cells[row][col];
                             if (c != null) {
-                                this.shortestDistance[root_row][root_col][row][col] = c.dist;
+                                shortestDistance[root_row][root_col][row][col] = c.dist;
                                 maxdist = Math.max(maxdist, c.dist);
                             }
                         }
@@ -120,6 +86,43 @@ public abstract class Heuristic implements Comparator<Node> {
                 }
             }
         }
+    }
+
+    public Heuristic(Node initialState) {
+        // Here's a chance to pre-process the static parts of the level.
+
+        // Find all goals.
+        ArrayList<Goal> goalcells = new ArrayList<>();
+        ArrayList<Goal> prioritisedgoals = new ArrayList<>();
+        for (int row = 0; row < Node.MAX_ROW; row++) {
+            for (int col = 0; col < Node.MAX_COL; col++) {
+                if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
+                    goalcells.add(new Goal(row, col, Node.goals[row][col]));
+                    // isgoalletter is a simple array keeping track of which letters occur on goal cells,
+                    // so that we can quickly discard the boxes having other letters
+                    isgoalletter[Node.goals[row][col] - 'a'] = 1;
+
+                }
+            }
+        }
+
+        solvableByColor = new HashMap<>();
+
+        for (Goal g : Node.goalSet) {
+            HashSet<Color> colors = solvableByColor.get(g);
+            if (colors == null) {
+                colors = new HashSet<>();
+            }
+
+            for (Box b : initialState.boxList) {
+                if (Character.toLowerCase(b.letter) == g.letter) {
+                    colors.add(b.color);
+                }
+            }
+
+            solvableByColor.put(g, colors);
+        }
+
     }
 
     /* Below are some heuristics:

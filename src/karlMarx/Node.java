@@ -303,7 +303,6 @@ public class Node {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.agent.hashCode();
-            result = prime * result + Arrays.deepHashCode(Node.walls);
             result = prime * result + boxList.hashCode();
             this._hash = result;
         }
