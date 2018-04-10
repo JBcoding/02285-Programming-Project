@@ -29,18 +29,19 @@ public class SASearchClient extends SearchClient {
 
             currentGoal = BDI.getGoal(currentState);
             System.err.println("NEXT GOAL: " + currentGoal);
+            List<Box> boxesToMove = null;
+            int[][] penaltyMap = null;
             while (true) {
                 Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
                 if (data != null && data.a.size() > 0) {
-                    List<Box> boxesToMove = data.a;
-                    int[][] penaltyMap = data.b;
+                    boxesToMove = data.a;
+                    penaltyMap = data.b;
                     System.err.println(currentState);
                     for (int[] arr : penaltyMap) {
                         System.err.println(Arrays.toString(arr));
                     }
-                    List<Box> boxesNotToMoveMuch = BDI.getBoxesToGoal(currentGoal, currentState);
                     System.err.println("MOVE BOXES: " + boxesToMove);
-                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch);
+                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     solution.addAll(plan);
                     currentState = plan.getLast();
                     // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -52,7 +53,7 @@ public class SASearchClient extends SearchClient {
             System.err.println(currentState);
             System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
-            Deque<Node> plan = getPlan(currentState, currentGoals, null, null, null);
+            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             solution.addAll(plan);
             currentState = plan.getLast();
             // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -84,6 +85,10 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
+
+            if (iterations == 0) {
+                System.err.println(leafNode);
+            }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode.extractPlan();

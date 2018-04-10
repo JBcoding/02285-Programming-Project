@@ -179,6 +179,10 @@ public abstract class Heuristic implements Comparator<Node> {
          3) Choose more efficient data structures if possible,
          in particular the HashSet for active goals and active boxes.
          */
+        if (n.h != -1) {
+            return n.h;
+        }
+
         n.h = 1;
         // start searching from the agent position
         int currentRow = n.agent.row;
@@ -200,7 +204,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
 
-        for (Goal g : activegoals) {
+        for (Goal ignored : activegoals) {
             n.h += 2;
         }
 
@@ -261,6 +265,10 @@ public abstract class Heuristic implements Comparator<Node> {
                 tempActiveGoals.remove(nearestGoal);
                 // add to the heuristics the number of actions required to go from a
                 // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+                //System.err.println(nearestBox);
+                //System.err.println(nearestGoal);
+                //System.err.println(shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col]);
+                //System.err.println();
                 n.h = n.h
                         + shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
                         + shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
@@ -274,8 +282,12 @@ public abstract class Heuristic implements Comparator<Node> {
         // System.err.println();
 
         if (boxesToMove != null) {
-            for (Box b2 : n.boxList) {
-                n.h += 5 * penaltyMap[b2.row][b2.col];
+            for (Box b1 : n.boxList) {
+                for (Box b2 : boxesToMove) {
+                    if (b1.id == b2.id) {
+                        n.h += 5 * penaltyMap[b1.row][b1.col];
+                    }
+                }
             }
         }
 
