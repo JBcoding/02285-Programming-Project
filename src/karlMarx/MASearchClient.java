@@ -159,23 +159,28 @@ public class MASearchClient {
                     solvedSomething = true;
                 } else {
                     Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
-                    Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
                     System.err.println("NEXT GOAL: " + currentGoal);
-                    if (data != null && data.a.size() > 0) {
-                        List<Box> boxesToMove = data.a;
-                        int[][] penaltyMap = data.b;
-                        System.err.println("MOVE BOXES: " + boxesToMove);
-                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
-                        if (plan == null) {
-                            System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
-                            Node.walls[currentState.agent.row][currentState.agent.col] = true;
-                            continue;
-                        }
-                        currentState = plan.getLast();
-                        // This is a new initialState so it must not have a parent for isInitialState method to work
-                        currentState.parent = null;
 
-                        pm.mergePlan(currentState.agent.id, plan);
+                    List<Box> boxesToMove = null;
+                    int[][] penaltyMap = null;
+                    while (true) {
+                        Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
+                        if (data != null && data.a.size() > 0) {
+                            boxesToMove = data.a;
+                            penaltyMap = data.b;
+                            System.err.println(currentState);
+                            for (int[] arr : penaltyMap) {
+                                System.err.println(Arrays.toString(arr));
+                            }
+                            System.err.println("MOVE BOXES: " + boxesToMove);
+                            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+                            pm.mergePlan(currentState.agent.id, plan);
+                            currentState = plan.getLast();
+                            // This is a new initialState so it must not have a parent for isInitialState method to work
+                            currentState.parent = null;
+                        } else {
+                            break;
+                        }
                     }
 
                     System.err.println("SOLVE GOAL: " + currentGoal);

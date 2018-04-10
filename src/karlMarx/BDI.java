@@ -260,30 +260,34 @@ public class BDI {
                 }
             }
         }
-        ArrayList<Integer> negativeNumbers = new ArrayList<>();
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
-                    /*if (penaltyMap[i][j] < 0) {
-                        negativeNumbers.add(penaltyMap[i][j]);
-                    }*/
-                    penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
+                    if (penaltyMap[i][j] < -numberOfBoxesToMove) {
+                        penaltyMap[i][j] = 0;
+                    }
+                    //penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }
             }
         }
-        /*
-        Collections.sort(negativeNumbers, Collections.reverseOrder());
-        numberOfBoxesToMove = Math.min(numberOfBoxesToMove + 2, negativeNumbers.size() - 1);
-        int limit = negativeNumbers.get(numberOfBoxesToMove);
+/*
+        boolean[][] updatedPositions = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
-                if (penaltyMap[i][j] < limit) {
-                    penaltyMap[i][j] = 0;
+                if (!updatedPositions[i][j] && penaltyMap[i][j] < 0) {
+                    queue.clear();
+                    queue.add(new Position(i, j));
+                    List<Integer> numberInBlob = new ArrayList<>();
+                    numberInBlob.add(penaltyMap[i][j]);
+                    while (!queue.isEmpty()) {
+                        Position p = queue.poll();
+                        if (penaltyMap[i][j])
+                    }
                 }
             }
-        }
-        */
+        }*/
+
         return penaltyMap;
     }
 
