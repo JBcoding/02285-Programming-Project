@@ -143,7 +143,7 @@ public class BDI {
         }
         if (ignoreGoals) {
             for (Goal g : Node.goalSet) {
-                if (map[g.row][g.col] != '+') {
+                if (map[g.row][g.col] != '+' && !Character.isUpperCase(map[g.row][g.col])) {
                     map[g.row][g.col] = ' ';
                 }
             }
@@ -260,35 +260,40 @@ public class BDI {
                 }
             }
         }
-        ArrayList<Integer> negativeNumbers = new ArrayList<>();
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
-                    /*if (penaltyMap[i][j] < 0) {
-                        negativeNumbers.add(penaltyMap[i][j]);
-                    }*/
-                    penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
+                    if (penaltyMap[i][j] < -numberOfBoxesToMove) {
+                        penaltyMap[i][j] = 0;
+                    }
+                    //penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }
             }
         }
-        /*
-        Collections.sort(negativeNumbers, Collections.reverseOrder());
-        numberOfBoxesToMove = Math.min(numberOfBoxesToMove + 2, negativeNumbers.size() - 1);
-        int limit = negativeNumbers.get(numberOfBoxesToMove);
+/*
+        boolean[][] updatedPositions = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
-                if (penaltyMap[i][j] < limit) {
-                    penaltyMap[i][j] = 0;
+                if (!updatedPositions[i][j] && penaltyMap[i][j] < 0) {
+                    queue.clear();
+                    queue.add(new Position(i, j));
+                    List<Integer> numberInBlob = new ArrayList<>();
+                    numberInBlob.add(penaltyMap[i][j]);
+                    while (!queue.isEmpty()) {
+                        Position p = queue.poll();
+                        if (penaltyMap[i][j])
+                    }
                 }
             }
-        }
-        */
+        }*/
+
         return penaltyMap;
     }
 
     public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Position start, Node n) {
         char[][] map = recreateMap(n, true, true, false);
+
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];
         queues[0] = new ArrayDeque<>();
         queues[0].add(new Position(g));
@@ -328,13 +333,14 @@ public class BDI {
             int dc = ((direction - 48) / 3) - 1;
             p.row -= dr;
             p.col -= dc;
-            IllegalPositions.add(new Position(p));
-        }
-
-        for (Box box : n.boxList) {
-            if (IllegalPositions.contains(new Position(box.row, box.col))) {
-                boxesOnThePath.add(box);
+            if (Character.isAlphabetic(originalMap[p.row][p.col])) {
+                for (Box box : n.boxList) {
+                    if (p.equals(box)) {
+                        boxesOnThePath.add(box);
+                    }
+                }
             }
+            IllegalPositions.add(new Position(p));
         }
 
         return new Pair<>(boxesOnThePath, IllegalPositions);

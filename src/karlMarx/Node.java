@@ -2,6 +2,7 @@ package karlMarx;
 
 import java.io.CharArrayReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import karlMarx.Command.Type;
 
@@ -26,7 +27,7 @@ public class Node {
     //
 
     public static boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
-    public ArrayList<Box> boxList = new ArrayList<Box>();
+    public ArrayList<Box> boxList = new ArrayList<>();
     public static Set<Goal> goalSet = new HashSet<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
@@ -299,11 +300,16 @@ public class Node {
 
     @Override
     public int hashCode() {
+
         if (this._hash == 0) {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.agent.hashCode();
-            result = prime * result + boxList.hashCode();
+            //result = prime * result + boxList.hashCode();
+            result = prime * result + boxList
+                    .stream()
+                    .sorted()
+                    .collect(Collectors.toList()).hashCode();
             this._hash = result;
         }
         return this._hash;
@@ -320,7 +326,14 @@ public class Node {
         Node other = (Node) obj;
         if (!this.agent.equals(other.agent))
             return false;
-        if (!boxList.equals(other.boxList))
+        //if (!boxList.equals(other.boxList))
+        if (!boxList.stream()
+                .sorted()
+                .collect(Collectors.toList())
+                .equals(other.boxList
+                        .stream()
+                        .sorted()
+                        .collect(Collectors.toList())))
             return false;
         return true;
     }
