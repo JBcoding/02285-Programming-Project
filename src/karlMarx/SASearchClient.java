@@ -86,10 +86,6 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (iterations == 0) {
-                System.err.println(leafNode);
-            }
-
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode.extractPlan();
             }
