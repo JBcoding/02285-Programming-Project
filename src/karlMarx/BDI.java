@@ -114,7 +114,7 @@ public class BDI {
 
     public static final int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    private static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
+    public static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
@@ -287,7 +287,7 @@ public class BDI {
         return penaltyMap;
     }
 
-    private static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Box b, Node n) {
+    public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Position start, Node n) {
         char[][] map = recreateMap(n, true, true, false);
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];
         queues[0] = new ArrayDeque<>();
@@ -317,7 +317,7 @@ public class BDI {
             }
         }
         // backtrack route
-        Position p = new Position(b);
+        Position p = new Position(start);
         List<Box> boxesOnThePath = new ArrayList<>();
         char[][] originalMap = recreateMap(n, true, true, false);
         Set<Position> IllegalPositions = new HashSet<>();
@@ -328,15 +328,15 @@ public class BDI {
             int dc = ((direction - 48) / 3) - 1;
             p.row -= dr;
             p.col -= dc;
-            if (Character.isAlphabetic(originalMap[p.row][p.col])) {
-                for (Box box : n.boxList) {
-                    if (p.equals(box)) {
-                        boxesOnThePath.add(box);
-                    }
-                }
-            }
             IllegalPositions.add(new Position(p));
         }
+
+        for (Box box : n.boxList) {
+            if (IllegalPositions.contains(new Position(box.row, box.col))) {
+                boxesOnThePath.add(box);
+            }
+        }
+
         return new Pair<>(boxesOnThePath, IllegalPositions);
     }
 

@@ -3,6 +3,8 @@ package karlMarx;
 import java.io.IOException;
 import java.util.*;
 
+import static karlMarx.BDI.deltas;
+
 public class MASearchClient {
 
     private Strategy[] strategies;
@@ -65,15 +67,20 @@ public class MASearchClient {
 
         MAPlanMerger pm = new MAPlanMerger(initialStates.get(0), initialStates.size(), initialStates);
 
-        ArrayList<HashSet<Position>> illegalPositions = new ArrayList<>();
-        for (int i = 0; i < initialStates.size(); i++) {
-            illegalPositions.add(new HashSet<>());
-        }
+        HashSet<Box> illegalBoxes = new HashSet<>();
+        Set<Position> illegalPositions = new HashSet<>();
+        int illegalByAgent = -1;
 
         while (solvedGoals.size() < Node.goalSet.size()) {
             boolean solvedSomething = false;
 
             for (int i = 0; i < initialStates.size(); i++) {
+                if (illegalByAgent == i) {
+                    illegalPositions.clear();
+                    illegalBoxes.clear();
+                    illegalByAgent = -1;
+                }
+
                 Node currentState = initialStates.get(i);
 
                 Node.walls[currentState.agent.row][currentState.agent.col] = false;
@@ -86,13 +93,12 @@ public class MASearchClient {
                 // Prune boxList based on solvable goals
 
                 HashSet<Goal> solvableGoals = new HashSet<>();
+                ArrayList<Box> boxList = new ArrayList<>();
 
                 Queue<Position> queue = new ArrayDeque<>();
                 queue.add(currentState.agent);
 
                 HashSet<Position> seen = new HashSet<>();
-
-                ArrayList<Box> boxList = new ArrayList<>();
 
                 while (!queue.isEmpty()) {
                     Position curr = queue.poll();
@@ -122,12 +128,6 @@ public class MASearchClient {
                     }
                 }
 
-                if (solvableGoals.isEmpty()) {
-                    System.err.println("No solvable goals for agent: " + currentState.agent.id);
-                    Node.walls[currentState.agent.row][currentState.agent.col] = true;
-                    continue;
-                }
-
                 ArrayList<Box> removed = new ArrayList<>();
                 for (Box box : currentState.boxList) {
                     if (!boxList.contains(box)) {
@@ -139,71 +139,135 @@ public class MASearchClient {
 
                 Set<Goal> currentGoals = new HashSet<>();
                 for (Goal goal : solvedGoals) {
-                    if (solvableByColor.get(goal).contains(currentState.agent.color) && !removed.contains(goal)) {
+                    boolean coveredByRemoved = false;
+
+                    for (Box box : removed) {
+                        if (box.isOn(goal)) {
+                            coveredByRemoved = true;
+                        }
+                    }
+
+                    if (solvableByColor.get(goal).contains(currentState.agent.color) && !coveredByRemoved) {
                         currentGoals.add(goal);
                     }
                 }
 
-                HashSet<Position> illegals = illegalPositions.get(currentState.agent.id);
-                if (!illegals.isEmpty()) {
-                    Deque<Node> plan = getAwayPlan(currentState, currentGoals, illegals);
-                    if (plan == null) {
-                        System.err.println("UNABLE TO MOVE AWAY FROM: " + illegals);
-                        return null;
-                    }
-                    currentState = plan.getLast();
-                    // This is a new initialState so it must not have a parent for isInitialState method to work
-                    currentState.parent = null;
+                try {
+                    if (!illegalBoxes.isEmpty()) {
+                        System.err.println("Trying to clear path.");
+                        System.err.println(illegalPositions);
 
-                    pm.mergePlan(currentState.agent.id, plan);
-                    solvedSomething = true;
-                } else {
-                    Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
-                    Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
-                    System.err.println("NEXT GOAL: " + currentGoal);
-                    if (data != null && data.a.size() > 0) {
-                        List<Box> boxesToMove = data.a;
-                        int[][] penaltyMap = data.b;
-                        System.err.println("MOVE BOXES: " + boxesToMove);
-                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+                        // TODO: use penalty map
+                        // TODO: allow only partial clearings
+                        Deque<Node> plan = getAwayPlan(currentState, currentGoals, illegalPositions);
                         if (plan == null) {
-                            System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
-                            Node.walls[currentState.agent.row][currentState.agent.col] = true;
+                            System.err.println("Unable to clear path.");
                             continue;
                         }
+
                         currentState = plan.getLast();
+
                         // This is a new initialState so it must not have a parent for isInitialState method to work
                         currentState.parent = null;
 
                         pm.mergePlan(currentState.agent.id, plan);
-                    }
-
-                    System.err.println("SOLVE GOAL: " + currentGoal);
-
-                    currentGoals.add(currentGoal);
-                    Deque<Node> plan = getPlan(currentState, currentGoals, null, null);
-
-                    if (plan == null) {
-                        System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
-                        Node.walls[currentState.agent.row][currentState.agent.col] = true;
-                        lastBoxList = currentState.boxList;
-                        lastBoxList.addAll(removed);
+                        solvedSomething = true;
+                    } else if (solvableGoals.isEmpty()) {
+                        System.err.println("No solvable goals for agent: " + currentState.agent.id);
                         continue;
+                    } else {
+                        Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
+                        System.err.println("NEXT GOAL: " + currentGoal);
+
+                        // Remove walls from agent positions to enable BFS
+                        HashSet<Position> agentPositions = new HashSet<>();
+                        ArrayList<Box> agentsAsBoxes = new ArrayList<>();
+                        for (Node s : initialStates) {
+                            if (s.agent.id == currentState.agent.id) {
+                                continue;
+                            }
+
+                            agentPositions.add(new Position(s.agent.row, s.agent.col));
+                            // Boxes representing agents have letter 'A'
+                            agentsAsBoxes.add(new Box(s.agent.row, s.agent.col, 'A', Color.BLUE));
+                            Node.walls[s.agent.row][s.agent.col] = false;
+                        }
+
+                        int prevSize = boxList.size();
+                        currentState.boxList.addAll(agentsAsBoxes);
+
+                        // TODO: also look at whether we can actually get to a box that solves it
+                        Pair<List<Box>, Set<Position>> blocking = BDI.boxesOnThePathToGoal(
+                                currentGoal,
+                                new Position(currentState.agent.row, currentState.agent.col),
+                                currentState
+                        );
+
+                        currentState.boxList.subList(prevSize, currentState.boxList.size()).clear();
+
+                        illegalBoxes = new HashSet<>(blocking.a);
+                        illegalPositions = blocking.b;
+
+                        final Color agentColor = currentState.agent.color;
+                        illegalBoxes.removeIf(box -> box.color == agentColor && box.letter != 'a');
+
+                        // Restore walls
+                        for (Position pos : agentPositions) {
+                            Node.walls[pos.row][pos.col] = true;
+                        }
+                        Node.walls[currentState.agent.row][currentState.agent.col] = false;
+
+                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
+
+                        if (!illegalBoxes.isEmpty()) {
+                            illegalByAgent = i;
+
+                            final HashSet<Position> finalIllegalPositions = new HashSet<>(illegalPositions);
+                            solvedGoals.removeIf(goal -> finalIllegalPositions.contains(new Position(goal.row, goal.col)));
+                            continue;
+                        }
+
+                        Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
+                        if (data.a.size() > 0) {
+                            List<Box> boxesToMove = data.a;
+                            int[][] penaltyMap = data.b;
+                            System.err.println("MOVE BOXES: " + boxesToMove);
+                            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+                            if (plan == null) {
+                                System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
+                                continue;
+                            }
+                            currentState = plan.getLast();
+                            // This is a new initialState so it must not have a parent for isInitialState method to work
+                            currentState.parent = null;
+
+                            pm.mergePlan(currentState.agent.id, plan);
+                        }
+
+                        System.err.println("SOLVE GOAL: " + currentGoal);
+
+                        currentGoals.add(currentGoal);
+                        Deque<Node> plan = getPlan(currentState, currentGoals, null, null);
+
+                        if (plan == null) {
+                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
+                            continue;
+                        }
+                        pm.mergePlan(currentState.agent.id, plan);
+
+                        currentState = plan.getLast();
+                        // This is a new initialState so it must not have a parent for isInitialState method to work
+                        currentState.parent = null;
+
+                        solvedGoals.add(currentGoal);
+                        solvedSomething = true;
                     }
-                    pm.mergePlan(currentState.agent.id, plan);
+                } finally {
+                    Node.walls[currentState.agent.row][currentState.agent.col] = true;
 
-                    currentState = plan.getLast();
-                    // This is a new initialState so it must not have a parent for isInitialState method to work
-                    currentState.parent = null;
-
-                    solvedGoals.add(currentGoal);
-                    solvedSomething = true;
+                    lastBoxList = currentState.boxList;
+                    lastBoxList.addAll(removed);
                 }
-
-                Node.walls[currentState.agent.row][currentState.agent.col] = true;
-
-                lastBoxList = currentState.boxList;
-                lastBoxList.addAll(removed);
 
                 initialStates.set(i, currentState);
             }
@@ -214,7 +278,6 @@ public class MASearchClient {
 
             System.err.println("Running agents again.");
         }
-
 
         return pm.getPlan();
     }
@@ -288,8 +351,16 @@ public class MASearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
+            boolean illegalBox = false;
+            for (Box box : leafNode.boxList) {
+                if (box.color == leafNode.agent.color && illegalPositions.contains(new Position(box.row, box.col))) {
+                    illegalBox = true;
+                }
+            }
+
             if (leafNode.isGoalState(currentGoals, null, null) &&
-                    !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col))) {
+                    !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col)) &&
+                    !illegalBox) {
                 return leafNode.extractPlan();
             }
 
