@@ -9,7 +9,7 @@ public abstract class Strategy {
     private final long startTime;
 
     public Strategy() {
-        this.explored = new HashSet<Node>();
+        this.explored = new HashSet<Node>(131072, 0.5f);
         this.startTime = System.currentTimeMillis();
     }
 
@@ -57,8 +57,8 @@ class StrategyBestFirst extends Strategy {
     public StrategyBestFirst(Heuristic h) {
         super();
         heuristic = h;
-        frontier = new PriorityQueue<Node>(h);
-        frontierSet = new HashSet<Node>();
+        frontier = new PriorityQueue<Node>(131072, h);
+        frontierSet = new HashSet<Node>(131072, 0.5f);
     }
 
     @Override
