@@ -271,22 +271,42 @@ public class BDI {
                 }
             }
         }
-/*
+
         boolean[][] updatedPositions = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!updatedPositions[i][j] && penaltyMap[i][j] < 0) {
                     queue.clear();
                     queue.add(new Position(i, j));
-                    List<Integer> numberInBlob = new ArrayList<>();
-                    numberInBlob.add(penaltyMap[i][j]);
+                    List<Integer> numbersInBlob = new ArrayList<>();
+                    List<Position> positionList = new ArrayList<>();
+                    positionList.add(new Position(i, j));
                     while (!queue.isEmpty()) {
                         Position p = queue.poll();
-                        if (penaltyMap[i][j])
+                        updatedPositions[p.row][p.col] = true;
+                        positionList.add(new Position(p.row, p.col));
+                        numbersInBlob.add(penaltyMap[p.row][p.col]);
+                        for (int k = 0; k < 4; k++) {
+                            int dr = deltas[k][0]; // delta row
+                            int dc = deltas[k][1]; // delta col
+                            if (penaltyMap[p.row + dr][p.col + dc] < 0 && !updatedPositions[p.row + dr][p.col + dc]) {
+                                queue.add(new Position(p.row + dr, p.col + dc));
+                                updatedPositions[p.row + dr][p.col + dc] = true;
+                            }
+                        }
+                    }
+                    if (numbersInBlob.size() > numberOfBoxesToMove) {
+                        Collections.sort(numbersInBlob, Collections.reverseOrder());
+                        int cutOffValue = numbersInBlob.get(numberOfBoxesToMove);
+                        for (int k = 0; k < positionList.size(); k++) {
+                            if (penaltyMap[positionList.get(k).row][positionList.get(k).col] < cutOffValue) {
+                                penaltyMap[positionList.get(k).row][positionList.get(k).col] = 0;
+                            }
+                        }
                     }
                 }
             }
-        }*/
+        }
 
         return penaltyMap;
     }

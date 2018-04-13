@@ -12,6 +12,6 @@ public class Pair<A, B> {
 
     @Override
     public String toString() {
-        return a.toString() + "\n" + b.toString();
+        return "(" + a.toString() + ", " + b.toString() + ")";
     }
 }

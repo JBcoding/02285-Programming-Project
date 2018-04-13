@@ -276,7 +276,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 currentRow = nearestGoal.row;
                 currentCol = nearestGoal.col;
             }
-            n.h *= 2; // TODO: Is this nice?
+            n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB
         }
         // System.err.println(currentGoals);
         // System.err.println();
@@ -289,6 +289,31 @@ public abstract class Heuristic implements Comparator<Node> {
                     }
                 }
             }
+            /*List<Pair<Integer, Integer>> boxesToMoveData = new ArrayList<>();
+            for (Box b1 : n.boxList) {
+                for (Box b2 : boxesToMove) {
+                    if (b1.id == b2.id) {
+                        int distanceToBox = shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col];
+                        boxesToMoveData.add(new Pair<>(distanceToBox, penaltyMap[b1.row][b1.col]));
+                    }
+                }
+            }
+            if (boxesToMoveData.size() > 0) {
+                Collections.sort(boxesToMoveData, new PairIntegerDistanceDataComp());
+                int p = 0;
+                for (Pair<Integer, Integer> aBoxesToMoveData : boxesToMoveData) {
+                    p += aBoxesToMoveData.b;
+                }
+                for (Pair<Integer, Integer> aBoxesToMoveData : boxesToMoveData) {
+                    int distance = aBoxesToMoveData.a;
+                    int penaltyFromMap = aBoxesToMoveData.b;
+                    if (penaltyFromMap > 0) {
+                        p += ((distance - 1) + penaltyFromMap);
+                    }
+                    p *= 2;
+                }
+                n.h += p;
+            }*/
         }
 
         /*if (boxesNotToMoveMuch != null) {
@@ -629,5 +654,25 @@ class Greedy extends Heuristic {
     @Override
     public String toString() {
         return "Greedy evaluation";
+    }
+}
+
+
+class PairIntegerDistanceDataComp implements Comparator<Pair<Integer, Integer>> {
+    @Override
+    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+        if (o1.b < 0 && o2.b < 0) {
+            return o1.b - o2.b;
+        } else if (o1.b < 0) {
+            return o1.b - o2.b;
+        } else if (o2.b < 0) {
+            return o1.b - o2.b;
+        } else {
+            if (o1.b.equals(o2.b)) {
+                return o1.a - o2.a;
+            } else {
+                return o1.b - o2.b;
+            }
+        }
     }
 }

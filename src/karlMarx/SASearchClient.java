@@ -37,9 +37,6 @@ public class SASearchClient extends SearchClient {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
                     System.err.println(currentState);
-                    for (int[] arr : penaltyMap) {
-                        System.err.println(Arrays.toString(arr));
-                    }
                     System.err.println("MOVE BOXES: " + boxesToMove);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     solution.addAll(plan);
