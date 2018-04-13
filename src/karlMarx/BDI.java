@@ -311,7 +311,7 @@ public class BDI {
         return penaltyMap;
     }
 
-    public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Position start, Node n) {
+    public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Position g, Position start, Node n) {
         char[][] map = recreateMap(n, true, true, false);
 
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];

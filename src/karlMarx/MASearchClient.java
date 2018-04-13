@@ -12,7 +12,7 @@ public class MASearchClient {
     private HashMap<Goal, HashSet<Color>> solvableByColor;
 
     public Command[][] Search(String strategyArg, List<Node> initialStates) throws IOException {
-        Node.IS_SINGLE = false;
+        Node.IS_SINGLE = false; // TODO: I don't think we use this
         this.strategyArg = strategyArg;
 
         strategies = new Strategy[initialStates.size()];
@@ -68,6 +68,7 @@ public class MASearchClient {
 
         MAPlanMerger pm = new MAPlanMerger(initialStates.get(0), initialStates.size(), initialStates);
 
+        // TODO: MAEvilCorp shows that we actually need a stack of these.
         HashSet<Box> illegalBoxes = new HashSet<>();
         Set<Position> illegalPositions = new HashSet<>();
         int illegalByAgent = -1;
@@ -91,9 +92,7 @@ public class MASearchClient {
                 System.err.println("STARTING FROM:");
                 System.err.println(currentState);
 
-                // TODO: bad way to calculate solvable goals, doesn't take others into account.
-                // Better to do as below.
-                Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, solvedGoals);
+                Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, initialStates, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
                 ArrayList<Box> removed = pruneData.b;
 
@@ -115,6 +114,8 @@ public class MASearchClient {
                 try {
                     if (!illegalBoxes.isEmpty()) {
                         System.err.println("Trying to clear path.");
+
+                        HashSet<Position> agentPositions = new HashSet<>();
 
                         HashSet<Position> clearableIllegalPositions = new HashSet<>();
                         for (Position pos : illegalPositions) {
@@ -152,10 +153,6 @@ public class MASearchClient {
                             Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
                         }
 
-                        for (int[] row : penaltyMap) {
-                            System.err.println(Arrays.toString(row));
-                        }
-
                         Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
                         if (plan == null) {
                             System.err.println("Unable to clear path.");
@@ -182,35 +179,46 @@ public class MASearchClient {
 
                         // Remove walls from agent positions to enable BFS
                         HashSet<Position> agentPositions = new HashSet<>();
-                        ArrayList<Box> agentsAsBoxes = new ArrayList<>();
+                        HashSet<Box> agentsAsBoxes = new HashSet<>();
                         for (Node s : initialStates) {
                             if (s.agent.id == currentState.agent.id) {
                                 continue;
                             }
 
-                            agentPositions.add(new Position(s.agent.row, s.agent.col));
+                            agentPositions.add(new Position(s.agent));
                             // Boxes representing agents have letter 'A'
                             agentsAsBoxes.add(new Box(s.agent.row, s.agent.col, 'A', Color.BLUE));
                             Node.walls[s.agent.row][s.agent.col] = false;
                         }
 
-                        int prevSize = currentState.boxList.size();
+                        ArrayList<Box> oldBoxes = new ArrayList<>(currentState.boxList);
+
                         currentState.boxList.addAll(agentsAsBoxes);
                         currentState.boxList.addAll(removed);
 
-                        // TODO: also look at whether we can actually get to a box that solves it
-                        Pair<List<Box>, Set<Position>> blocking = BDI.boxesOnThePathToGoal(
+                        // Try to find the easiest accessible box matching the goal
+
+                        Pair<Box, Pair<List<Box>, Set<Position>>> bestBoxData =
+                                bestBox(currentState, agentsAsBoxes, currentGoal);
+
+                        Box bestBox = bestBoxData.a;
+
+                        Pair<List<Box>, Set<Position>> boxToGoalData = BDI.boxesOnThePathToGoal(
                                 currentGoal,
-                                new Position(currentState.agent.row, currentState.agent.col),
+                                new Position(bestBox.row, bestBox.col),
                                 currentState
                         );
 
-                        currentState.boxList.subList(prevSize, currentState.boxList.size()).clear();
+                        illegalBoxes = new HashSet<>(bestBoxData.b.a);
+                        illegalBoxes.addAll(boxToGoalData.a);
 
-                        illegalBoxes = new HashSet<>(blocking.a);
                         final Color agentColor = currentState.agent.color;
-                        illegalBoxes.removeIf(box -> box.color == agentColor);
-                        illegalPositions = blocking.b;
+                        illegalBoxes.removeIf(box ->
+                                box.color == agentColor&& !agentPositions.contains(new Position(box)));
+                        illegalPositions = new HashSet<>(bestBoxData.b.b);
+                        illegalPositions.addAll(boxToGoalData.b);
+
+                        currentState.boxList = oldBoxes;
 
                         // Restore walls
                         for (Position pos : agentPositions) {
@@ -227,12 +235,14 @@ public class MASearchClient {
                             continue;
                         }
 
-                        Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
+                        System.err.println("AGENT POSITIONS " + agentPositions);
 
                         List<Box> boxesToMove = null;
                         int[][] penaltyMap = null;
 
                         while (true) {
+                            Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
+
                             if (data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
@@ -242,6 +252,7 @@ public class MASearchClient {
                                     System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
                                 }
+                                System.err.println(currentState);
                                 currentState = plan.getLast();
                                 // This is a new initialState so it must not have a parent for isInitialState method to work
                                 currentState.parent = null;
@@ -290,7 +301,78 @@ public class MASearchClient {
         return pm.getPlan();
     }
 
-    private Pair<HashSet<Goal>, ArrayList<Box>> pruneBoxList(Node currentState, HashSet<Goal> solvedGoals) {
+    private Pair<Box, Pair<List<Box>, Set<Position>>>
+    bestBox(Node currentState, HashSet<Box> agentsAsBoxes, Goal goal) {
+        Queue<Position> queue = new ArrayDeque<>();
+        queue.add(currentState.agent);
+
+        HashSet<Position> seen = new HashSet<>();
+        ArrayList<Box> reachableBoxes = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+            Position curr = queue.poll();
+
+            Box maybeBox = currentState.findBox(curr.row, curr.col);
+            if (maybeBox != null &&
+                    Character.toLowerCase(maybeBox.letter) == goal.letter &&
+                    Node.goals[maybeBox.row][maybeBox.col] != ' ') {
+                reachableBoxes.add(maybeBox);
+            }
+
+            for (Position pos : curr.getNeighbours()) {
+                if (Node.inBounds(pos) && !Node.walls[pos.row][pos.col] && !seen.contains(pos)) {
+                    queue.add(pos);
+                    seen.add(pos);
+                }
+            }
+        }
+
+        Position start = new Position(currentState.agent.row, currentState.agent.col);
+
+        int bestAgents = Integer.MAX_VALUE;
+        int bestBoxes = Integer.MAX_VALUE;
+        Box bestBox = null;
+        Pair<List<Box>, Set<Position>> bestData = null;
+
+        for (Box box : reachableBoxes) {
+            Pair<List<Box>, Set<Position>> data = BDI.boxesOnThePathToGoal(box, start, currentState);
+
+            int blockingAgents = 0, blockingBoxes = 0;
+
+            for (Box blocking : data.a) {
+                if (agentsAsBoxes.contains(blocking)) {
+                    blockingAgents++;
+                } else if (blocking.color != currentState.agent.color) {
+                    blockingBoxes++;
+                }
+            }
+
+            if (blockingBoxes < bestBoxes || (blockingBoxes == bestBoxes && blockingAgents < bestAgents)) {
+                bestBox = box;
+                bestData = data;
+                bestAgents = blockingAgents;
+                bestBoxes = blockingBoxes;
+            }
+
+        }
+
+        return new Pair<>(bestBox, bestData);
+    }
+
+    private Pair<HashSet<Goal>, ArrayList<Box>> pruneBoxList(
+            Node currentState, List<Node> initialStates, HashSet<Goal> solvedGoals
+    ) {
+        // Remove walls
+        HashSet<Position> agentPositions = new HashSet<>();
+        for (Node s : initialStates) {
+            if (s.agent.id == currentState.agent.id) {
+                continue;
+            }
+
+            agentPositions.add(new Position(s.agent.row, s.agent.col));
+            Node.walls[s.agent.row][s.agent.col] = false;
+        }
+
         HashSet<Goal> solvableGoals = new HashSet<>();
         ArrayList<Box> boxList = new ArrayList<>();
 
@@ -312,9 +394,6 @@ public class MASearchClient {
 
                 if (solvableByColor.get(goal).contains(currentState.agent.color) &&
                         !solvedGoals.contains(goal)) {
-                    if (Node.walls[goal.row][goal.col]) {
-                        System.err.println("Goal: " + goal + " blocked by agent.");
-                    }
                     solvableGoals.add(goal);
                 }
             }
@@ -335,6 +414,11 @@ public class MASearchClient {
         }
 
         currentState.boxList = boxList;
+
+        // Restore walls
+        for (Position pos : agentPositions) {
+            Node.walls[pos.row][pos.col] = true;
+        }
 
         return new Pair<>(solvableGoals, removed);
     }

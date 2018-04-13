@@ -278,21 +278,18 @@ public class Node {
     public String toString() {
         StringBuilder s = new StringBuilder();
         for (int row = 0; row < MAX_ROW; row++) {
-            if (!Node.walls[row][0]) {
-                break;
-            }
             // TODO: Possibly recreate toString
             for (int col = 0; col < MAX_COL; col++) {
                 Box box = findBox(row, col);
                 Goal goal = findGoal(row, col);
                 if (box != null) {
                     s.append(box.letter);
-                } else if (goal != null) {
-                    s.append(goal.letter);
-                } else if (Node.walls[row][col]) {
-                    s.append("+");
                 } else if (row == this.agent.row && col == this.agent.col) {
                     s.append(agent.id);
+                } else if (Node.walls[row][col]) {
+                    s.append("+");
+                } else if (goal != null) {
+                    s.append(goal.letter);
                 } else {
                     s.append(" ");
                 }

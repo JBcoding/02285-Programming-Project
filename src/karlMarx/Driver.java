@@ -75,7 +75,7 @@ public class Driver {
             }
 
             if (solution == null) {
-                System.err.println(searchClient.searchStatus());
+                // System.err.println(searchClient.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.out.println(NO_SOLUTION);
                 System.exit(0);

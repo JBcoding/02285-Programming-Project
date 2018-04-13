@@ -22,7 +22,7 @@ public class Box extends Position implements Comparable{
     }
 
     public String toString() {
-        return "Box " + letter + " at (" + col + "," + row + ")";
+        return "Box " + letter + " (" + color + ") at (" + row + "," + col + ")";
     }
 
     public Box(Position position, char letter, Color color) {
