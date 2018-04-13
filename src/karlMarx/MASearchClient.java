@@ -91,6 +91,8 @@ public class MASearchClient {
                 System.err.println("STARTING FROM:");
                 System.err.println(currentState);
 
+                // TODO: bad way to calculate solvable goals, doesn't take others into account.
+                // Better to do as below.
                 Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
                 ArrayList<Box> removed = pruneData.b;
@@ -113,7 +115,6 @@ public class MASearchClient {
                 try {
                     if (!illegalBoxes.isEmpty()) {
                         System.err.println("Trying to clear path.");
-                        System.err.println(illegalPositions);
 
                         HashSet<Position> clearableIllegalPositions = new HashSet<>();
                         for (Position pos : illegalPositions) {
@@ -124,8 +125,38 @@ public class MASearchClient {
                             }
                         }
 
-                        // TODO: use penalty map
-                        Deque<Node> plan = getAwayPlan(currentState, currentGoals, clearableIllegalPositions);
+                        System.err.println(clearableIllegalPositions);
+
+                        ArrayList<Box> boxesToMove = new ArrayList<>();
+                        for (Box box : currentState.boxList) {
+                            if (box.color == currentState.agent.color) {
+                                boxesToMove.add(box);
+                            }
+                        }
+
+                        System.err.println(boxesToMove);
+
+                        ArrayList<Pair<Position, Character>> removedGoals = new ArrayList<>();
+
+                        for (Position pos : clearableIllegalPositions) {
+                            if (Node.goals[pos.row][pos.col] >= 'a' && Node.goals[pos.row][pos.col] <= 'z') {
+                                removedGoals.add(new Pair<>(pos, Node.goals[pos.row][pos.col]));
+                                Node.goals[pos.row][pos.col] = ' ';
+                            }
+                        }
+
+                        int[][] penaltyMap = BDI.calculatePenaltyMap(currentState, clearableIllegalPositions,
+                                boxesToMove.size() + 1);
+
+                        for (Pair<Position, Character> posGoal : removedGoals) {
+                            Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
+                        }
+
+                        for (int[] row : penaltyMap) {
+                            System.err.println(Arrays.toString(row));
+                        }
+
+                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
                         if (plan == null) {
                             System.err.println("Unable to clear path.");
                             continue;
@@ -206,7 +237,7 @@ public class MASearchClient {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
                                 System.err.println("MOVE BOXES: " + boxesToMove);
-                                Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+                                Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
                                 if (plan == null) {
                                     System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
@@ -224,7 +255,7 @@ public class MASearchClient {
                         System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
-                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
+                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
 
                         if (plan == null) {
                             System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
@@ -259,7 +290,7 @@ public class MASearchClient {
         return pm.getPlan();
     }
 
-    Pair<HashSet<Goal>, ArrayList<Box>> pruneBoxList(Node currentState, HashSet<Goal> solvedGoals) {
+    private Pair<HashSet<Goal>, ArrayList<Box>> pruneBoxList(Node currentState, HashSet<Goal> solvedGoals) {
         HashSet<Goal> solvableGoals = new HashSet<>();
         ArrayList<Box> boxList = new ArrayList<>();
 
@@ -308,7 +339,7 @@ public class MASearchClient {
         return new Pair<>(solvableGoals, removed);
     }
 
-    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
+    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent) {
         Strategy strategy;
 
         switch (strategyArg) {
@@ -335,60 +366,8 @@ public class MASearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
-                return leafNode.extractPlan();
-            }
-
-            strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
-                    strategy.addToFrontier(n);
-                }
-            }
-
-            iterations++;
-        }
-    }
-
-    private Deque<Node> getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
-        Strategy strategy;
-
-        switch (strategyArg) {
-            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, null, null, null)); break;
-            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, null, null, null)); break;
-            case "-greedy": /* Fall-through */
-            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, null, null, null));
-        }
-
-        System.err.println(currentGoals);
-
-        strategy.addToFrontier(state);
-
-        int iterations = 0;
-        while (true) {
-            if (iterations == 10000) {
-                System.err.println(searchStatus());
-                iterations = 0;
-            }
-
-            if (strategy.frontierIsEmpty()) {
-                return null;
-            }
-
-            Node leafNode = strategy.getAndRemoveLeaf();
-
-            boolean illegalBox = false;
-            for (Box box : leafNode.boxList) {
-                if (box.color == leafNode.agent.color && illegalPositions.contains(new Position(box.row, box.col))) {
-                    illegalBox = true;
-                }
-            }
-
-            // TODO: getting no help from the heuristic right now
-            // Can I just pass the penalty map?
-            if (leafNode.isGoalState(currentGoals, null, null) &&
-                    !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col)) &&
-                    !illegalBox) {
+            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap) &&
+                    (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {
                 return leafNode.extractPlan();
             }
 
