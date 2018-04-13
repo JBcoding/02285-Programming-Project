@@ -202,7 +202,7 @@ public class Node {
         return pos.row >= 0 &&
                 pos.row < MAX_ROW &&
                 pos.col >= 0 &&
-                pos.row < MAX_COL;
+                pos.col < MAX_COL;
     }
 
     private boolean cellIsFree(int row, int col) {
