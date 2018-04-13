@@ -156,10 +156,13 @@ public class Node {
                     n.agent.row = newAgentRow;
                     n.agent.col = newAgentCol;
                     // Change box position in boxList
-                    for (Box box : n.boxList) {
+                    for (int i = 0; i < n.boxList.size(); i++) {
+                        Box box = n.boxList.get(i);
                         if (box.isOn(new Position(newAgentRow, newAgentCol))) {
+                            box = box.copy();
                             box.row = newBoxRow;
                             box.col = newBoxCol;
+                            n.boxList.set(i, box);
                             break;
                         }
                     }
@@ -179,10 +182,13 @@ public class Node {
                     n.agent.row = newAgentRow;
                     n.agent.col = newAgentCol;
                     // Change box position in boxList
-                    for (Box box : n.boxList) {
+                    for (int i = 0; i < n.boxList.size(); i++) {
+                        Box box = n.boxList.get(i);
                         if (box.isOn(new Position(boxRow, boxCol))) {
+                            box = box.copy();
                             box.row = this.agent.row;
                             box.col = this.agent.col;
+                            n.boxList.set(i, box);
                             break;
                         }
                     }
@@ -296,9 +302,7 @@ public class Node {
 
     protected Node ChildNode() {
         Node copy = new Node(this);
-        for (Box box : boxList) {
-            copy.boxList.add(box.copy());
-        }
+        copy.boxList.addAll(boxList);
         return copy;
     }
 

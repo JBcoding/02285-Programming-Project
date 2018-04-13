@@ -16,6 +16,7 @@ public abstract class Heuristic implements Comparator<Node> {
     protected Goal currentGoal;
     protected Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps;
     protected Box box;
+    protected List<Box> boxesToMove;
 
     static {
         // All pair shortest distances (by BFS).
@@ -282,24 +283,29 @@ public abstract class Heuristic implements Comparator<Node> {
 
         int[][] penaltyMap = null;
         Position pos = new Position(n.boxList.get(box.id));
-        List<Box> boxesOnPath;
         Set<Position> illegalPositions;
         if (penaltyMaps.containsKey(pos)) {
             Pair<Set<Position>, int[][]> data = penaltyMaps.get(pos);
             illegalPositions = data.a;
             penaltyMap = data.b;
-            boxesOnPath = new ArrayList<Box>();
-            for (Box b : n.boxList) {
-                if (illegalPositions.contains(new Position(b))) {
-                    boxesOnPath.add(b);
-                }
-            }
         } else {
-            Pair<List<Box>, Set<Position>> data = BDI.boxesOnThePathToGoal(currentGoal, box, n);
-            boxesOnPath = data.a;
+            Pair<List<Box>, Set<Position>> data = BDI.boxesOnThePathToGoal(currentGoal, n.boxList.get(box.id), n);
+            System.err.println(n.boxList.get(box.id));
+            if (boxesToMove == null) {
+                boxesToMove = data.a;
+            }
+            System.err.println(n);
+            System.err.println(boxesToMove);
             illegalPositions = data.b;
-            penaltyMap = BDI.calculatePenaltyMap(n, illegalPositions, data.a.size());
+            penaltyMap = BDI.calculatePenaltyMap(n, illegalPositions, boxesToMove.size());
             penaltyMaps.put(pos, new Pair<Set<Position>, int[][]>(illegalPositions, penaltyMap));
+
+            for (int[] arr : penaltyMap) {
+                System.err.println(Arrays.toString(arr));
+            }
+        }
+        for (Box b : boxesToMove) {
+            n.h += 5 * penaltyMap[b.row][b.col];
         }
 
         /*if (boxesNotToMoveMuch != null) {
@@ -582,7 +588,7 @@ class AStar extends Heuristic {
     public AStar(Node initialState, Set<Goal> currentGoals, Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps, Box box, Goal currentGoal) {
         this(initialState);
         this.currentGoals = currentGoals;
-        this.penaltyMaps = penaltyMaps;
+        this.penaltyMaps = new HashMap<>();
         this.box = box;
         this.currentGoal = currentGoal;
     }
@@ -608,7 +614,7 @@ class WeightedAStar extends Heuristic {
     public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps, Box box, Goal currentGoal) {
         this(initialState, W);
         this.currentGoals = currentGoals;
-        this.penaltyMaps = penaltyMaps;
+        this.penaltyMaps = new HashMap<>();
         this.box = box;
         this.currentGoal = currentGoal;
     }
@@ -633,7 +639,7 @@ class Greedy extends Heuristic {
     public Greedy(Node initialState, Set<Goal> currentGoals, Map<Position, Pair<Set<Position>, int[][]>> penaltyMaps, Box box, Goal currentGoal) {
         this(initialState);
         this.currentGoals = currentGoals;
-        this.penaltyMaps = penaltyMaps;
+        this.penaltyMaps = new HashMap<>();
         this.box = box;
         this.currentGoal = currentGoal;
     }

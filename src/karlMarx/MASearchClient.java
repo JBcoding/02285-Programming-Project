@@ -11,7 +11,7 @@ public class MASearchClient {
     private String strategyArg;
 
     public Command[][] Search(String strategyArg, List<Node> initialStates) throws IOException {
-        Node.IS_SINGLE = false;
+/*        Node.IS_SINGLE = false;
         this.strategyArg = strategyArg;
 
         strategies = new Strategy[initialStates.size()];
@@ -146,11 +146,10 @@ public class MASearchClient {
                     }
                 }
 
-<<<<<<< d29ba6caa96fb39ceebacc4a8235c60d831a70c8
                 HashSet<Position> illegals = illegalPositions.get(currentState.agent.id);
                 if (!illegals.isEmpty()) {
                     Deque<Node> plan = getAwayPlan(currentState, currentGoals, illegals);
-=======
+
             List<Node> solution = new LinkedList<Node>();
             while (!currentState.isGoalState(solvableGoals, null, null, -1, null)) {
                 currentGoal = BDI.getGoal(currentState, solvableGoals);
@@ -161,7 +160,6 @@ public class MASearchClient {
                     int[][] penaltyMap = data.b;
                     System.err.println("MOVE BOXES: " + boxesToMove);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
->>>>>>> Temp commit for several penalty maps
                     if (plan == null) {
                         System.err.println("UNABLE TO MOVE AWAY FROM: " + illegals);
                         return null;
@@ -236,16 +234,17 @@ public class MASearchClient {
         }
 
 
-        return pm.getPlan();
+        return pm.getPlan();*/
+return null;
     }
 
     private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap) {
-        Strategy strategy;
+        /*Strategy strategy;
 
         switch (strategyArg) {
             case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null)); break;
             case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null)); break;
-            case "-greedy": /* Fall-through */
+            case "-greedy":
             default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
         }
 
@@ -278,7 +277,8 @@ public class MASearchClient {
             }
 
             iterations++;
-        }
+        }*/
+        return null;
     }
 
     private Deque<Node> getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
@@ -308,10 +308,10 @@ public class MASearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, null, null) &&
+            /*if (leafNode.isGoalState(currentGoals, null, null) &&
                     !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col))) {
                 return leafNode.extractPlan();
-            }
+            }*/
 
             strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
