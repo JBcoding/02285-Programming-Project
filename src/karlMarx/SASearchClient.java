@@ -25,7 +25,7 @@ public class SASearchClient extends SearchClient {
         
         List<Node> solution = new LinkedList<Node>();
         while (!currentState.isGoalState()) {
-            System.err.println(currentState);
+            //System.err.println(currentState);
 
             currentGoal = BDI.getGoal(currentState);
             System.err.println("NEXT GOAL: " + currentGoal);
@@ -36,8 +36,8 @@ public class SASearchClient extends SearchClient {
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
-                    System.err.println(currentState);
-                    System.err.println("MOVE BOXES: " + boxesToMove);
+                    //System.err.println(currentState);
+                    //System.err.println("MOVE BOXES: " + boxesToMove);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     solution.addAll(plan);
                     currentState = plan.getLast();
@@ -47,8 +47,8 @@ public class SASearchClient extends SearchClient {
                     break;
                 }
             }
-            System.err.println(currentState);
-            System.err.println("SOLVE GOAL: " + currentGoal);
+            //System.err.println(currentState);
+            //System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
             Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             solution.addAll(plan);

@@ -57,6 +57,7 @@ public class MasterPlan {
         for (int i = 0; i < numberOfAgents; i++) {
             positions[i] = new Position(initPositions[i]);
         }
+        List<Pair<Integer, Position>> tempBoxPositions = new ArrayList<>();
         int stepsTaken = 0;
         while (stepsBack != 0 && stepsTaken < length) {
             stepsBack --;
@@ -91,12 +92,20 @@ public class MasterPlan {
                 for (int j = 0; j < oldN.boxList.size(); j++) {
                     if (oldN.boxList.get(j).col != n.boxList.get(j).col || oldN.boxList.get(j).row != n.boxList.get(j).row) {
                         oldPositions.add(new Position(oldN.boxList.get(j)));
+                        oldPositions.add(new Position(n.boxList.get(j)));
+                        tempBoxPositions.add(new Pair<>(j, new Position(n.boxList.get(j))));
+                        n.boxList.get(j).row = -10;
                     }
                 }
                 oldPositions.add(positions[i]);
                 positions[i] = new Position(n.agent);
             }
             oldPositions.clear();
+            for (Pair<Integer, Position> p : tempBoxPositions) {
+                n.boxList.get(p.a).row = p.b.row;
+                n.boxList.get(p.a).col = p.b.col;
+            }
+            tempBoxPositions.clear();
             stepsTaken ++;
         }
         return new Pair<>(n, positions);

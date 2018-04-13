@@ -31,7 +31,7 @@ public class Node {
     public static Set<Goal> goalSet = new HashSet<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
-    
+
     public Node parent;
     public Command action;
 
@@ -49,7 +49,7 @@ public class Node {
         Node.walls = new boolean[rows][cols];
         Node.goals = new char[rows][cols];
     }
-    
+
     public Node(Agent agent) {
         this((Node)null);
         this.g = 0;
@@ -61,7 +61,7 @@ public class Node {
         if (parent != null) {
             this.g = parent.g() + 1;
             this.agent = parent.agent.copy();
-        }        
+        }
     }
 
     public int g() {
@@ -105,7 +105,7 @@ public class Node {
 
         return true;
     }
-    
+
     public boolean isGoalState(Set<Goal> goals, Set<Pair<Box, Position>> boxPositionGoals) {
         for (Pair<Box, Position> goal : boxPositionGoals) {
             if (!goal.a.isOn(goal.b)) {
@@ -142,10 +142,13 @@ public class Node {
                     n.agent.row = newAgentRow;
                     n.agent.col = newAgentCol;
                     // Change box position in boxList
-                    for (Box box : n.boxList) {
+                    for (int i = 0; i < n.boxList.size(); i++) {
+                        Box box = n.boxList.get(i);
                         if (box.isOn(new Position(newAgentRow, newAgentCol))) {
+                            box = box.copy();
                             box.row = newBoxRow;
                             box.col = newBoxCol;
+                            n.boxList.set(i, box);
                             break;
                         }
                     }
@@ -165,10 +168,13 @@ public class Node {
                     n.agent.row = newAgentRow;
                     n.agent.col = newAgentCol;
                     // Change box position in boxList
-                    for (Box box : n.boxList) {
+                    for (int i = 0; i < n.boxList.size(); i++) {
+                        Box box = n.boxList.get(i);
                         if (box.isOn(new Position(boxRow, boxCol))) {
+                            box = box.copy();
                             box.row = this.agent.row;
                             box.col = this.agent.col;
+                            n.boxList.set(i, box);
                             break;
                         }
                     }
@@ -200,11 +206,8 @@ public class Node {
     }
 
     private boolean cellIsFree(int row, int col) {
-        if (Node.walls[row][col]) {
-            return false;
-        }
+        return !Node.walls[row][col] && !boxAt(row, col);
 
-        return !boxAt(row, col);
     }
 
     private boolean boxAt(int row, int col) {
@@ -218,9 +221,7 @@ public class Node {
 
     protected Node ChildNode() {
         Node copy = new Node(this);
-        for (Box box : boxList) {
-            copy.boxList.add(box.copy());
-        }
+        copy.boxList.addAll(boxList);
         return copy;
     }
 
