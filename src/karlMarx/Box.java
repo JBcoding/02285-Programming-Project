@@ -1,6 +1,6 @@
 package karlMarx;
 
-public class Box extends Position {
+public class Box extends Position implements Comparable{
     protected static int idCount = 0;
     public int id;
     char letter;
@@ -54,5 +54,10 @@ public class Box extends Position {
             this._hash = result;
         }
         return this._hash;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return hashCode() - o.hashCode();
     }
 }
