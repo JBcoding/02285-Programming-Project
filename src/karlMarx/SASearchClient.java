@@ -20,6 +20,7 @@ public class SASearchClient extends SearchClient {
         System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
         
         Node currentState = initialStates.get(0);
+        BDI.removeUnreachableBoxesFromBoxlist(currentState);
         Goal currentGoal;
         Set<Goal> currentGoals = new HashSet<Goal>();
         

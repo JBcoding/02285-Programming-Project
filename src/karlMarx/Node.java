@@ -352,12 +352,12 @@ public class Node {
                 Goal goal = findGoal(row, col);
                 if (box != null) {
                     s.append(box.letter);
+                } else if (row == this.agent.row && col == this.agent.col) {
+                    s.append(agent.id);
                 } else if (goal != null) {
                     s.append(goal.letter);
                 } else if (Node.walls[row][col]) {
                     s.append("+");
-                } else if (row == this.agent.row && col == this.agent.col) {
-                    s.append(agent.id);
                 } else {
                     s.append(" ");
                 }
@@ -384,4 +384,5 @@ public class Node {
         }
         return null;
     }
+    
 }

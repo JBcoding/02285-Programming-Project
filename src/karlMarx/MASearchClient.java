@@ -87,9 +87,9 @@ public class MASearchClient {
                 Node.walls[currentState.agent.row][currentState.agent.col] = false;
                 currentState.boxList = lastBoxList;
 
-                System.err.println("Agent: " + currentState.agent);
-                System.err.println("STARTING FROM:");
-                System.err.println(currentState);
+//                System.err.println("Agent: " + currentState.agent);
+//                System.err.println("STARTING FROM:");
+//                System.err.println(currentState);
 
                 Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
@@ -112,8 +112,8 @@ public class MASearchClient {
 
                 try {
                     if (!illegalBoxes.isEmpty()) {
-                        System.err.println("Trying to clear path.");
-                        System.err.println(illegalPositions);
+//                        System.err.println("Trying to clear path.");
+//                        System.err.println(illegalPositions);
 
                         HashSet<Position> clearableIllegalPositions = new HashSet<>();
                         for (Position pos : illegalPositions) {
@@ -127,7 +127,7 @@ public class MASearchClient {
                         // TODO: use penalty map
                         Deque<Node> plan = getAwayPlan(currentState, currentGoals, clearableIllegalPositions);
                         if (plan == null) {
-                            System.err.println("Unable to clear path.");
+//                            System.err.println("Unable to clear path.");
                             continue;
                         }
 
@@ -143,11 +143,11 @@ public class MASearchClient {
                         pm.mergePlan(currentState.agent.id, plan);
                         solvedSomething = true;
                     } else if (solvableGoals.isEmpty()) {
-                        System.err.println("No solvable goals for agent: " + currentState.agent.id);
+//                        System.err.println("No solvable goals /for agent: " + currentState.agent.id);
                         continue;
                     } else {
                         Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
-                        System.err.println("NEXT GOAL: " + currentGoal);
+//                        System.err.println("NEXT GOAL: " + currentGoal);
 
                         // Remove walls from agent positions to enable BFS
                         HashSet<Position> agentPositions = new HashSet<>();
@@ -186,7 +186,7 @@ public class MASearchClient {
                             Node.walls[pos.row][pos.col] = true;
                         }
 
-                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
+//                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
 
                         if (!illegalBoxes.isEmpty()) {
                             illegalByAgent = i;
@@ -205,10 +205,10 @@ public class MASearchClient {
                             if (data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
-                                System.err.println("MOVE BOXES: " + boxesToMove);
+//                                System.err.println("MOVE BOXES: " + boxesToMove);
                                 Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
                                 if (plan == null) {
-                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
+//                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
                                 }
                                 currentState = plan.getLast();
@@ -221,13 +221,13 @@ public class MASearchClient {
                             }
                         }
 
-                        System.err.println("SOLVE GOAL: " + currentGoal);
+//                        System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
                         Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap);
 
                         if (plan == null) {
-                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
+//                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
                             continue;
                         }
                         pm.mergePlan(currentState.agent.id, plan);
@@ -253,7 +253,7 @@ public class MASearchClient {
                 return null;
             }
 
-            System.err.println("Running agents again.");
+//            System.err.println("Running agents again.");
         }
 
         return pm.getPlan();
@@ -282,7 +282,7 @@ public class MASearchClient {
                 if (solvableByColor.get(goal).contains(currentState.agent.color) &&
                         !solvedGoals.contains(goal)) {
                     if (Node.walls[goal.row][goal.col]) {
-                        System.err.println("Goal: " + goal + " blocked by agent.");
+//                        System.err.println("Goal: " + goal + " blocked by agent.");
                     }
                     solvableGoals.add(goal);
                 }
@@ -318,7 +318,7 @@ public class MASearchClient {
             default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
         }
 
-        System.err.println(currentGoals);
+//        System.err.println(currentGoals);
 
         strategy.addToFrontier(state);
 
@@ -360,7 +360,7 @@ public class MASearchClient {
             default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, null, null, null));
         }
 
-        System.err.println(currentGoals);
+//        System.err.println(currentGoals);
 
         strategy.addToFrontier(state);
 

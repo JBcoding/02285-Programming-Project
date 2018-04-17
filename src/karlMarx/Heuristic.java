@@ -204,9 +204,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
 
-        for (Goal ignored : activegoals) {
-            n.h += 2;
-        }
+        n.h += 2*activegoals.size();
 
         // initialise activeboxes with all boxes not on goal cells
         HashSet<Box> activeboxes = new HashSet<Box>();

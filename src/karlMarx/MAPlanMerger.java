@@ -14,6 +14,7 @@ public class MAPlanMerger {
     private Agent[] agents;
 
     public MAPlanMerger(Node initState, int numberOfAgents, List<Node> initialStates) {
+        System.err.println("INITIAL STATE:\n" + initState);
         this.initState = initState.ChildNode();
         initWalls = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
@@ -86,7 +87,7 @@ public class MAPlanMerger {
                     if (success) {
                         offset = 0;
                         restPlan = tryPlanOfLength(backup, arr, agent, workablePlanLengthMax, thisOffset, false);
-                        arr = restPlan;
+                        arr = restPlan;                        
                         backup = masterPlan.copy();
                     }
                 }
@@ -96,7 +97,7 @@ public class MAPlanMerger {
 
         for (int j = 0; j < Node.walls.length; j++) {
             System.arraycopy(initWallsBackup[j], 0, Node.walls[j], 0, Node.walls[j].length);
-        }
+        }        
     }
 
     public Command[] tryPlanOfLength(MasterPlan backup, Command[] plan, int agent, int length, int offset, boolean doRestore) {
@@ -118,6 +119,7 @@ public class MAPlanMerger {
     }
 
     public Command[][] getPlan() {
-        return masterPlan.getPlan();
+        masterPlan.removeRepetitiveStates(initState.ChildNode(), initPositions, agents, initWalls);            
+        return masterPlan.getPlan();            
     }
 }

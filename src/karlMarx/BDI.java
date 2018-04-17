@@ -450,4 +450,16 @@ public class BDI {
         
         return bestGoal;
     }
+
+    public static void removeUnreachableBoxesFromBoxlist(Node currentState) {
+        return;
+//        Agent agent = currentState.agent;
+//        List<Box> list = currentState.boxList;
+//        for (int i = list.size(); i >= 0; i--) {
+//            Box box = list.get(i);
+//            if (Heuristic.shortestDistance[box.row][box.col][agent.row][agent.col] < 0) {
+//                list.remove(i);
+//            }
+//        }
+    }
 }
