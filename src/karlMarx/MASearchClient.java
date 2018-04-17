@@ -440,7 +440,7 @@ public class MASearchClient {
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(searchStatus());
+                System.err.println(searchStatus(strategy));
                 iterations = 0;
             }
 
@@ -466,16 +466,8 @@ public class MASearchClient {
         }
     }
 
-    public String searchStatus() { {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < strategies.length; i++) {
-            Strategy strategy = strategies[i];
-            s.append("Status for agent ");
-            s.append(i);
-            s.append(": ");
-            s.append(strategy.searchStatus());
-        }
-        return s.toString();
+    public String searchStatus(Strategy strategy) { {
+        return strategy.searchStatus();
     }
     }
 

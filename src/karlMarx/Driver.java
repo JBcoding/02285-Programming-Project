@@ -82,7 +82,6 @@ public class Driver {
             } else {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println("Found solution of length " + solution.length);
-                System.err.println(searchClient.searchStatus());
 
                 for (Command[] arr : solution) {
                     String act = Arrays.toString(arr);
