@@ -194,70 +194,6 @@ public class Node {
             }
         }
 
-        /*if (!IS_SINGLE && false) {
-            ArrayDeque<Position> queue = new ArrayDeque<>();
-
-            queue.add(this.agent);
-
-            HashSet<Position> seen = new HashSet<>();
-
-            HashSet<Goal> goals = new HashSet<>();
-            HashSet<Box> boxes = new HashSet<>();
-
-            while (!queue.isEmpty()) {
-                Position curr = queue.poll();
-
-                if (Node.goals[curr.row][curr.col] >= 'a' && Node.goals[curr.row][curr.col] <= 'z') {
-                    Goal goal = findGoal(curr.row, curr.col);
-                    goals.add(goal);
-                }
-
-                for (Position pos : curr.getNeighbours()) {
-                    Box maybeBox = findBox(pos.row, pos.col);
-                    if (maybeBox != null && !boxes.contains(maybeBox)) {
-                        boxes.add(maybeBox);
-                    }
-
-                    if (inBounds(pos) && cellIsFree(pos.row, pos.col) && !seen.contains(pos)) {
-                        queue.add(pos);
-                        seen.add(pos);
-                    }
-                }
-            }
-
-            boolean solved = true;
-
-            for (Goal goal : goals) {
-                Box assigned = null;
-                for (Box box : boxes) {
-                    if (Character.toLowerCase(box.letter) == goal.letter && box.isOn(goal)) {
-                        assigned = box;
-                        break;
-                    }
-                }
-
-                if (assigned == null) {
-                    solved = false;
-                } else {
-                    boxes.remove(assigned);
-                }
-            }
-
-            if (solved) {
-                for (Box box : boxes) {
-                    Node n = this.ChildNode();
-                    n.action = new Command(box);
-                    n.agent.row = agent.row;
-                    n.agent.col = agent.col;
-                    //n.boxList.remove(box);
-                    expandedNodes.add(n);
-
-                    System.err.println("NEED HELP MOVING: " + box);
-                }
-            }
-
-        }*/
-
         Collections.shuffle(expandedNodes, RND);
         return expandedNodes;
     }
@@ -266,7 +202,7 @@ public class Node {
         return pos.row >= 0 &&
                 pos.row < MAX_ROW &&
                 pos.col >= 0 &&
-                pos.row < MAX_COL;
+                pos.col < MAX_COL;
     }
 
     private boolean cellIsFree(int row, int col) {
@@ -343,9 +279,6 @@ public class Node {
     public String toString() {
         StringBuilder s = new StringBuilder();
         for (int row = 0; row < MAX_ROW; row++) {
-            if (!Node.walls[row][0]) {
-                break;
-            }
             // TODO: Possibly recreate toString
             for (int col = 0; col < MAX_COL; col++) {
                 Box box = findBox(row, col);

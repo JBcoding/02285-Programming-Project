@@ -208,7 +208,7 @@ public class BDI {
         return null;
     }
 
-    private static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
+    public static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
         Queue<Position> queue = new ArrayDeque<>();
@@ -311,7 +311,7 @@ public class BDI {
         return penaltyMap;
     }
 
-    public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Goal g, Position start, Node n) {
+    public static Pair<List<Box>, Set<Position>> boxesOnThePathToGoal(Position g, Position start, Node n) {
         char[][] map = recreateMap(n, true, true, false);
 
         Queue<Position>[] queues = new Queue[n.boxList.size() + 1];

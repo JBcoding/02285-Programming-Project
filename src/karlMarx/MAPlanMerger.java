@@ -14,7 +14,7 @@ public class MAPlanMerger {
     private Agent[] agents;
 
     public MAPlanMerger(Node initState, int numberOfAgents, List<Node> initialStates) {
-        System.err.println("INITIAL STATE:\n" + initState);
+//        System.err.println("INITIAL STATE:\n" + initState);
         this.initState = initState.ChildNode();
         initWalls = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {

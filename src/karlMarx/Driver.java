@@ -75,14 +75,13 @@ public class Driver {
             }
 
             if (solution == null) {
-                System.err.println(searchClient.searchStatus());
+                // System.err.println(searchClient.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.out.println(NO_SOLUTION);
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println("Found solution of length " + solution.length);
-                System.err.println(searchClient.searchStatus());
 
                 for (Command[] arr : solution) {
                     String act = Arrays.toString(arr);
