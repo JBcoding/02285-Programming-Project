@@ -11,7 +11,7 @@ public abstract class Heuristic implements Comparator<Node> {
     protected HashMap<Goal, HashSet<Color>> solvableByColor;
 
     protected Set<Goal> currentGoals;
-    protected List<Box> boxesToMove;
+    protected HashSet<Integer> boxesToMove;
     protected int[][] penaltyMap;
     protected List<Box> boxesNotToMoveMuch;
 
@@ -163,6 +163,10 @@ public abstract class Heuristic implements Comparator<Node> {
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
 
+    public static long t1 = 0;
+    public static long t2 = 0;
+    public static long t3 = 0;
+
     public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -183,6 +187,8 @@ public abstract class Heuristic implements Comparator<Node> {
             return n.h;
         }
 
+        long t = System.nanoTime();
+
         n.h = 1;
         // start searching from the agent position
         int currentRow = n.agent.row;
@@ -196,97 +202,78 @@ public abstract class Heuristic implements Comparator<Node> {
             activegoals.addAll(currentGoals);
         }
 
+        HashSet<Box> activeboxes = new HashSet<Box>();
         for (Box b : n.boxList) {
             if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
                 activegoals.remove(new Goal(b.row, b.col, Character.toLowerCase(b.letter)));
+            } else if (b.color == n.agent.color) {
+                activeboxes.add(b);
             }
         }
 
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
 
-        for (Goal ignored : activegoals) {
-            n.h += 2;
-        }
+        n.h += 2 * activegoals.size();
 
-        // initialise activeboxes with all boxes not on goal cells
-        HashSet<Box> activeboxes = new HashSet<Box>();
-        for (Box box : n.boxList) {
-            if (box.color != n.agent.color) {
-                continue;
-            }
+        Set<Goal> tempActiveGoals = activegoals;
+        Set<Box> tempActiveBoxes = activeboxes;
 
-            boolean isUsed = false;
+        t1 += System.nanoTime() - t;
+        t = System.nanoTime();
 
-            for (Goal goal : currentGoals) {
-                if (goal.row == box.row && goal.col == box.col && goal.letter == Character.toLowerCase(box.letter)) {
-                    isUsed = true;
-                }
-            }
-
-            if (!isUsed) {
-                activeboxes.add(box);
-            }
-        }
-
-        ArrayList<Pair<Set<Goal>, Set<Box>>> iterators = new ArrayList<Pair<Set<Goal>, Set<Box>>>();
-        iterators.add(new Pair<Set<Goal>, Set<Box>>(new HashSet<Goal>(activegoals), new HashSet<Box>(activeboxes)));
-
-        for (Pair<Set<Goal>, Set<Box>> pair : iterators) {
-            Set<Goal> tempActiveGoals = pair.a;
-            Set<Box> tempActiveBoxes = pair.b;
-            
-            while (!tempActiveGoals.isEmpty()) {
-                Box nearestBox = null;
-                Goal nearestGoal = null;
-                while (nearestGoal == null) {
-                    // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
-                    int distToBox = Integer.MAX_VALUE;
-                    for (Box b : tempActiveBoxes) {
-                        if (shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
-                            nearestBox = b;
-                            distToBox = shortestDistance[b.row][b.col][currentRow][currentCol];
-                        }
-                    }
-
-                    // remove the chosen box from the list of active boxes
-                    tempActiveBoxes.remove(nearestBox);
-                    // find the nearest same-letter active goal to the chosen box (if exists)
-                    int distToGoal = Integer.MAX_VALUE;
-                    for (Goal g : tempActiveGoals) {
-                        if (Character.toLowerCase(nearestBox.letter) == g.letter
-                                && nearestBox.color == n.agent.color
-                                && shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
-                            nearestGoal = g;
-                            distToGoal = shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
-                        }
+        while (!tempActiveGoals.isEmpty()) {
+            Box nearestBox = null;
+            Goal nearestGoal = null;
+            while (nearestGoal == null) {
+                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
+                int distToBox = Integer.MAX_VALUE;
+                for (Box b : tempActiveBoxes) {
+                    if (shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
+                        nearestBox = b;
+                        distToBox = shortestDistance[b.row][b.col][currentRow][currentCol];
                     }
                 }
-                // remove the chosen goal from the list of active goals
-                tempActiveGoals.remove(nearestGoal);
-                // add to the heuristics the number of actions required to go from a
-                // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-                //System.err.println(nearestBox);
-                //System.err.println(nearestGoal);
-                //System.err.println(shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col]);
-                //System.err.println();
-                n.h = n.h
-                        + shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                        + shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
-                // System.err.println(nearestGoal + " " + nearestBox);
-                currentRow = nearestGoal.row;
-                currentCol = nearestGoal.col;
+
+                // remove the chosen box from the list of active boxes
+                tempActiveBoxes.remove(nearestBox);
+                // find the nearest same-letter active goal to the chosen box (if exists)
+                int distToGoal = Integer.MAX_VALUE;
+                for (Goal g : tempActiveGoals) {
+                    if (Character.toLowerCase(nearestBox.letter) == g.letter
+                            && nearestBox.color == n.agent.color
+                            && shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                        nearestGoal = g;
+                        distToGoal = shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                    }
+                }
             }
-            n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB
+            // remove the chosen goal from the list of active goals
+            tempActiveGoals.remove(nearestGoal);
+            // add to the heuristics the number of actions required to go from a
+            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
+            //System.err.println(nearestBox);
+            //System.err.println(nearestGoal);
+            //System.err.println(shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col]);
+            //System.err.println();
+            n.h = n.h
+                    + shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
+                    + shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+            // System.err.println(nearestGoal + " " + nearestBox);
+            currentRow = nearestGoal.row;
+            currentCol = nearestGoal.col;
         }
+        n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
         // System.err.println(currentGoals);
         // System.err.println();
 
+
+        t2 += System.nanoTime() - t;
+        t = System.nanoTime();
+
         if (boxesToMove != null) {
             for (Box b1 : n.boxList) {
-                for (Box b2 : boxesToMove) {
-                    if (b1.id == b2.id) {
-                        n.h += 5 * penaltyMap[b1.row][b1.col];
-                    }
+                if (boxesToMove.contains(b1.id)) {
+                    n.h += 5 * penaltyMap[b1.row][b1.col];
                 }
             }
             /*List<Pair<Integer, Integer>> boxesToMoveData = new ArrayList<>();
@@ -315,6 +302,9 @@ public abstract class Heuristic implements Comparator<Node> {
                 n.h += p;
             }*/
         }
+
+
+        t3 += System.nanoTime() - t;
 
         /*if (boxesNotToMoveMuch != null) {
             for (Box b1 : boxesNotToMoveMuch) {
@@ -586,7 +576,12 @@ class AStar extends Heuristic {
     public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
         this(initialState);
         this.currentGoals = currentGoals;
-        this.boxesToMove = boxesToMove;
+        this.boxesToMove = new HashSet<>();
+        if (boxesToMove != null) {
+            for (Box b : boxesToMove) {
+                this.boxesToMove.add(b.id);
+            }
+        }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
     }
@@ -612,7 +607,12 @@ class WeightedAStar extends Heuristic {
     public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
         this(initialState, W);
         this.currentGoals = currentGoals;
-        this.boxesToMove = boxesToMove;
+        this.boxesToMove = new HashSet<>();
+        if (boxesToMove != null) {
+            for (Box b : boxesToMove) {
+                this.boxesToMove.add(b.id);
+            }
+        }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
     }
@@ -637,7 +637,12 @@ class Greedy extends Heuristic {
     public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
         this(initialState);
         this.currentGoals = currentGoals;
-        this.boxesToMove = boxesToMove;
+        this.boxesToMove = new HashSet<>();
+        if (boxesToMove != null) {
+            for (Box b : boxesToMove) {
+                this.boxesToMove.add(b.id);
+            }
+        }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
     }
