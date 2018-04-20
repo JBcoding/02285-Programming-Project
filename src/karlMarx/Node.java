@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(2);
+    private static final Random RND = new Random(3);
 
     public static boolean IS_SINGLE = true;
 

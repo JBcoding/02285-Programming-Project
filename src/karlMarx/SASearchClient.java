@@ -37,8 +37,6 @@ public class SASearchClient extends SearchClient {
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
-                    //System.err.println(currentState);
-                    //System.err.println("MOVE BOXES: " + boxesToMove);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     solution.addAll(plan);
                     currentState = plan.getLast();
@@ -48,8 +46,6 @@ public class SASearchClient extends SearchClient {
                     break;
                 }
             }
-            //System.err.println(currentState);
-            //System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
             Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             solution.addAll(plan);

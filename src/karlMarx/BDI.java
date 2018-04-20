@@ -442,6 +442,7 @@ public class BDI {
             for (int i = 0; i < 4; i++) {
                 goalScore += (map[g.row + deltas[i][0]][g.col + deltas[i][1]] == '+') ? .2 : 0;
             }
+            goalScore += .2 - ((double)(Heuristic.shortestDistance[g.row][g.col][n.agent.row][n.agent.col]) / 5000.);
             if (goalScore > bestGoalScore) {
                 bestGoalScore = goalScore;
                 bestGoal = g;
