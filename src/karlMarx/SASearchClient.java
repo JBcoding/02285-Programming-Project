@@ -36,11 +36,13 @@ public class SASearchClient extends SearchClient {
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
+                if (currentState.isGoalState()){
+                    return solution;
+                }
                 Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
-                    System.err.println(currentGoals);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     if (plan.size() == 0) {
                         continue isGoalStateLoop;
@@ -87,7 +89,6 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
-//            System.err.println(leafNode);
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode.extractPlan();

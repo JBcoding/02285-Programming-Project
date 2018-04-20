@@ -91,6 +91,7 @@ public class BDI {
             }
 
             if (closestBox == null) {
+                System.err.println(n);
                 throw new IllegalStateException("TODO: No closest box.");
             }
 
