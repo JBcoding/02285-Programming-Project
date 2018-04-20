@@ -44,14 +44,14 @@ public class SASearchClient extends SearchClient {
                     currentState = plan.getLast();
                     // This is a new initialState so it must not have a parent for isInitialState method to work
                     currentState.parent = null;
-                    if (currentState.isGoalState()) {
-                        return solution;
-                    }
                 } else {
                     break;
                 }
             }
             Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+            if (plan.size() == 0) {
+                continue;
+            }
             solution.addAll(plan);
             currentState = plan.getLast();
             // This is a new initialState so it must not have a parent for isInitialState method to work
