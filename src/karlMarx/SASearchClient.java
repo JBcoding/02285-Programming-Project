@@ -25,6 +25,8 @@ public class SASearchClient extends SearchClient {
         Set<Goal> currentGoals = new HashSet<Goal>();
         
         List<Node> solution = new LinkedList<Node>();
+
+        isGoalStateLoop:
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
@@ -40,6 +42,9 @@ public class SASearchClient extends SearchClient {
                     penaltyMap = data.b;
                     System.err.println(currentGoals);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    if (plan.size() == 0) {
+                        continue isGoalStateLoop;
+                    }
                     solution.addAll(plan);
                     currentState = plan.getLast();
                     // This is a new initialState so it must not have a parent for isInitialState method to work
