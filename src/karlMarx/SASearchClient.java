@@ -29,6 +29,7 @@ public class SASearchClient extends SearchClient {
             //System.err.println(currentState);
 
             currentGoal = BDI.getGoal(currentState);
+            currentGoals.add(currentGoal);
             System.err.println("NEXT GOAL: " + currentGoal);
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
@@ -37,16 +38,19 @@ public class SASearchClient extends SearchClient {
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
+                    System.err.println(currentGoals);
                     Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     solution.addAll(plan);
                     currentState = plan.getLast();
                     // This is a new initialState so it must not have a parent for isInitialState method to work
                     currentState.parent = null;
+                    if (currentState.isGoalState()) {
+                        return solution;
+                    }
                 } else {
                     break;
                 }
             }
-            currentGoals.add(currentGoal);
             Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             solution.addAll(plan);
             currentState = plan.getLast();
@@ -64,7 +68,6 @@ public class SASearchClient extends SearchClient {
         case "-greedy": /* Fall-through */
         default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch));
         }
-        
         strategy.addToFrontier(state);
 
         int iterations = 0;
@@ -79,6 +82,7 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
+//            System.err.println(leafNode);
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode.extractPlan();
