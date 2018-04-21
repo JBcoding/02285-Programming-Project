@@ -88,9 +88,9 @@ public class MASearchClient {
                 Node.walls[currentState.agent.row][currentState.agent.col] = false;
                 currentState.boxList = lastBoxList;
 
-                System.err.println("Agent: " + currentState.agent);
-                System.err.println("STARTING FROM:");
-                System.err.println(currentState);
+//                System.err.println("Agent: " + currentState.agent);
+//                System.err.println("STARTING FROM:");
+//                System.err.println(currentState);
 
                 Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, initialStates, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
@@ -113,7 +113,7 @@ public class MASearchClient {
 
                 try {
                     if (!illegalBoxes.isEmpty()) {
-                        System.err.println("Trying to clear path.");
+//                        System.err.println("Trying to clear path.");
 
                         HashSet<Position> agentPositions = new HashSet<>();
 
@@ -126,7 +126,7 @@ public class MASearchClient {
                             }
                         }
 
-                        System.err.println(clearableIllegalPositions);
+//                        System.err.println(clearableIllegalPositions);
 
                         ArrayList<Box> boxesToMove = new ArrayList<>();
                         for (Box box : currentState.boxList) {
@@ -135,7 +135,7 @@ public class MASearchClient {
                             }
                         }
 
-                        System.err.println(boxesToMove);
+//                        System.err.println(boxesToMove);
 
                         ArrayList<Pair<Position, Character>> removedGoals = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class MASearchClient {
 
                         Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
                         if (plan == null) {
-                            System.err.println("Unable to clear path.");
+//                            System.err.println("Unable to clear path.");
                             continue;
                         }
 
@@ -171,11 +171,11 @@ public class MASearchClient {
                         pm.mergePlan(currentState.agent.id, plan);
                         solvedSomething = true;
                     } else if (solvableGoals.isEmpty()) {
-                        System.err.println("No solvable goals for agent: " + currentState.agent.id);
+//                        System.err.println("No solvable goals /for agent: " + currentState.agent.id);
                         continue;
                     } else {
                         Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
-                        System.err.println("NEXT GOAL: " + currentGoal);
+//                        System.err.println("NEXT GOAL: " + currentGoal);
 
                         // Remove walls from agent positions to enable BFS
                         HashSet<Position> agentPositions = new HashSet<>();
@@ -225,7 +225,7 @@ public class MASearchClient {
                             Node.walls[pos.row][pos.col] = true;
                         }
 
-                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
+//                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
 
                         if (!illegalBoxes.isEmpty()) {
                             illegalByAgent = i;
@@ -235,7 +235,7 @@ public class MASearchClient {
                             continue;
                         }
 
-                        System.err.println("AGENT POSITIONS " + agentPositions);
+//                        System.err.println("AGENT POSITIONS " + agentPositions);
 
                         List<Box> boxesToMove = null;
                         int[][] penaltyMap = null;
@@ -246,13 +246,13 @@ public class MASearchClient {
                             if (data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
-                                System.err.println("MOVE BOXES: " + boxesToMove);
+//                                System.err.println("MOVE BOXES: " + boxesToMove);
                                 Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
                                 if (plan == null) {
-                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
+//                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
                                 }
-                                System.err.println(currentState);
+//                                System.err.println(currentState);
                                 currentState = plan.getLast();
                                 // This is a new initialState so it must not have a parent for isInitialState method to work
                                 currentState.parent = null;
@@ -263,13 +263,13 @@ public class MASearchClient {
                             }
                         }
 
-                        System.err.println("SOLVE GOAL: " + currentGoal);
+//                        System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
                         Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
 
                         if (plan == null) {
-                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
+//                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
                             continue;
                         }
                         pm.mergePlan(currentState.agent.id, plan);
@@ -295,7 +295,7 @@ public class MASearchClient {
                 return null;
             }
 
-            System.err.println("Running agents again.");
+//            System.err.println("Running agents again.");
         }
 
         return pm.getPlan();
@@ -433,14 +433,14 @@ public class MASearchClient {
             default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
         }
 
-        System.err.println(currentGoals);
+//        System.err.println(currentGoals);
 
         strategy.addToFrontier(state);
 
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(searchStatus(strategy));
+                System.err.println(searchStatus());
                 iterations = 0;
             }
 
@@ -466,9 +466,74 @@ public class MASearchClient {
         }
     }
 
+<<<<<<< HEAD
     public String searchStatus(Strategy strategy) { {
         return strategy.searchStatus() + "\n" + Heuristic.t1 + "\n" + Heuristic.t2 + "\n" + Heuristic.t3;
+=======
+    private Deque<Node> getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
+        Strategy strategy;
+
+        switch (strategyArg) {
+            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, null, null, null)); break;
+            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, null, null, null)); break;
+            case "-greedy": /* Fall-through */
+            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, null, null, null));
+        }
+
+//        System.err.println(currentGoals);
+
+        strategy.addToFrontier(state);
+
+        int iterations = 0;
+        while (true) {
+            if (iterations == 10000) {
+                System.err.println(searchStatus());
+                iterations = 0;
+            }
+
+            if (strategy.frontierIsEmpty()) {
+                return null;
+            }
+
+            Node leafNode = strategy.getAndRemoveLeaf();
+
+            boolean illegalBox = false;
+            for (Box box : leafNode.boxList) {
+                if (box.color == leafNode.agent.color && illegalPositions.contains(new Position(box.row, box.col))) {
+                    illegalBox = true;
+                }
+            }
+
+            // TODO: getting no help from the heuristic right now
+            // Can I just pass the penalty map?
+            if (leafNode.isGoalState(currentGoals, null, null) &&
+                    !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col)) &&
+                    !illegalBox) {
+                return leafNode.extractPlan();
+            }
+
+            strategy.addToExplored(leafNode);
+            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
+                    strategy.addToFrontier(n);
+                }
+            }
+
+            iterations++;
+        }
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
     }
+
+    public String searchStatus() {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < strategies.length; i++) {
+            Strategy strategy = strategies[i];
+            s.append("Status for agent ");
+            s.append(i);
+            s.append(": ");
+            s.append(strategy.searchStatus());
+        }
+        return s.toString();
     }
 
 }

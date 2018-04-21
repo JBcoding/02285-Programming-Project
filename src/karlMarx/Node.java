@@ -5,7 +5,7 @@ import java.util.*;
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(2);
+    private static final Random RND = new Random(3);
 
     public static boolean IS_SINGLE = true;
 
@@ -552,10 +552,10 @@ public class Node {
                     s.append(box.letter);
                 } else if (row == this.agent.row && col == this.agent.col) {
                     s.append(agent.id);
-                } else if (Node.walls[row][col]) {
-                    s.append("+");
                 } else if (goal != null) {
                     s.append(goal.letter);
+                } else if (Node.walls[row][col]) {
+                    s.append("+");
                 } else {
                     s.append(" ");
                 }
@@ -582,4 +582,5 @@ public class Node {
         }
         return null;
     }
+    
 }

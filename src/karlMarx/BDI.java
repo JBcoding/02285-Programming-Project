@@ -3,7 +3,6 @@ package karlMarx;
 import java.util.*;
 
 public class BDI {
-    public static void main(String[] args) {
         /*
             Agent Control Loop Version 2
             1. B := B0                 // initial beliefs
@@ -31,86 +30,6 @@ public class BDI {
             currentState.execute(plan);
         }
         */
-        /*
-
-         */
-        /*Node n = new Node(new Agent(3, 6, 0, Color.BLUE));
-        Node.walls = new boolean[][]{{false, true, true, true, true, true, false, true, true, true, true, true, true, false, false},
-                {false, true, false, false, false, true, true, true, false, false, false, false, true, false, false},
-                {false, true, true, false, false, false, false, false, true, false, false, true, false, true, false},
-                {false, true, false, false, false, false, false, false, false, false, false, false, false, true, true},
-                {false, true, false, true, false, false, true, true, false, true, false, false, false, false, true},
-                {false, true, false, false, true, true, false, false, false, true, false, true, true, false, true},
-                {false, true, true, false, false, false, false, false, false, false, false, false, false, false, true},
-                {false, true, false, false, false, false, true, false, true, false, false, false, false, true, false},
-                {false, true, false, false, false, true, false, false, false, true, false, false, true, true, false},
-                {false, true, true, true, true, true, false, false, false, false, false, false, true, false, false},
-                {false, false, false, false, false, true, true, true, true, false, false, true, true, false, false},
-                {false, false, false, false, false, false, false, false, true, true, true, true, false, false, false}};
-        Node.goalSet = new HashSet<>();
-        Node.goalSet.add(new Goal(7, 9, 's'));
-        Node.goalSet.add(new Goal(7, 12, 's'));
-        Node.goalSet.add(new Goal(6, 12, 's'));
-        Node.goalSet.add(new Goal(4, 11, 's'));
-        Node.goalSet.add(new Goal(6, 13, 's'));
-        Node.goalSet.add(new Goal(4, 12, 's'));
-        Node.goalSet.add(new Goal(5, 13, 's'));
-        Node.goalSet.add(new Goal(4, 13, 's'));
-        n.boxList = new ArrayList<>();
-        n.boxList.add(new Box(2, 4, 'S', Color.BLUE));
-        n.boxList.add(new Box(2, 6, 'S', Color.BLUE));
-        n.boxList.add(new Box(2, 9, 'S', Color.BLUE));
-        n.boxList.add(new Box(2, 12, 'S', Color.BLUE));
-        n.boxList.add(new Box(3, 4, 'S', Color.BLUE));
-        n.boxList.add(new Box(3, 8, 'S', Color.BLUE));
-        n.boxList.add(new Box(3, 11, 'S', Color.BLUE));
-        n.boxList.add(new Box(5, 7, 'S', Color.BLUE));
-        n.boxList.add(new Box(6, 5, 'S', Color.BLUE));
-        n.boxList.add(new Box(7, 3, 'S', Color.BLUE));
-        n.boxList.add(new Box(7, 4, 'S', Color.BLUE));
-        n.boxList.add(new Box(7, 7, 'S', Color.BLUE));
-        n.boxList.add(new Box(8, 10, 'S', Color.BLUE));
-        n.boxList.add(new Box(9, 7, 'S', Color.BLUE));
-
-
-        //n.boxList.add(new Box(7, 9, 'S', Color.BLUE));
-        //n.boxList.add(new Box(7, 12, 'S', Color.BLUE));
-        //n.boxList.add(new Box(6, 12, 'S', Color.BLUE));
-        //n.boxList.add(new Box(4, 11, 'S', Color.BLUE));
-        //n.boxList.add(new Box(6, 13, 'S', Color.BLUE));
-        //n.boxList.add(new Box(4, 12, 'S', Color.BLUE));
-        //n.boxList.add(new Box(5, 13, 'S', Color.BLUE));
-        //n.boxList.add(new Box(4, 13, 'S', Color.BLUE));
-        System.out.println(getGoal(n));*/
-
-
-        Node n = new Node(new Agent(1, 3, 0, Color.BLUE));
-        Node.walls = new boolean[][]{
-                {true, true, true, true, true, true, true},
-                {true, false, false, false, false, false, true},
-                {true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true},
-                {true, true, true, true, true, true, true}
-        };
-        Node.goalSet = new HashSet<>();
-        Node.goalSet.add(new Goal(2, 5, 'a'));
-        Node.goalSet.add(new Goal(3, 5, 'b'));
-        Node.goalSet.add(new Goal(4, 5, 'c'));
-        Node.goalSet.add(new Goal(5, 5, 'd'));
-        Node.goalSet.add(new Goal(6, 5, 'e'));
-        n.boxList = new ArrayList<>();
-        n.boxList.add(new Box(2, 1, 'D', Color.BLUE));
-        n.boxList.add(new Box(3, 1, 'B', Color.BLUE));
-        n.boxList.add(new Box(4, 1, 'A', Color.BLUE));
-        n.boxList.add(new Box(5, 1, 'C', Color.BLUE));
-        n.boxList.add(new Box(6, 1, 'E', Color.BLUE));
-        Goal g = getGoal(n);
-        System.out.println(g);
-        System.out.println(boxToMove(n, g));
-    }
 
     public static final int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
     public static final Command.Dir[] deltasDirection = new Command.Dir[]{Command.Dir.S, Command.Dir.N, Command.Dir.E, Command.Dir.W};
@@ -173,6 +92,7 @@ public class BDI {
             }
 
             if (closestBox == null) {
+                System.err.println(n);
                 throw new IllegalStateException("TODO: No closest box.");
             }
 
@@ -443,6 +363,7 @@ public class BDI {
             for (int i = 0; i < 4; i++) {
                 goalScore += (map[g.row + deltas[i][0]][g.col + deltas[i][1]] == '+') ? .2 : 0;
             }
+            goalScore += .2 - ((double)(Heuristic.shortestDistance[g.row][g.col][n.agent.row][n.agent.col]) / 5000.);
             if (goalScore > bestGoalScore) {
                 bestGoalScore = goalScore;
                 bestGoal = g;
@@ -450,5 +371,17 @@ public class BDI {
         }
         
         return bestGoal;
+    }
+
+    public static void removeUnreachableBoxesFromBoxlist(Node currentState) {
+        return;
+//        Agent agent = currentState.agent;
+//        List<Box> list = currentState.boxList;
+//        for (int i = list.size(); i >= 0; i--) {
+//            Box box = list.get(i);
+//            if (Heuristic.shortestDistance[box.row][box.col][agent.row][agent.col] < 0) {
+//                list.remove(i);
+//            }
+//        }
     }
 }

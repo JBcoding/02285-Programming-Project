@@ -195,7 +195,7 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
         Set<Goal> activegoals = new HashSet<Goal>();
-        
+
         if (currentGoals == null) {
             activegoals.addAll(Node.goalSet);
         } else {
@@ -218,9 +218,12 @@ public abstract class Heuristic implements Comparator<Node> {
         Set<Goal> tempActiveGoals = activegoals;
         Set<Box> tempActiveBoxes = activeboxes;
 
+<<<<<<< HEAD
         t1 += System.nanoTime() - t;
         t = System.nanoTime();
 
+=======
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         while (!tempActiveGoals.isEmpty()) {
             Box nearestBox = null;
             Goal nearestGoal = null;
@@ -261,15 +264,22 @@ public abstract class Heuristic implements Comparator<Node> {
             // System.err.println(nearestGoal + " " + nearestBox);
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
+<<<<<<< HEAD
+=======
+
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         }
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
         // System.err.println(currentGoals);
         // System.err.println();
 
 
+<<<<<<< HEAD
         t2 += System.nanoTime() - t;
         t = System.nanoTime();
 
+=======
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         if (boxesToMove != null) {
             for (Box b1 : n.boxList) {
                 if (boxesToMove.contains(b1.id)) {
@@ -328,231 +338,10 @@ public abstract class Heuristic implements Comparator<Node> {
                 .filter(g -> Character.toLowerCase(b.letter) == g.letter)
                 .forEach(g -> n.h += this.shortestDistance[b.row][b.col][g.row][g.col]);
         }*/
-        
+
         return n.h;
     }
 
-    // Not used atm
-	/*
-    public int hPairingDistanceDeadlockPenalty(Node n) {
-        /* to improve this further, I could e.g.:
-         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
-         and then shortest paths can be checked for whether the contain other goal cells,
-         e.g. The current heuristics work very well when there are no conflicts,
-         but breaks down when there is a lot of conflicts between subgoals.
-
-         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals.
-         This can be computed by checking whether putting a box on the goal
-         would make some unfulfilled goals be in a connected component distinct from the one containing the agent.
-         This would however require computing connected components in each state,
-         that is, run a BFS or DFS, which might turn out to be too computationally expensive.
-
-         3) Choose more efficient data structures if possible,
-         in particular the HashSet for active goals and active boxes.
-         *//*
-        n.h = 1;
-        // start searching from the agent position
-        int currentRow = n.agentRow;
-        int currentCol = n.agentCol;
-        // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals = new HashSet<Goal>();
-        
-        for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
-                activegoals.add(g);
-                // goal count heuristics: add maxdist for all unsatisfied goals
-                n.h = n.h + 2; // add between 1 and maxdist;
-            }
-            
-        }
-         
-        // initialise activeboxes with all boxes not on goal cells
-        HashSet<Box> activeboxes = new HashSet<Box>();
-        for (int row = 0; row < Node.MAX_ROW; row++) {
-            for (int col = 0; col < Node.MAX_COL; col++) {
-                char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && letter != Node.goals[row][col]) { // box at [row][col]
-                    activeboxes.add(new Box(row,col,letter));
-                    if ((Node.walls[row+1][col] && Node.walls[row][col+1]) ||
-                       (Node.walls[row-1][col] && Node.walls[row][col-1]) ||
-                        (Node.walls[row+1][col] && Node.walls[row][col-1]) ||
-                        (Node.walls[row-1][col] && Node.walls[row][col+1]))
-                    {
-                        return Integer.MAX_VALUE;
-                    }
-                }
-            }
-        }
-        while (!activegoals.isEmpty()) {
-            Box nearestBox = null;
-            Goal nearestGoal = null;
-            while (nearestGoal==null) {
-                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
-                int distToBox = Integer.MAX_VALUE;
-                for (Box b: activeboxes) {
-                    if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
-                        nearestBox = b;
-                        distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
-                    }
-                }
-                // remove the chosen box from the list of active boxes
-                activeboxes.remove(nearestBox);
-                // find the nearest same-letter active goal to the chosen box (if exists)
-                int distToGoal = Integer.MAX_VALUE;
-                for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] < distToGoal) {
-                        nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
-                    }
-                }
-            }
-            // remove the chosen goal from the list of active goals
-            activegoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a
-            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h
-                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
-            currentRow = nearestGoal.row;
-            currentCol = nearestGoal.col;
-        }
-        return n.h;
-    }
-    
-    public int hPairingDistanceFurthestGoal(Node n) {
-        n.h = 1;
-        // start searching from the agent position
-        int currentRow = n.agentRow;
-        int currentCol = n.agentCol;
-        // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals = new HashSet<Goal>();
-        
-        for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
-                activegoals.add(g);
-                // goal count heuristics: add maxdist for all unsatisfied goals
-                n.h = n.h + 2; // add between 1 and maxdist;
-            }
-            
-        }
-        
-        // initialise activeboxes with all boxes not on goal cells
-        HashSet<Box> activeboxes = new HashSet<Box>();
-        for (int row = 0; row < Node.MAX_ROW; row++) {
-            for (int col = 0; col < Node.MAX_COL; col++) {
-                char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && letter != Node.goals[row][col]) { // box at [row][col]
-                    activeboxes.add(new Box(row,col,letter));
-                }
-            }
-        }
-        while (!activegoals.isEmpty()) {
-            Box nearestBox = null;
-            Goal furthestGoal = null;
-            while (furthestGoal==null) {
-                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
-                int distToBox = Integer.MAX_VALUE;
-                for (Box b: activeboxes) {
-                    if (this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol] < distToBox) {
-                        nearestBox = b;
-                        distToBox = this.shortestDistance[b.position.row][b.position.col][currentRow][currentCol];
-                    }
-                }
-                // remove the chosen box from the list of active boxes
-                activeboxes.remove(nearestBox);
-                // find the furtherst away same-letter active goal to the chosen box (if exists)
-                int distToGoal = 0; // Integer.MAX_VALUE;
-                for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] > distToGoal) {
-                        furthestGoal = g;
-                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
-                    }
-                }
-            }
-            // remove the chosen goal from the list of active goals
-            activegoals.remove(furthestGoal);
-            // add to the heuristics the number of actions required to go from a
-            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
-            n.h = n.h
-                    + this.shortestDistance[currentRow][currentCol][nearestBox.row][nearestBox.col]
-                    + this.shortestDistance[nearestBox.row][nearestBox.col][furthestGoal.row][furthestGoal.col] - 2;
-            currentRow = furthestGoal.row;
-            currentCol = furthestGoal.col;
-        }
-        return n.h;
-    }
-    
-    public int hGoalCount(Node n) { // pure goal count heuristics
-        n.h = 0;
-        for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) n.h = n.h + 1;
-        }
-        return n.h;
-    }
-    
-    public int hGoalCountPlusNearest(Node n) {
-        // this heuristics adds:
-        // 1) a goal count multiplied by 2*maxdist,
-        // the maximal number of actions required to take a box to a goal if the path is not blocked
-        // 2) the distance to the nearest relevant box and its distance to the nearest relevant goal
-        // It has not been optimised for performance (e.g. choice of data structures)
-        if (n.isGoalState()) return n.h = 0;
-        n.h = 0;
-        // initialise activegoals with all unsatisfied goals
-        HashSet<Goal> activegoals = new HashSet<Goal>();
-        
-        for (Goal g: goalcells) {
-            if (Character.toLowerCase(n.boxes[g.position.row][g.position.col]) != g.letter) {
-                activegoals.add(g);
-                // goal count heuristics: add maxdist for all unsatisfied goals
-                n.h = n.h + 2*maxdist;
-            }
-            
-        }
-        
-        // initialise activeboxes with all boxes not on goal cells and for which a goal cell of that letter exists
-        //System.err.println();
-        HashSet<Box> activeboxes = new HashSet<Box>();
-        for (int row = 0; row < Node.MAX_ROW; row++) {
-            for (int col = 0; col < Node.MAX_COL; col++) {
-                char letter = Character.toLowerCase(n.boxes[row][col]);
-                if (letter > 0 && isgoalletter[letter-'a']==1 && letter != Node.goals[row][col]) { // box at [row][col]
-                    activeboxes.add(new Box(row,col,letter));
-                   // System.err.print("("+col+","+row+")");
-                }
-            }
-        }
-        Box nearestBox = null;
-        Goal nearestGoal = null;
-        while (nearestGoal==null) {
-            // find the nearest active box to agent and find the distance to it
-            int distToBox = Integer.MAX_VALUE;
-            for (Box b: activeboxes) {
-                if (this.shortestDistance[b.position.row][b.position.col][n.agentRow][n.agentCol] < distToBox) {
-                        nearestBox = b;
-                        distToBox = this.shortestDistance[b.position.row][b.position.col][n.agentRow][n.agentCol];
-                    }
-                }
-                // remove the chosen box from the list of active boxes
-                activeboxes.remove(nearestBox);
-                // find the nearest same-letter active goal to the chosen box (if exists)
-                int distToGoal = Integer.MAX_VALUE;
-                for (Goal g: activegoals) {
-                    if (nearestBox.letter == g.letter
-                            && this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col] < distToGoal) {
-                        nearestGoal = g;
-                        distToGoal = this.shortestDistance[g.position.row][g.position.col][nearestBox.row][nearestBox.col];
-                    }
-                }
-            }
-            n.h = n.h
-                    + this.shortestDistance[n.agentRow][n.agentCol][nearestBox.row][nearestBox.col]
-                    + this.shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 1;
-        return n.h;
-    }
-*/
     public int h(Node n) {
         //return 0;
         return hPairingDistance(n); // default heuristics. Best performing on warmup levels

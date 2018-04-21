@@ -20,26 +20,44 @@ public class SASearchClient extends SearchClient {
         System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
         
         Node currentState = initialStates.get(0);
+        BDI.removeUnreachableBoxesFromBoxlist(currentState);
         Goal currentGoal;
         Set<Goal> currentGoals = new HashSet<Goal>();
         
+<<<<<<< HEAD
         List<Command> solution = new ArrayList<Command>();
+=======
+        List<Node> solution = new LinkedList<Node>();
+
+        isGoalStateLoop:
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
             currentGoal = BDI.getGoal(currentState);
+            currentGoals.add(currentGoal);
             System.err.println("NEXT GOAL: " + currentGoal);
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
+                if (currentState.isGoalState()){
+                    return solution;
+                }
                 Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
+<<<<<<< HEAD
                     //System.err.println(currentState);
                     //System.err.println("MOVE BOXES: " + boxesToMove);
                     Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     List<Command> plan = lastNode.extractPlanNew();
+=======
+                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    if (plan.size() == 0) {
+                        continue isGoalStateLoop;
+                    }
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
                     solution.addAll(plan);
                     currentState = lastNode;
                     // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -48,11 +66,18 @@ public class SASearchClient extends SearchClient {
                     break;
                 }
             }
+<<<<<<< HEAD
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
             Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             List<Command> plan = lastNode.extractPlanNew();
+=======
+            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+            if (plan.size() == 0) {
+                continue;
+            }
+>>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
             solution.addAll(plan);
             currentState = lastNode;
             // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -69,7 +94,6 @@ public class SASearchClient extends SearchClient {
         case "-greedy": /* Fall-through */
         default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch));
         }
-        
         strategy.addToFrontier(state);
 
         int iterations = 0;

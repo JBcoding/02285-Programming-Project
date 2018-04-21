@@ -59,7 +59,7 @@ public class Test {
         try (DirectoryStream<Path> stream =
            Files.newDirectoryStream(currPath, saOrMa + "SA*.lvl")) {
                for (Path entry: stream) {
-                   System.out.println(entry);
+                   System.out.println(entry.toAbsolutePath().toString().substring(0, entry.toAbsolutePath().toString().lastIndexOf("/")));
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
                    String s = runJob(copy);
