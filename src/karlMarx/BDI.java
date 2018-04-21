@@ -113,6 +113,7 @@ public class BDI {
     }
 
     public static final int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    public static final Command.Dir[] deltasDirection = new Command.Dir[]{Command.Dir.S, Command.Dir.N, Command.Dir.E, Command.Dir.W};
 
     public static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];

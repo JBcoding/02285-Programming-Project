@@ -467,7 +467,7 @@ public class MASearchClient {
     }
 
     public String searchStatus(Strategy strategy) { {
-        return strategy.searchStatus();
+        return strategy.searchStatus() + "\n" + Heuristic.t1 + "\n" + Heuristic.t2 + "\n" + Heuristic.t3;
     }
     }
 

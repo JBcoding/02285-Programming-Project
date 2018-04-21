@@ -1,8 +1,6 @@
 package karlMarx;
 
-import java.io.CharArrayReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import karlMarx.Command.Type;
 
@@ -28,12 +26,15 @@ public class Node {
 
     public static boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
     public ArrayList<Box> boxList = new ArrayList<>();
+    public ArrayList<Box> boxListSorted;
+    public int boxListSortedHashCode = 0;
     public static Set<Goal> goalSet = new HashSet<Goal>();
     public static char[][] goals = new char[MAX_ROW][MAX_COL];
     public static HashMap<Character, ArrayList<Goal>> goalMap = new HashMap<Character, ArrayList<Goal>>();
 
     public Node parent;
     public Command action;
+    public List<Command> actions;
 
     private int g;
 
@@ -51,7 +52,7 @@ public class Node {
     }
 
     public Node(Agent agent) {
-        this((Node)null);
+        this((Node) null);
         this.g = 0;
         this.agent = agent;
     }
@@ -115,6 +116,76 @@ public class Node {
         return isGoalState(goals, null, null);
     }
 
+    public static void quickApplyCommands(Node n, List<Command> cmds) {
+        for (Command c : cmds) {
+            int newAgentRow = n.agent.row + Command.dirToRowChange(c.dir1);
+            int newAgentCol = n.agent.col + Command.dirToColChange(c.dir1);
+
+            if (c.actionType == Type.Move) {
+                // Check if there's a wall or box on the cell to which the agent is moving
+                if (n.cellIsFree(newAgentRow, newAgentCol)) {
+                    n.agent.row = newAgentRow;
+                    n.agent.col = newAgentCol;
+                }
+            } else if (c.actionType == Type.Push) {
+                // Make sure that there's actually a box to move
+                Box b = n.findBox(newAgentRow, newAgentCol);
+                if (b != null && n.agent.color == b.color) {
+                    int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
+                    int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
+                    // .. and that new cell of box is free
+                    if (n.cellIsFree(newBoxRow, newBoxCol)) {
+                        n.agent.row = newAgentRow;
+                        n.agent.col = newAgentCol;
+                        // Change box position in boxList
+                        for (int i = 0; i < n.boxList.size(); i++) {
+                            Box box = n.boxList.get(i);
+                            if (box.isOn(new Position(newAgentRow, newAgentCol))) {
+                                box = box.copy();
+                                box.row = newBoxRow;
+                                box.col = newBoxCol;
+                                n.boxList.set(i, box);
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else if (c.actionType == Type.Pull) {
+                // Cell is free where agent is going
+                if (n.cellIsFree(newAgentRow, newAgentCol)) {
+                    int boxRow = n.agent.row + Command.dirToRowChange(c.dir2);
+                    int boxCol = n.agent.col + Command.dirToColChange(c.dir2);
+                    // .. and there's a box in "dir2" of the agent
+                    Box b = n.findBox(boxRow, boxCol);
+                    if (b != null && n.agent.color == b.color) {
+                        int ar = n.agent.row;
+                        int ac = n.agent.col;
+                        n.action = c;
+                        n.agent.row = newAgentRow;
+                        n.agent.col = newAgentCol;
+                        // Change box position in boxList
+                        for (int i = 0; i < n.boxList.size(); i++) {
+                            Box box = n.boxList.get(i);
+                            if (box.isOn(new Position(boxRow, boxCol))) {
+                                box = box.copy();
+                                box.row = ar;
+                                box.col = ac;
+                                n.boxList.set(i, box);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        n.boxListSorted = new ArrayList<>();
+        n.boxListSorted.addAll(n.boxList);
+        n.insertionSortOneLoop(n, 0);
+        n.boxListSortedHashCode = n.boxListSorted.hashCode();
+        n.actions = cmds;
+        n.g += cmds.size() - 1;
+    }
+
     public Node getNodeFromCommand(Command c) {
         // Determine applicability of action
         int newAgentRow = this.agent.row + Command.dirToRowChange(c.dir1);
@@ -149,6 +220,11 @@ public class Node {
                             box.row = newBoxRow;
                             box.col = newBoxCol;
                             n.boxList.set(i, box);
+
+                            n.boxListSorted = new ArrayList<>();
+                            n.boxListSorted.addAll(n.boxList);
+                            insertionSortOneLoop(n, i);
+                            n.boxListSortedHashCode = n.boxListSorted.hashCode();
                             break;
                         }
                     }
@@ -175,6 +251,11 @@ public class Node {
                             box.row = this.agent.row;
                             box.col = this.agent.col;
                             n.boxList.set(i, box);
+
+                            n.boxListSorted = new ArrayList<>();
+                            n.boxListSorted.addAll(n.boxList);
+                            insertionSortOneLoop(n, i);
+                            n.boxListSortedHashCode = n.boxListSorted.hashCode();
                             break;
                         }
                     }
@@ -185,8 +266,154 @@ public class Node {
         return null;
     }
 
+    private void insertionSortOneLoop(Node n, int index) {
+        /*int i = index;
+
+        List<Box> lll = new ArrayList<>(n.boxListSorted);
+        //System.err.println(index);
+        //System.err.println("A: " + n.boxListSorted);
+        while (index > 0 && n.boxListSorted.get(index).compareTo(n.boxListSorted.get(index - 1)) > 0) {
+            Box temp = n.boxListSorted.get(index);
+            n.boxListSorted.set(index, n.boxListSorted.get(index - 1));
+            n.boxListSorted.set(index - 1, temp);
+            index --;
+        }
+        while (index < n.boxListSorted.size() - 1 && n.boxListSorted.get(index).compareTo(n.boxListSorted.get(index + 1)) < 0) {
+            Box temp = n.boxListSorted.get(index);
+            n.boxListSorted.set(index, n.boxListSorted.get(index + 1));
+            n.boxListSorted.set(index + 1, temp);
+            index ++;
+        }*/
+        //List<Box> l = new ArrayList<>(n.boxListSorted);
+        Collections.sort(n.boxListSorted);
+        /*if (!l.equals(n.boxListSorted)) {
+            System.err.println("ERR");
+            System.err.println(i);
+            System.err.println(lll);
+            System.err.println(n.boxListSorted);
+            System.err.println(l);
+            System.err.println(index);
+        }*/
+        //System.err.println("B: " + n.boxListSorted);
+        //System.err.println(index);
+    }
+
     public ArrayList<Node> getExpandedNodes() {
+        return getExpandedNodes(null);
+    }
+
+    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
+
+        List<SearchState> statesOfInterest = new ArrayList<>();
+
+        char[][] map = BDI.recreateMap(this, true, true, false);
+        Set<SearchState> seen = new HashSet<>();
+        Queue<SearchState> queue = new ArrayDeque<>();
+        SearchState startState = new SearchState(agent);
+        queue.add(startState);
+        seen.add(startState);
+        for (Box b : boxList) {
+            int distanceSquared = (int) (Math.pow(b.row - agent.row, 2) + Math.pow(b.col - agent.col, 2));
+            if (distanceSquared == 1) {
+                startState = new SearchState(agent);
+                startState.setBoxPosition(new Position(b));
+                startState.setBox(b);
+                startState.setPulling(true);
+                queue.add(startState);
+                seen.add(startState);
+
+                startState = startState.copy();
+                startState.swapPullPush();
+                queue.add(startState);
+                seen.add(startState);
+            }
+        }
+        while (!queue.isEmpty()) {
+            SearchState ss = queue.poll();
+            seen.add(ss);
+            Position p = ss.getPosition();
+            if (ss.getBox() == null) {
+                for (int i = 0; i < BDI.deltas.length; i++) {
+                    int dr = BDI.deltas[i][0]; // delta row
+                    int dc = BDI.deltas[i][1]; // delta col
+                    if (p.row + dr < 0 || p.col + dc < 0 || p.row + dr >= Node.MAX_ROW || p.col + dc >= Node.MAX_COL) {
+                        continue;
+                    }
+                    if (Character.isAlphabetic(map[p.row + dr][p.col + dc])) { // box
+                        statesOfInterest.add(ss);
+                    }
+                    SearchState newState = new SearchState(new Position(p.row + dr, p.col + dc), ss, new Command(BDI.deltasDirection[i]));
+                    if (!seen.contains(newState) && map[p.row + dr][p.col + dc] == ' ') {
+                        seen.add(newState);
+                        queue.add(newState);
+                    }
+                }
+            } else {
+                if (goals[ss.getBoxPosition().row][ss.getBoxPosition().col] == Character.toLowerCase(ss.getBox().letter)) {
+                    statesOfInterest.add(ss);
+                } else if (penaltyMap != null) {
+                    if (penaltyMap[ss.getBoxPosition().row][ss.getBoxPosition().col] <= 0) {
+                        statesOfInterest.add(ss); // TODO: choose states smarter here
+                    }
+                }
+                map[ss.getBox().row][ss.getBox().col] = ' ';
+                boolean canTurnAround = false;
+                int countClearSpotsAround = 0;
+                for (int i = 0; i < BDI.deltas.length; i++) {
+                    int dr = BDI.deltas[i][0]; // delta row
+                    int dc = BDI.deltas[i][1]; // delta col
+                    if (p.row + dr < 0 || p.col + dc < 0 || p.row + dr >= Node.MAX_ROW || p.col + dc >= Node.MAX_COL) {
+                        continue;
+                    }
+                    if (map[p.row + dr][p.col + dc] == ' ') {
+                        countClearSpotsAround += 1;
+                    }
+                }
+                if (countClearSpotsAround >= 3) { // on of the is the box
+                    canTurnAround = true;
+                }
+                for (int i = 0; i < BDI.deltas.length; i++) {
+                    int dr = BDI.deltas[i][0]; // delta row
+                    int dc = BDI.deltas[i][1]; // delta col
+                    if (ss.isPulling()) {
+                        if (p.row + dr < 0 || p.col + dc < 0 || p.row + dr >= Node.MAX_ROW || p.col + dc >= Node.MAX_COL) {
+                            continue;
+                        }
+                        Position newP = new Position(p.row + dr, p.col + dc);
+                        if (map[p.row + dr][p.col + dc] == ' ' && !ss.getBoxPosition().equals(newP)) {
+                            // we can pull this way
+                            SearchState newState = new SearchState(newP, ss, new Command(Type.Pull, BDI.deltasDirection[i], getDirectionFromPositions(p, ss.getBoxPosition())));
+                            newState.setBoxPosition(p);
+                            addToQueue(canTurnAround, newState, queue, seen, ss, statesOfInterest);
+                        }
+                    } else {
+                        // pushing
+                        Position bp = ss.getBoxPosition();
+                        if (bp.row + dr < 0 || bp.col + dc < 0 || bp.row + dr >= Node.MAX_ROW || bp.col + dc >= Node.MAX_COL) {
+                            continue;
+                        }
+                        Position newP = new Position(bp.row + dr, bp.col + dc);
+                        if (map[bp.row + dr][bp.col + dc] == ' ' && !newP.equals(p)) {
+                            SearchState newState = new SearchState(bp, ss, new Command(Type.Push, getDirectionFromPositions(p, bp), BDI.deltasDirection[i]));
+                            newState.setBoxPosition(newP);
+                            addToQueue(canTurnAround, newState, queue, seen, ss, statesOfInterest);
+                        }
+                    }
+                }
+                map[ss.getBox().row][ss.getBox().col] = ss.getBox().letter;
+            }
+        }
+        long t = System.nanoTime();
+        for (SearchState ss : statesOfInterest) {
+            Node n = this.ChildNode();
+            quickApplyCommands(n, ss.backTrack());
+            expandedNodes.add(n);
+        }
+        t1 += System.nanoTime() - t;
+        Collections.shuffle(expandedNodes, RND);
+        return expandedNodes;
+        /*
         for (Command c : Command.EVERY) {
             Node n = getNodeFromCommand(c);
             if (n != null) {
@@ -195,7 +422,42 @@ public class Node {
         }
 
         Collections.shuffle(expandedNodes, RND);
-        return expandedNodes;
+        return expandedNodes;*/
+    }
+
+    public static long t1 = 0;
+
+    private Command.Dir getDirectionFromPositions(Position p1, Position p2) {
+        if (p1.row > p2.row) {
+            return Command.Dir.N;
+        } else if (p1.row < p2.row) {
+            return Command.Dir.S;
+        } else if (p1.col > p2.col) {
+            return Command.Dir.W;
+        } else {
+            return Command.Dir.E;
+        }
+    }
+
+    private void addToQueue(boolean canTurnAround, SearchState newState, Queue<SearchState> queue, Set<SearchState> seen, SearchState ss, List<SearchState> statesOfInterest) {
+        if (canTurnAround) {
+            newState.setHasTurnedAround();
+        }
+        if (!seen.contains(newState)) {
+            seen.add(newState);
+            queue.add(newState);
+            if (canTurnAround && !ss.hasTurnedAround()) {
+                statesOfInterest.add(newState);
+            }
+        }
+        if (canTurnAround) {
+            newState = newState.copy();
+            newState.swapPullPush();
+            if (!seen.contains(newState)) {
+                seen.add(newState);
+                queue.add(newState);
+            }
+        }
     }
 
     public static boolean inBounds(Position pos) {
@@ -222,7 +484,19 @@ public class Node {
     protected Node ChildNode() {
         Node copy = new Node(this);
         copy.boxList.addAll(boxList);
+        copy.boxListSorted = this.boxListSorted;
+        copy.boxListSortedHashCode = boxListSortedHashCode;
         return copy;
+    }
+
+    public List<Command> extractPlanNew() {
+        if (actions == null || parent == null) {
+            return new ArrayList<>();
+        } else {
+            List<Command> plan = parent.extractPlanNew();
+            plan.addAll(actions);
+            return plan;
+        }
     }
 
     public LinkedList<Node> extractPlan() {
@@ -243,10 +517,7 @@ public class Node {
             int result = 1;
             result = prime * result + this.agent.hashCode();
             //result = prime * result + boxList.hashCode();
-            result = prime * result + boxList
-                    .stream()
-                    .sorted()
-                    .collect(Collectors.toList()).hashCode();
+            result = prime * result + boxListSortedHashCode;
             this._hash = result;
         }
         return this._hash;
@@ -264,13 +535,7 @@ public class Node {
         if (!this.agent.equals(other.agent))
             return false;
         //if (!boxList.equals(other.boxList))
-        if (!boxList.stream()
-                .sorted()
-                .collect(Collectors.toList())
-                .equals(other.boxList
-                        .stream()
-                        .sorted()
-                        .collect(Collectors.toList())))
+        if (!boxListSorted.equals(other.boxListSorted))
             return false;
         return true;
     }

@@ -84,6 +84,10 @@ public class LevelReader {
                 boxListCopy.add(box.copy());
             }
             state.boxList = boxListCopy;
+            state.boxListSorted = new ArrayList<>();
+            state.boxListSorted.addAll(boxListCopy);
+            Collections.sort(state.boxListSorted);
+            state.boxListSortedHashCode = state.boxListSorted.hashCode();
         }
         
         return initialStates;

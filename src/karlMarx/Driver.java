@@ -31,7 +31,7 @@ public class Driver {
         if (initialStates.size() == 1) {
             SASearchClient searchClient = new SASearchClient();
 
-            List<Node> solution;
+            List<Command> solution;
 
             try {
                 solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
@@ -51,13 +51,13 @@ public class Driver {
                 System.err.println(searchClient.searchStatus());
                 System.err.println(solution.size());
 
-                for (Node n : solution) {
-                    String act = "[" + n.action.toString() + "]";
+                for (Command c : solution) {
+                    String act = "[" + c + "]";
                     System.out.println(act);
                     String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
-                        System.err.format("%s was attempted in \n%s\n", act, n.toString());
+                        System.err.format("%s was attempted in \n%s\n", act, c.toString());
                         break;
                     }
                 }

@@ -8,7 +8,7 @@ public class SASearchClient extends SearchClient {
     private String strategyArg;
     private Strategy strategy;
 
-    public List<Node> Search(String strategyArg, List<Node> initialStates) throws IOException {
+    public List<Command> Search(String strategyArg, List<Node> initialStates) throws IOException {
         Node.IS_SINGLE = true;
 
         if (initialStates.size() != 1) {
@@ -23,7 +23,7 @@ public class SASearchClient extends SearchClient {
         Goal currentGoal;
         Set<Goal> currentGoals = new HashSet<Goal>();
         
-        List<Node> solution = new LinkedList<Node>();
+        List<Command> solution = new ArrayList<Command>();
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
@@ -38,9 +38,10 @@ public class SASearchClient extends SearchClient {
                     penaltyMap = data.b;
                     //System.err.println(currentState);
                     //System.err.println("MOVE BOXES: " + boxesToMove);
-                    Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    List<Command> plan = lastNode.extractPlanNew();
                     solution.addAll(plan);
-                    currentState = plan.getLast();
+                    currentState = lastNode;
                     // This is a new initialState so it must not have a parent for isInitialState method to work
                     currentState.parent = null;
                 } else {
@@ -50,9 +51,10 @@ public class SASearchClient extends SearchClient {
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
             currentGoals.add(currentGoal);
-            Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+            List<Command> plan = lastNode.extractPlanNew();
             solution.addAll(plan);
-            currentState = plan.getLast();
+            currentState = lastNode;
             // This is a new initialState so it must not have a parent for isInitialState method to work
             currentState.parent = null;
         }
@@ -60,7 +62,7 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
         switch (strategyArg) {
         case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
         case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
@@ -84,11 +86,12 @@ public class SASearchClient extends SearchClient {
             Node leafNode = strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
-                return leafNode.extractPlan();
+                System.err.println(searchStatus());
+                return leafNode;
             }
 
             strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+            for (Node n : leafNode.getExpandedNodes(penaltyMap)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
@@ -100,6 +103,6 @@ public class SASearchClient extends SearchClient {
 
     @Override
     public String searchStatus() {
-        return strategy.searchStatus();
+        return strategy.searchStatus() + " --- " + Node.t1;
     }
 }
