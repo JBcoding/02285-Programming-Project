@@ -466,10 +466,6 @@ public class MASearchClient {
         }
     }
 
-<<<<<<< HEAD
-    public String searchStatus(Strategy strategy) { {
-        return strategy.searchStatus() + "\n" + Heuristic.t1 + "\n" + Heuristic.t2 + "\n" + Heuristic.t3;
-=======
     private Deque<Node> getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
         Strategy strategy;
 
@@ -521,7 +517,6 @@ public class MASearchClient {
 
             iterations++;
         }
->>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
     }
 
     public String searchStatus() {

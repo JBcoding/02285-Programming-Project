@@ -163,10 +163,6 @@ public abstract class Heuristic implements Comparator<Node> {
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
 
-    public static long t1 = 0;
-    public static long t2 = 0;
-    public static long t3 = 0;
-
     public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -218,12 +214,6 @@ public abstract class Heuristic implements Comparator<Node> {
         Set<Goal> tempActiveGoals = activegoals;
         Set<Box> tempActiveBoxes = activeboxes;
 
-<<<<<<< HEAD
-        t1 += System.nanoTime() - t;
-        t = System.nanoTime();
-
-=======
->>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         while (!tempActiveGoals.isEmpty()) {
             Box nearestBox = null;
             Goal nearestGoal = null;
@@ -264,22 +254,11 @@ public abstract class Heuristic implements Comparator<Node> {
             // System.err.println(nearestGoal + " " + nearestBox);
             currentRow = nearestGoal.row;
             currentCol = nearestGoal.col;
-<<<<<<< HEAD
-=======
-
->>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         }
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
         // System.err.println(currentGoals);
         // System.err.println();
 
-
-<<<<<<< HEAD
-        t2 += System.nanoTime() - t;
-        t = System.nanoTime();
-
-=======
->>>>>>> bcc0a8ea808c391f27c2ad301b90e87c0542900e
         if (boxesToMove != null) {
             for (Box b1 : n.boxList) {
                 if (boxesToMove.contains(b1.id)) {
@@ -312,9 +291,6 @@ public abstract class Heuristic implements Comparator<Node> {
                 n.h += p;
             }*/
         }
-
-
-        t3 += System.nanoTime() - t;
 
         /*if (boxesNotToMoveMuch != null) {
             for (Box b1 : boxesNotToMoveMuch) {
