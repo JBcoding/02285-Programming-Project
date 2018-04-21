@@ -38,18 +38,18 @@ public class Test {
             "-l", 
             "%s", 
             "-c", 
-            "java -cp src karlMarx.Driver", 
+            "java -cp out karlMarx.Driver", 
             //"-g",
             //"-30",
             "-t", 
-            "300" 
+            "30"
         };
     
     private static void testAllLevels(String saOrMa) throws Exception {
         String topDir = new java.io.File( "." ).getCanonicalPath();
         COMMAND[2] = String.format(COMMAND[2], topDir);
-        
-        String levelDir = "/environment/levels/";
+
+        String levelDir = "/environment/comp_levels_2017/";
         Path currPath = Paths.get(topDir + levelDir);
         
         int totalSolved = 0;
@@ -57,12 +57,13 @@ public class Test {
         
         long before = System.currentTimeMillis();
         try (DirectoryStream<Path> stream =
-           Files.newDirectoryStream(currPath, saOrMa + "*.lvl")) {
+           Files.newDirectoryStream(currPath, saOrMa + "SA*.lvl")) {
                for (Path entry: stream) {
                    System.out.println(entry);
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
                    String s = runJob(copy);
+                   System.err.println(s);
                    try {
                        int solutionLength = Integer.parseInt(s);
                        totalSolved++;
@@ -96,6 +97,7 @@ public class Test {
             while ((next = stdError.readLine()) != null) {
                 if (next.contains("Unable to read next action from client")) return "";
                 s = next;
+                //System.err.println(s);
                 s = s.substring("[Client said] ".length());
                 try {
                     if (s.charAt(0) == Driver.NO_SOLUTION) {
