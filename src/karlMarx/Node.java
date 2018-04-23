@@ -116,72 +116,27 @@ public class Node {
         return isGoalState(goals, null, null);
     }
 
-    public static void quickApplyCommands(Node n, List<Command> cmds) {
-        for (Command c : cmds) {
-            int newAgentRow = n.agent.row + Command.dirToRowChange(c.dir1);
-            int newAgentCol = n.agent.col + Command.dirToColChange(c.dir1);
+    public static void quickApplyCommands(Node n, List<Command> cmds, SearchState ss) {
+        n.agent.row = ss.getPosition().row;
+        n.agent.col = ss.getPosition().col;
+        if (ss.getBox() != null) {
+            for (int i = 0; i < n.boxList.size(); i ++) {
+                Box b = n.boxList.get(i);
+                if (b.id == ss.getBox().id) {
+                    Box bb = b.copy();
+                    bb.row = ss.getBoxPosition().row;
+                    bb.col = ss.getBoxPosition().col;
+                    n.boxList.set(i, bb);
 
-            if (c.actionType == Type.Move) {
-                // Check if there's a wall or box on the cell to which the agent is moving
-                if (n.cellIsFree(newAgentRow, newAgentCol)) {
-                    n.agent.row = newAgentRow;
-                    n.agent.col = newAgentCol;
-                }
-            } else if (c.actionType == Type.Push) {
-                // Make sure that there's actually a box to move
-                Box b = n.findBox(newAgentRow, newAgentCol);
-                if (b != null && n.agent.color == b.color) {
-                    int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
-                    int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
-                    // .. and that new cell of box is free
-                    if (n.cellIsFree(newBoxRow, newBoxCol)) {
-                        n.agent.row = newAgentRow;
-                        n.agent.col = newAgentCol;
-                        // Change box position in boxList
-                        for (int i = 0; i < n.boxList.size(); i++) {
-                            Box box = n.boxList.get(i);
-                            if (box.isOn(new Position(newAgentRow, newAgentCol))) {
-                                box = box.copy();
-                                box.row = newBoxRow;
-                                box.col = newBoxCol;
-                                n.boxList.set(i, box);
-                                break;
-                            }
-                        }
-                    }
-                }
-            } else if (c.actionType == Type.Pull) {
-                // Cell is free where agent is going
-                if (n.cellIsFree(newAgentRow, newAgentCol)) {
-                    int boxRow = n.agent.row + Command.dirToRowChange(c.dir2);
-                    int boxCol = n.agent.col + Command.dirToColChange(c.dir2);
-                    // .. and there's a box in "dir2" of the agent
-                    Box b = n.findBox(boxRow, boxCol);
-                    if (b != null && n.agent.color == b.color) {
-                        int ar = n.agent.row;
-                        int ac = n.agent.col;
-                        n.action = c;
-                        n.agent.row = newAgentRow;
-                        n.agent.col = newAgentCol;
-                        // Change box position in boxList
-                        for (int i = 0; i < n.boxList.size(); i++) {
-                            Box box = n.boxList.get(i);
-                            if (box.isOn(new Position(boxRow, boxCol))) {
-                                box = box.copy();
-                                box.row = ar;
-                                box.col = ac;
-                                n.boxList.set(i, box);
-                                break;
-                            }
-                        }
-                    }
+                    n.boxListSorted = new ArrayList<>();
+                    n.boxListSorted.addAll(n.boxList);
+                    n.insertionSortOneLoop(n, 0);
+                    n.boxListSortedHashCode = n.boxListSorted.hashCode();
+
+                    break;
                 }
             }
         }
-        n.boxListSorted = new ArrayList<>();
-        n.boxListSorted.addAll(n.boxList);
-        n.insertionSortOneLoop(n, 0);
-        n.boxListSortedHashCode = n.boxListSorted.hashCode();
         n.actions = cmds;
         n.g += cmds.size() - 1;
     }
@@ -404,13 +359,11 @@ public class Node {
                 map[ss.getBox().row][ss.getBox().col] = ss.getBox().letter;
             }
         }
-        long t = System.nanoTime();
         for (SearchState ss : statesOfInterest) {
             Node n = this.ChildNode();
-            quickApplyCommands(n, ss.backTrack());
+            quickApplyCommands(n, ss.backTrack(), ss);
             expandedNodes.add(n);
         }
-        t1 += System.nanoTime() - t;
         Collections.shuffle(expandedNodes, RND);
         return expandedNodes;
         /*
@@ -440,11 +393,11 @@ public class Node {
     }
 
     private void addToQueue(boolean canTurnAround, SearchState newState, Queue<SearchState> queue, Set<SearchState> seen, SearchState ss, List<SearchState> statesOfInterest) {
+        t1 ++;
         if (canTurnAround) {
             newState.setHasTurnedAround();
         }
-        if (!seen.contains(newState)) {
-            seen.add(newState);
+        if (seen.add(newState)) {
             queue.add(newState);
             if (canTurnAround && !ss.hasTurnedAround()) {
                 statesOfInterest.add(newState);
@@ -453,8 +406,7 @@ public class Node {
         if (canTurnAround) {
             newState = newState.copy();
             newState.swapPullPush();
-            if (!seen.contains(newState)) {
-                seen.add(newState);
+            if (seen.add(newState)) {
                 queue.add(newState);
             }
         }
