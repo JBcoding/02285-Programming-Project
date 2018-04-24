@@ -201,8 +201,8 @@ public class BDI {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
-                    if (penaltyMap[i][j] < -numberOfBoxesToMove) {
-                        penaltyMap[i][j] = 0;
+                    if (penaltyMap[i][j] < -numberOfBoxesToMove - 1) {
+                        penaltyMap[i][j] = 1;
                     }
                     //penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }

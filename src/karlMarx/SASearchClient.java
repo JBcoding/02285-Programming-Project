@@ -100,6 +100,7 @@ public class SASearchClient extends SearchClient {
             Node leafNode = strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
+                System.err.println(searchStatus());
                 return leafNode;
             }
             strategy.addToExplored(leafNode);

@@ -315,7 +315,7 @@ public class Node {
                     statesOfInterest.add(ss);
                 } else if (penaltyMap != null) {
                     if (penaltyMap[ss.getBoxPosition().row][ss.getBoxPosition().col] <= 0) {
-                        statesOfInterest.add(ss); // TODO: choose states smarter here
+                        statesOfInterest.add(ss);
                     }
                 }
                 map[ss.getBox().row][ss.getBox().col] = ' ';
