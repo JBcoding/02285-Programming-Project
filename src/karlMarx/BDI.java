@@ -35,6 +35,7 @@ public class BDI {
     public static final Command.Dir[] deltasDirection = new Command.Dir[]{Command.Dir.S, Command.Dir.N, Command.Dir.E, Command.Dir.W};
 
     public static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
+//        System.err.println("Node in recreateMap: " + n);
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             for (int j = 0; j < Node.walls[i].length; j++) {
@@ -44,8 +45,16 @@ public class BDI {
         for (Goal g : Node.goalSet) {
             map[g.row][g.col] = g.letter;
         }
+//        for (int i = 0; i < map.length; i++) {
+//            System.err.println(Arrays.toString(map[i]));
+//        }
         for (Box b : n.boxList) {
+//            System.err.println(b);
+//            System.err.println(map[b.row][b.col]);
+//            System.err.println(Character.toLowerCase(b.letter) == map[b.row][b.col]);
+//            System.err.println(makeCorrectlyPlacedGoalsToWalls);
             if (Character.toLowerCase(b.letter) == map[b.row][b.col] && makeCorrectlyPlacedGoalsToWalls) { // goal already fulfilled
+//                System.err.println("Changing to +");
                 map[b.row][b.col] = '+';
             } else {
                 map[b.row][b.col] = 'o';
@@ -92,8 +101,15 @@ public class BDI {
             }
 
             if (closestBox == null) {
-                System.err.println(n);
-                throw new IllegalStateException("TODO: No closest box.");
+//                for (int i = 0; i < tempMap.length; i++) {
+//                    System.err.println(Arrays.toString(tempMap[i]));
+//                }
+//                System.err.println(tempNode);
+//                System.err.println(g);
+//                System.err.println(boxes);
+//                System.err.println(n);
+//                throw new IllegalStateException("TODO: No closest box.");
+                return null;
             }
 
             box = closestBox;
@@ -301,8 +317,13 @@ public class BDI {
         return getGoal(n, Node.goalSet);
     }
 
+    public static char[][] tempMap;
+    public static Node tempNode;
+
     public static Goal getGoal(Node n, Set<Goal> goalSet) {
         char[][] map = recreateMap(n, false, false, true);
+        tempMap = map;
+        tempNode = n.ChildNode();
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
             System.arraycopy(map[i], 0, originalMap[i], 0, map[i].length);
