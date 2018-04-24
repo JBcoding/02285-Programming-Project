@@ -26,6 +26,7 @@ public class SASearchClient extends SearchClient {
         
         List<Command> solution = new ArrayList<Command>();
 
+        goalStateLoop:
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
@@ -46,6 +47,9 @@ public class SASearchClient extends SearchClient {
                     //System.err.println("MOVE BOXES: " + boxesToMove);
                     Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     List<Command> plan = lastNode.extractPlanNew();
+                    if (plan.size() == 0) {
+                        continue goalStateLoop;
+                    }
 
                     solution.addAll(plan);
                     currentState = lastNode;
@@ -57,10 +61,11 @@ public class SASearchClient extends SearchClient {
             }
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
-            currentGoals.add(currentGoal);
             Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             List<Command> plan = lastNode.extractPlanNew();
-
+            if (plan.size() == 0) {
+                continue;
+            }
             solution.addAll(plan);
             currentState = lastNode;
             // This is a new initialState so it must not have a parent for isInitialState method to work
@@ -77,7 +82,9 @@ public class SASearchClient extends SearchClient {
         case "-greedy": /* Fall-through */
         default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch));
         }
-        strategy.addToFrontier(state);
+        if (!strategy.isExplored(state)) {
+            strategy.addToFrontier(state);
+        }
 
         int iterations = 0;
         while (true) {
@@ -85,7 +92,7 @@ public class SASearchClient extends SearchClient {
                 System.err.println(searchStatus());
                 iterations = 0;
             }
-            
+
             if (strategy.frontierIsEmpty()) {
                 return null;
             }
@@ -93,10 +100,8 @@ public class SASearchClient extends SearchClient {
             Node leafNode = strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
-                System.err.println(searchStatus());
                 return leafNode;
             }
-
             strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes(penaltyMap)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {

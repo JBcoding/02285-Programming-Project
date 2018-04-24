@@ -3,8 +3,6 @@ package karlMarx;
 import java.io.IOException;
 import java.util.*;
 
-import static karlMarx.BDI.deltas;
-
 public class MASearchClient {
 
     private Strategy[] strategies;
@@ -94,6 +92,7 @@ public class MASearchClient {
 
                 Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, initialStates, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
+
                 ArrayList<Box> removed = pruneData.b;
 
                 Set<Goal> currentGoals = new HashSet<>();
@@ -153,17 +152,18 @@ public class MASearchClient {
                             Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
                         }
 
-                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
-                        if (plan == null) {
+                        Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
+                        if (lastNode == null) {
 //                            System.err.println("Unable to clear path.");
                             continue;
                         }
 
+                        List<Command> plan = lastNode.extractPlanNew();
                         if (plan.isEmpty()) {
                             continue;
                         }
 
-                        currentState = plan.getLast();
+                        currentState = lastNode;
 
                         // This is a new initialState so it must not have a parent for isInitialState method to work
                         currentState.parent = null;
@@ -175,6 +175,11 @@ public class MASearchClient {
                         continue;
                     } else {
                         Goal currentGoal = BDI.getGoal(currentState, solvableGoals);
+
+                        if (currentGoal == null) {
+                            continue;
+                        }
+
 //                        System.err.println("NEXT GOAL: " + currentGoal);
 
                         // Remove walls from agent positions to enable BFS
@@ -247,13 +252,14 @@ public class MASearchClient {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
 //                                System.err.println("MOVE BOXES: " + boxesToMove);
-                                Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
-                                if (plan == null) {
+                                Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
+                                if (leafNode == null) {
 //                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
                                 }
 //                                System.err.println(currentState);
-                                currentState = plan.getLast();
+                                List<Command> plan = leafNode.extractPlanNew();
+                                currentState = leafNode;
                                 // This is a new initialState so it must not have a parent for isInitialState method to work
                                 currentState.parent = null;
 
@@ -266,15 +272,16 @@ public class MASearchClient {
 //                        System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
-                        Deque<Node> plan = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
+                        Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
 
-                        if (plan == null) {
+                        if (leafNode == null) {
 //                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
                             continue;
                         }
+                        List<Command> plan = leafNode.extractPlanNew();
                         pm.mergePlan(currentState.agent.id, plan);
 
-                        currentState = plan.getLast();
+                        currentState = leafNode;
                         // This is a new initialState so it must not have a parent for isInitialState method to work
                         currentState.parent = null;
 
@@ -423,7 +430,7 @@ public class MASearchClient {
         return new Pair<>(solvableGoals, removed);
     }
 
-    private Deque<Node> getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent) {
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent) {
         Strategy strategy;
 
         switch (strategyArg) {
@@ -440,7 +447,7 @@ public class MASearchClient {
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(searchStatus());
+                System.err.println(searchStatus(strategy));
                 iterations = 0;
             }
 
@@ -452,7 +459,8 @@ public class MASearchClient {
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap) &&
                     (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {
-                return leafNode.extractPlan();
+                System.err.println(searchStatus(strategy));
+                return leafNode;
             }
 
             strategy.addToExplored(leafNode);
@@ -466,7 +474,7 @@ public class MASearchClient {
         }
     }
 
-    private Deque<Node> getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
+    private Node getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
         Strategy strategy;
 
         switch (strategyArg) {
@@ -483,7 +491,7 @@ public class MASearchClient {
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(searchStatus());
+                System.err.println(searchStatus(strategy));
                 iterations = 0;
             }
 
@@ -505,7 +513,8 @@ public class MASearchClient {
             if (leafNode.isGoalState(currentGoals, null, null) &&
                     !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col)) &&
                     !illegalBox) {
-                return leafNode.extractPlan();
+                System.err.println(searchStatus(strategy));
+                return leafNode;
             }
 
             strategy.addToExplored(leafNode);
@@ -519,15 +528,9 @@ public class MASearchClient {
         }
     }
 
-    public String searchStatus() {
+    public String searchStatus(Strategy strategy) {
         StringBuilder s = new StringBuilder();
-        for (int i = 0; i < strategies.length; i++) {
-            Strategy strategy = strategies[i];
-            s.append("Status for agent ");
-            s.append(i);
-            s.append(": ");
-            s.append(strategy.searchStatus());
-        }
+        s.append(strategy.searchStatus() + " --- " + Node.t1);
         return s.toString();
     }
 

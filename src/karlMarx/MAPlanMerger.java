@@ -1,8 +1,5 @@
 package karlMarx;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 
 public class MAPlanMerger {
@@ -33,7 +30,7 @@ public class MAPlanMerger {
         }
     }
 
-    public void mergePlan(int agent, Deque<Node> plan) {
+    public void mergePlan(int agent, List<Command> plan) {
         boolean[][] initWallsBackup = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             System.arraycopy(Node.walls[i], 0, initWallsBackup[i], 0, Node.walls[i].length);
@@ -42,8 +39,8 @@ public class MAPlanMerger {
 
         Command[] arr = new Command[plan.size()];
         int i = 0;
-        for (Node n : plan) {
-            arr[i] = n.action;
+        for (Command n : plan) {
+            arr[i] = n;
             i += 1;
         }
         MasterPlan backup = masterPlan.copy();

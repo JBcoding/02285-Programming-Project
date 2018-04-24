@@ -50,7 +50,8 @@ public class SearchState {
         int prime = 31;
         _hash = _hash * prime + position.hashCode();
         if (box != null) {
-            _hash = _hash * prime + box.hashCode();
+            _hash = _hash * prime ^ box.hashCode();
+            _hash = _hash * prime ^ boxPosition.hashCode();
         }
         _hash = _hash * 2 + (pushing ? 1 : 0);
         _hash = _hash * 2 + (pulling ? 1 : 0);

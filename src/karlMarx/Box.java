@@ -22,8 +22,8 @@ public class Box extends Position implements Comparable<Box> {
     }
 
     public String toString() {
-        //return "Box " + letter + " (" + color + ") at (" + row + "," + col + ")";
-        return String.valueOf(hashCode());
+        return "Box " + letter + " (" + color + ") at (" + row + "," + col + ")";
+        //return String.valueOf(hashCode());
     }
 
     public Box(Position position, char letter, Color color) {
