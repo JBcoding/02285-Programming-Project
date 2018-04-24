@@ -38,11 +38,11 @@ public class Test {
             "-l", 
             "%s", 
             "-c", 
-            "java -cp out karlMarx.Driver", 
+            "java -cp src karlMarx.Driver -wastar", 
             //"-g",
             //"-30",
             "-t", 
-            "30"
+            "10" 
         };
     
     private static void testAllLevels(String saOrMa) throws Exception {
@@ -57,18 +57,23 @@ public class Test {
         
         long before = System.currentTimeMillis();
         try (DirectoryStream<Path> stream =
-           Files.newDirectoryStream(currPath, saOrMa + "SA*.lvl")) {
+           Files.newDirectoryStream(currPath, saOrMa + "*.lvl")) {
                for (Path entry: stream) {
-                   System.out.println(entry.toAbsolutePath().toString().substring(0, entry.toAbsolutePath().toString().lastIndexOf("/")));
+                   System.out.print(entry.getFileName());
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
+                   long b = System.currentTimeMillis();
                    String s = runJob(copy);
                    System.err.println(s);
                    try {
                        int solutionLength = Integer.parseInt(s);
                        totalSolved++;
                        totalSolutionLength += solutionLength;
-                   } catch (NumberFormatException e) {}
+                       System.out.print(" Number of steps to solve: " + solutionLength);
+                       System.out.println(" Time to solve: " + (System.currentTimeMillis() - b));
+                   } catch (NumberFormatException e) {
+                       System.out.println(" Could not solve this level");
+                   }
                }
            } catch (IOException x) {
                // IOException can never be thrown by the iteration.

@@ -1,0 +1,28 @@
+SABlinky.lvl Number of steps to solve: 163 Time to solve: 591
+SAIamGreedy.lvl Number of steps to solve: 781 Time to solve: 1063
+SAAIoliMAsh.lvl Could not solve this level
+SAOmnics.lvl Could not solve this level
+SAMasAiArne.lvl Number of steps to solve: 858 Time to solve: 575
+SAHALnineK.lvl Could not solve this level
+SATALK.lvl Number of steps to solve: 343 Time to solve: 422
+SAKalle.lvl Could not solve this level
+SAGeneralAI.lvl Could not solve this level
+SANeverMind.lvl Could not solve this level
+SAGroupOne.lvl Could not solve this level
+SAFooBar.lvl Number of steps to solve: 153 Time to solve: 403
+SABeliebers.lvl Number of steps to solve: 481 Time to solve: 515
+SAtnrbts.lvl Could not solve this level
+SAJomarki.lvl Number of steps to solve: 60 Time to solve: 404
+SAMASters.lvl Number of steps to solve: 377 Time to solve: 3671
+SAEvilCorp.lvl Could not solve this level
+SAgroupname.lvl Number of steps to solve: 3959 Time to solve: 2180
+SABronies.lvl Could not solve this level
+SALemmings.lvl Number of steps to solve: 198 Time to solve: 1914
+SABoxBunny.lvl Could not solve this level
+SADoDo.lvl Number of steps to solve: 251 Time to solve: 522
+SAHiveMind.lvl Could not solve this level
+SALiquorice.lvl Number of steps to solve: 618 Time to solve: 3141
+SADAT.lvl Could not solve this level
+Solved 12 levels
+Total length of all solutions is: 8242
+Total time used (ms): 121486
