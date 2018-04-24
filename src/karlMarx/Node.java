@@ -260,7 +260,7 @@ public class Node {
     public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
 
-        List<SearchState> statesOfInterest = new ArrayList<>();
+        HashSet<SearchState> statesOfInterest = new HashSet<>();
 
         char[][] map = BDI.recreateMap(this, true, true, false);
         Set<SearchState> seen = new HashSet<>();
@@ -288,6 +288,11 @@ public class Node {
             SearchState ss = queue.poll();
             seen.add(ss);
             Position p = ss.getPosition();
+
+            if (!IS_SINGLE && penaltyMap != null && penaltyMap[p.row][p.col] <= 0) {
+                statesOfInterest.add(ss);
+            }
+
             if (ss.getBox() == null) {
                 for (int i = 0; i < BDI.deltas.length; i++) {
                     int dr = BDI.deltas[i][0]; // delta row
@@ -298,7 +303,8 @@ public class Node {
                     if (Character.isAlphabetic(map[p.row + dr][p.col + dc])) { // box
                         statesOfInterest.add(ss);
                     }
-                    SearchState newState = new SearchState(new Position(p.row + dr, p.col + dc), ss, new Command(BDI.deltasDirection[i]));
+                    SearchState newState =new SearchState(
+                            new Position(p.row + dr, p.col + dc), ss, new Command(BDI.deltasDirection[i]));
                     if (!seen.contains(newState) && map[p.row + dr][p.col + dc] == ' ') {
                         seen.add(newState);
                         queue.add(newState);
@@ -392,7 +398,7 @@ public class Node {
         }
     }
 
-    private void addToQueue(boolean canTurnAround, SearchState newState, Queue<SearchState> queue, Set<SearchState> seen, SearchState ss, List<SearchState> statesOfInterest) {
+    private void addToQueue(boolean canTurnAround, SearchState newState, Queue<SearchState> queue, Set<SearchState> seen, SearchState ss, Set<SearchState> statesOfInterest) {
         t1 ++;
         if (canTurnAround) {
             newState.setHasTurnedAround();
