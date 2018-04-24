@@ -45,7 +45,7 @@ public class Agent extends Position {
     }
 
     public String toString() {
-        return "Agent " + id + " at (" + row + "," + col + ")";
+        return "Agent " + id + " (" + color + ")" + " at (" + row + "," + col + ")";
     }
 
 }
