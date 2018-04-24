@@ -317,13 +317,8 @@ public class BDI {
         return getGoal(n, Node.goalSet);
     }
 
-    public static char[][] tempMap;
-    public static Node tempNode;
-
     public static Goal getGoal(Node n, Set<Goal> goalSet) {
         char[][] map = recreateMap(n, false, false, true);
-        tempMap = map;
-        tempNode = n.ChildNode();
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
             System.arraycopy(map[i], 0, originalMap[i], 0, map[i].length);
@@ -341,11 +336,7 @@ public class BDI {
             }
             map[g.row][g.col] = 'X';
             int[] sidesCount = new int[4];
-            Position[] sidesPositions = new Position[] {
-                    new Position(g.row + 1, g.col),
-                    new Position(g.row, g.col + 1),
-                    new Position(g.row - 1, g.col),
-                    new Position(g.row, g.col - 1)};
+            Position[] sidesPositions = g.getNeighbours();
             for (int i = 0; i < 4; i++) {
                 Queue<Position> queue = new ArrayDeque<>();
                 if (map[sidesPositions[i].row][sidesPositions[i].col] == 'o') {
@@ -390,19 +381,22 @@ public class BDI {
                 bestGoal = g;
             }
         }
-        
+
         return bestGoal;
     }
 
     public static void removeUnreachableBoxesFromBoxlist(Node currentState) {
-        return;
-//        Agent agent = currentState.agent;
-//        List<Box> list = currentState.boxList;
-//        for (int i = list.size(); i >= 0; i--) {
-//            Box box = list.get(i);
-//            if (Heuristic.shortestDistance[box.row][box.col][agent.row][agent.col] < 0) {
-//                list.remove(i);
-//            }
-//        }
+        Agent agent = currentState.agent;
+        List<Box> list = currentState.boxList;
+        LinkedList<Box> boxesToRemove = new LinkedList<Box>();
+        for (int i = 0; i < list.size(); i++) {
+            Box box = list.get(i);
+            if (Heuristic.shortestDistance[box.row][box.col][agent.row][agent.col] < 0) {
+                boxesToRemove.add(box);
+            }
+        }
+        for (Box box : boxesToRemove) {
+            list.remove(box);
+        }
     }
 }

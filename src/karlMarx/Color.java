@@ -1,7 +1,7 @@
 package karlMarx;
 
 public enum Color {
-    BLUE, RED, GREEN, CYAN, MAGENTA, ORANGE, PINK, YELLOW;
+    BLUE, RED, GREEN, CYAN, MAGENTA, ORANGE, PINK, YELLOW, AGENT;
 
     public static Color toColor(String color) {
         switch (color.toLowerCase()) {

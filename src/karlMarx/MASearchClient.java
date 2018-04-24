@@ -10,7 +10,7 @@ public class MASearchClient {
     private HashMap<Goal, HashSet<Color>> solvableByColor;
 
     public Command[][] Search(String strategyArg, List<Node> initialStates) throws IOException {
-        Node.IS_SINGLE = false; // TODO: I don't think we use this
+        Node.IS_SINGLE = false;
         this.strategyArg = strategyArg;
 
         strategies = new Strategy[initialStates.size()];
@@ -66,7 +66,8 @@ public class MASearchClient {
 
         MAPlanMerger pm = new MAPlanMerger(initialStates.get(0), initialStates.size(), initialStates);
 
-        // TODO: MAEvilCorp shows that we actually need a stack of these.
+        // TODO: MAEvilCorp shows that we actually need a stack of these or similar.
+        // Note: illegalBoxes can also contain boxes with color AGENT
         HashSet<Box> illegalBoxes = new HashSet<>();
         Set<Position> illegalPositions = new HashSet<>();
         int illegalByAgent = -1;
@@ -86,9 +87,9 @@ public class MASearchClient {
                 Node.walls[currentState.agent.row][currentState.agent.col] = false;
                 currentState.boxList = lastBoxList;
 
-//                System.err.println("Agent: " + currentState.agent);
-//                System.err.println("STARTING FROM:");
-//                System.err.println(currentState);
+                System.err.println("Agent: " + currentState.agent);
+                System.err.println("STARTING FROM:");
+                System.err.println(currentState);
 
                 Pair<HashSet<Goal>, ArrayList<Box>> pruneData = pruneBoxList(currentState, initialStates, solvedGoals);
                 HashSet<Goal> solvableGoals = pruneData.a;
@@ -112,9 +113,7 @@ public class MASearchClient {
 
                 try {
                     if (!illegalBoxes.isEmpty()) {
-//                        System.err.println("Trying to clear path.");
-
-                        HashSet<Position> agentPositions = new HashSet<>();
+                        System.err.println("Trying to clear path.");
 
                         HashSet<Position> clearableIllegalPositions = new HashSet<>();
                         for (Position pos : illegalPositions) {
@@ -129,12 +128,17 @@ public class MASearchClient {
 
                         ArrayList<Box> boxesToMove = new ArrayList<>();
                         for (Box box : currentState.boxList) {
-                            if (box.color == currentState.agent.color) {
+                            if (illegalBoxes.contains(box) && box.color == currentState.agent.color) {
                                 boxesToMove.add(box);
                             }
                         }
 
-//                        System.err.println(boxesToMove);
+                        if (boxesToMove.isEmpty() && !illegalPositions.contains(new Position(currentState.agent))) {
+                            System.err.println("NOTHING TO CLEAR");
+                            continue;
+                        }
+
+                        System.err.println(boxesToMove);
 
                         ArrayList<Pair<Position, Character>> removedGoals = new ArrayList<>();
 
@@ -154,7 +158,7 @@ public class MASearchClient {
 
                         Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
                         if (lastNode == null) {
-//                            System.err.println("Unable to clear path.");
+                            System.err.println("Unable to clear path.");
                             continue;
                         }
 
@@ -180,7 +184,7 @@ public class MASearchClient {
                             continue;
                         }
 
-//                        System.err.println("NEXT GOAL: " + currentGoal);
+                        System.err.println("NEXT GOAL: " + currentGoal);
 
                         // Remove walls from agent positions to enable BFS
                         HashSet<Position> agentPositions = new HashSet<>();
@@ -191,8 +195,8 @@ public class MASearchClient {
                             }
 
                             agentPositions.add(new Position(s.agent));
-                            // Boxes representing agents have letter 'A'
-                            agentsAsBoxes.add(new Box(s.agent.row, s.agent.col, 'A', Color.BLUE));
+                            // Boxes representing agents have color AGENT
+                            agentsAsBoxes.add(new Box(s.agent.row, s.agent.col, 'A', Color.AGENT));
                             Node.walls[s.agent.row][s.agent.col] = false;
                         }
 
@@ -218,8 +222,7 @@ public class MASearchClient {
                         illegalBoxes.addAll(boxToGoalData.a);
 
                         final Color agentColor = currentState.agent.color;
-                        illegalBoxes.removeIf(box ->
-                                box.color == agentColor&& !agentPositions.contains(new Position(box)));
+                        illegalBoxes.removeIf(box -> box.color == agentColor);
                         illegalPositions = new HashSet<>(bestBoxData.b.b);
                         illegalPositions.addAll(boxToGoalData.b);
 
@@ -230,7 +233,7 @@ public class MASearchClient {
                             Node.walls[pos.row][pos.col] = true;
                         }
 
-//                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
+                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
 
                         if (!illegalBoxes.isEmpty()) {
                             illegalByAgent = i;
@@ -251,10 +254,10 @@ public class MASearchClient {
                             if (data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
-//                                System.err.println("MOVE BOXES: " + boxesToMove);
+                                System.err.println("MOVE BOXES: " + boxesToMove);
                                 Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
                                 if (leafNode == null) {
-//                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
+                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
                                 }
 //                                System.err.println(currentState);
@@ -269,13 +272,13 @@ public class MASearchClient {
                             }
                         }
 
-//                        System.err.println("SOLVE GOAL: " + currentGoal);
+                        System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
                         Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
 
                         if (leafNode == null) {
-//                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
+                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
                             continue;
                         }
                         List<Command> plan = leafNode.extractPlanNew();
@@ -366,9 +369,8 @@ public class MASearchClient {
         return new Pair<>(bestBox, bestData);
     }
 
-    private Pair<HashSet<Goal>, ArrayList<Box>> pruneBoxList(
-            Node currentState, List<Node> initialStates, HashSet<Goal> solvedGoals
-    ) {
+    private Pair<HashSet<Goal>, ArrayList<Box>>
+    pruneBoxList(Node currentState, List<Node> initialStates, HashSet<Goal> solvedGoals) {
         // Remove walls
         HashSet<Position> agentPositions = new HashSet<>();
         for (Node s : initialStates) {
@@ -459,60 +461,6 @@ public class MASearchClient {
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap) &&
                     (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {
-                System.err.println(searchStatus(strategy));
-                return leafNode;
-            }
-
-            strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
-                    strategy.addToFrontier(n);
-                }
-            }
-
-            iterations++;
-        }
-    }
-
-    private Node getAwayPlan(Node state, Set<Goal> currentGoals, Set<Position> illegalPositions) {
-        Strategy strategy;
-
-        switch (strategyArg) {
-            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, null, null, null)); break;
-            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, null, null, null)); break;
-            case "-greedy": /* Fall-through */
-            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, null, null, null));
-        }
-
-//        System.err.println(currentGoals);
-
-        strategy.addToFrontier(state);
-
-        int iterations = 0;
-        while (true) {
-            if (iterations == 10000) {
-                System.err.println(searchStatus(strategy));
-                iterations = 0;
-            }
-
-            if (strategy.frontierIsEmpty()) {
-                return null;
-            }
-
-            Node leafNode = strategy.getAndRemoveLeaf();
-
-            boolean illegalBox = false;
-            for (Box box : leafNode.boxList) {
-                if (box.color == leafNode.agent.color && illegalPositions.contains(new Position(box.row, box.col))) {
-                    illegalBox = true;
-                }
-            }
-
-            // TODO: getting no help from the heuristic right now
-            // Can I just pass the penalty map?
-            if (leafNode.isGoalState(currentGoals, null, null) &&
-                    !illegalPositions.contains(new Position(leafNode.agent.row, leafNode.agent.col)) &&
-                    !illegalBox) {
                 System.err.println(searchStatus(strategy));
                 return leafNode;
             }
