@@ -504,6 +504,8 @@ public class Node {
                     s.append(box.letter);
                 } else if (row == this.agent.row && col == this.agent.col) {
                     s.append(agent.id);
+                } else if (Node.walls[row][col] && goal != null) {
+                    s.append("@");
                 } else if (goal != null) {
                     s.append(goal.letter);
                 } else if (Node.walls[row][col]) {
