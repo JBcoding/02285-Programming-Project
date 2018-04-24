@@ -39,14 +39,11 @@ public class Position {
     }
 
     public Position[] getNeighbours() {
-        Position[] neighbours = new Position[4];
-
-        neighbours[0] = new Position(row + 1, col);
-        neighbours[1] = new Position(row - 1, col);
-        neighbours[2] = new Position(row, col + 1);
-        neighbours[3] = new Position(row, col - 1);
-
-        return neighbours;
+        return new Position[] {
+                new Position(row + 1, col),
+                new Position(row, col + 1),
+                new Position(row - 1, col),
+                new Position(row, col - 1)};
     }
 
     @Override

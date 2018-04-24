@@ -292,6 +292,44 @@ public abstract class Heuristic implements Comparator<Node> {
             }*/
         }
 
+
+        boolean boxesInThisArea = false;
+        Position[] sidesPositions = n.agent.getNeighbours();
+        Queue<Position> queue = new ArrayDeque<>();
+        char[][] map = BDI.recreateMap(n, false, true, true);
+        for (Position sidesPosition : sidesPositions) {
+            if (map[sidesPosition.row][sidesPosition.col] == ' ') {
+                queue.add(sidesPosition);
+            }
+        }
+
+        /*
+        queueLoop:
+        while (!queue.isEmpty()) {
+            Position pos = queue.poll();
+            for (int i = 0; i < 4; i++) {
+                int dr = BDI.deltas[i][0]; // delta row
+                int dc = BDI.deltas[i][1]; // delta col
+                if (map[pos.row + dr][pos.col + dc] == '0') {
+                    continue;
+                }
+                if (map[pos.row + dr][pos.col + dc] == 'o') {
+                    map[pos.row + dr][pos.col + dc] = ' ';
+                    boxesInThisArea = true;
+                    break queueLoop;
+                }
+                if (map[pos.row + dr][pos.col + dc] == ' ') {
+                    queue.add(new Position(pos.row + dr, pos.col + dc));
+                    map[pos.row + dr][pos.col + dc] = '0';
+                }
+            }
+        }
+
+        if (!boxesInThisArea) {
+            n.h += n.boxList.size();
+        }
+        */
+
         /*if (boxesNotToMoveMuch != null) {
             for (Box b1 : boxesNotToMoveMuch) {
                 for (Box b2 : n.boxList) {

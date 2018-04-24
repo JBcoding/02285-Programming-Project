@@ -8,6 +8,8 @@ public class SASearchClient extends SearchClient {
     private String strategyArg;
     private Strategy strategy;
 
+    private List<Command> solution = new ArrayList<Command>();
+
     public List<Command> Search(String strategyArg, List<Node> initialStates) throws IOException {
         Node.IS_SINGLE = true;
 
@@ -23,8 +25,6 @@ public class SASearchClient extends SearchClient {
         BDI.removeUnreachableBoxesFromBoxlist(currentState);
         Goal currentGoal;
         Set<Goal> currentGoals = new HashSet<Goal>();
-        
-        List<Command> solution = new ArrayList<Command>();
 
         goalStateLoop:
         while (!currentState.isGoalState()) {
@@ -37,6 +37,7 @@ public class SASearchClient extends SearchClient {
             int[][] penaltyMap = null;
             while (true) {
                 if (currentState.isGoalState()){
+                    removeRepetitiveStates(initialStates.get(0));
                     return solution;
                 }
                 Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
@@ -71,7 +72,8 @@ public class SASearchClient extends SearchClient {
             // This is a new initialState so it must not have a parent for isInitialState method to work
             currentState.parent = null;
         }
-        
+
+        removeRepetitiveStates(initialStates.get(0));
         return solution;
     }
 
@@ -98,6 +100,9 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
+//            if (iterations == 0) {
+//                System.err.println(leafNode);
+//            }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode;
@@ -111,6 +116,33 @@ public class SASearchClient extends SearchClient {
             
             iterations++;
         }
+    }
+
+    private void removeRepetitiveStates(Node initialState) {
+        long t = System.currentTimeMillis();
+        Node n = initialState.ChildNode();
+
+        Map<Node, Integer> observedNodes = new HashMap<Node, Integer>(); // Nodes and at which step they were observed
+
+        observedNodes.put(n, 0);
+
+        List<Pair<Integer, Integer>> slicesToRemove = new ArrayList<Pair<Integer, Integer>>();
+
+        for (int stepsTaken = 0; stepsTaken < solution.size(); ) {
+            n = n.getNodeFromCommand(solution.get(stepsTaken));
+            stepsTaken++;
+
+            if (observedNodes.containsKey(n)) {
+                int startOfSlice = observedNodes.get(n).intValue();
+                for (int j = startOfSlice; j < stepsTaken; j++) {
+                    solution.remove(startOfSlice); // TODO: Shouldn't have to created a new array every time. Do something clever here
+                }
+                stepsTaken = startOfSlice;
+            } else {
+                observedNodes.put(n, stepsTaken);
+            }
+        }
+        System.err.println("Time: " + (System.currentTimeMillis() - t));
     }
 
     @Override
