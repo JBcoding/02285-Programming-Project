@@ -312,6 +312,23 @@ public class Node {
                         statesOfInterest.add(ss); // TODO: choose states smarter here
                     }
                 }
+
+                int numberOfWallsAroundBox = 0;
+                for (int i = 0; i < BDI.deltas.length; i++) {
+                    int dr = BDI.deltas[i][0]; // delta row
+                    int dc = BDI.deltas[i][1]; // delta col
+                    if (ss.getBoxPosition().row + dr < 0 || ss.getBoxPosition().col + dc < 0 || ss.getBoxPosition().row + dr >= Node.MAX_ROW || ss.getBoxPosition().col + dc >= Node.MAX_COL) {
+                        continue;
+                    }
+                    if (map[ss.getBoxPosition().row + dr][ss.getBoxPosition().col + dc] == '+') {
+                        numberOfWallsAroundBox += 1;
+                    }
+                }
+                if (numberOfWallsAroundBox >= 3) {
+                    statesOfInterest.add(ss);
+                }
+
+                if (Node.walls[ss.getBoxPosition().row][ss.getBoxPosition().col])
                 map[ss.getBox().row][ss.getBox().col] = ' ';
                 boolean canTurnAround = false;
                 int countClearSpotsAround = 0;
@@ -325,7 +342,7 @@ public class Node {
                         countClearSpotsAround += 1;
                     }
                 }
-                if (countClearSpotsAround >= 3) { // on of the is the box
+                if (countClearSpotsAround >= 3) { // one of them is the box
                     canTurnAround = true;
                 }
                 for (int i = 0; i < BDI.deltas.length; i++) {
