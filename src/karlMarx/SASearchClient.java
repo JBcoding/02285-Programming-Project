@@ -89,7 +89,7 @@ public class SASearchClient extends SearchClient {
         if (!strategy.isExplored(state)) {
             strategy.addToFrontier(state);
         }
-        
+
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
@@ -139,6 +139,7 @@ public class SASearchClient extends SearchClient {
                 observedNodes.put(n, stepsTaken);
             }
         }
+        // TODO: Prune this even more aggressively, finding BFS shortest paths between states
 //        boolean[] removedIndices = new boolean[solution.size()];
 //        for (Pair<Integer, Integer> slice : allSlicesToRemove) {
 //            for (int i = slice.a; i < slice.b; i++) {
