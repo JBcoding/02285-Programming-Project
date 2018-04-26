@@ -388,7 +388,7 @@ public class BDI {
     public static int[][] getUselessCellsMap(Node n, Goal currentGoal, Set<Goal> goalSet) {
         char[][] originalMap = recreateMap(n, true, false, true);
         for (Goal g : goalSet) {
-            originalMap[g.row][g.col] = '+'; // Make all current goals walls
+            originalMap[g.row][g.col] = '+'; // Make all current goals free cells
         }
 //        for (int i = 0; i < originalMap.length; i++) {
 //            System.err.println(Arrays.toString(originalMap[i]));

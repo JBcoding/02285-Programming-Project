@@ -89,7 +89,9 @@ public class SASearchClient extends SearchClient {
         if (!strategy.isExplored(state)) {
             strategy.addToFrontier(state);
         }
-        
+        for (int i = 0; i < uselessCellsMap.length; i++) {
+            System.err.println(Arrays.toString(uselessCellsMap[i]));
+        }
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
@@ -102,6 +104,10 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
+            if (iterations == 0) {
+                System.err.println(leafNode);
+                System.err.println(leafNode.h);
+            }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode;
@@ -139,6 +145,7 @@ public class SASearchClient extends SearchClient {
                 observedNodes.put(n, stepsTaken);
             }
         }
+        // TODO: Prune this even more aggressively, finding BFS shortest paths between states
 //        boolean[] removedIndices = new boolean[solution.size()];
 //        for (Pair<Integer, Integer> slice : allSlicesToRemove) {
 //            for (int i = slice.a; i < slice.b; i++) {

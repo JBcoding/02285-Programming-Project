@@ -294,9 +294,9 @@ public abstract class Heuristic implements Comparator<Node> {
         }
 
 //        n.h += uselessCellsMap[n.agent.row][n.agent.col] * 10;
-        for (Box box : n.boxList) {
-            n.h += uselessCellsMap[box.row][box.col] * 10;
-        }
+//        for (Box box : n.boxList) {
+//            n.h += uselessCellsMap[box.row][box.col];
+//        }
 
         // Add weight for getting any box closer to its goal
         /*activeboxes = new HashSet<Box>();
