@@ -5,7 +5,7 @@ import java.util.*;
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(3);
+    private static final Random RND = new Random(1);
 
     public static boolean IS_SINGLE = true;
 
@@ -263,6 +263,7 @@ public class Node {
         HashSet<SearchState> statesOfInterest = new HashSet<>();
 
         char[][] map = BDI.recreateMap(this, true, true, false);
+
         Set<SearchState> seen = new HashSet<>();
         Queue<SearchState> queue = new ArrayDeque<>();
         SearchState startState = new SearchState(agent);

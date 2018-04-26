@@ -14,6 +14,7 @@ public abstract class Heuristic implements Comparator<Node> {
     protected HashSet<Integer> boxesToMove;
     protected int[][] penaltyMap;
     protected List<Box> boxesNotToMoveMuch;
+    protected int[][] uselessCellsMap;
 
     static {
         // All pair shortest distances (by BFS).
@@ -292,53 +293,10 @@ public abstract class Heuristic implements Comparator<Node> {
             }*/
         }
 
-
-        boolean boxesInThisArea = false;
-        Position[] sidesPositions = n.agent.getNeighbours();
-        Queue<Position> queue = new ArrayDeque<>();
-        char[][] map = BDI.recreateMap(n, false, true, true);
-        for (Position sidesPosition : sidesPositions) {
-            if (map[sidesPosition.row][sidesPosition.col] == ' ') {
-                queue.add(sidesPosition);
-            }
+//        n.h += uselessCellsMap[n.agent.row][n.agent.col] * 10;
+        for (Box box : n.boxList) {
+            n.h += uselessCellsMap[box.row][box.col] * 10;
         }
-
-        /*
-        queueLoop:
-        while (!queue.isEmpty()) {
-            Position pos = queue.poll();
-            for (int i = 0; i < 4; i++) {
-                int dr = BDI.deltas[i][0]; // delta row
-                int dc = BDI.deltas[i][1]; // delta col
-                if (map[pos.row + dr][pos.col + dc] == '0') {
-                    continue;
-                }
-                if (map[pos.row + dr][pos.col + dc] == 'o') {
-                    map[pos.row + dr][pos.col + dc] = ' ';
-                    boxesInThisArea = true;
-                    break queueLoop;
-                }
-                if (map[pos.row + dr][pos.col + dc] == ' ') {
-                    queue.add(new Position(pos.row + dr, pos.col + dc));
-                    map[pos.row + dr][pos.col + dc] = '0';
-                }
-            }
-        }
-
-        if (!boxesInThisArea) {
-            n.h += n.boxList.size();
-        }
-        */
-
-        /*if (boxesNotToMoveMuch != null) {
-            for (Box b1 : boxesNotToMoveMuch) {
-                for (Box b2 : n.boxList) {
-                    if (b1.id == b2.id) {
-                        n.h += 100 * this.shortestDistance[b1.row][b1.col][b2.row][b2.col];
-                    }
-                }
-            }
-        }*/
 
         // Add weight for getting any box closer to its goal
         /*activeboxes = new HashSet<Box>();
@@ -376,7 +334,7 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
+    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, int[][] uselessCellsMap) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -387,6 +345,7 @@ class AStar extends Heuristic {
         }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
+        this.uselessCellsMap = uselessCellsMap;
     }
 
     public AStar(Node initialState) {
@@ -407,7 +366,7 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, int[][] uselessCellsMap) {
         this(initialState, W);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -418,6 +377,7 @@ class WeightedAStar extends Heuristic {
         }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
+        this.uselessCellsMap = uselessCellsMap;
     }
 
     public WeightedAStar(Node initialState, int W) {
@@ -437,7 +397,7 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
+    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, int[][] uselessCellsMap) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -448,6 +408,7 @@ class Greedy extends Heuristic {
         }
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
+        this.uselessCellsMap = uselessCellsMap;
     }
 
     public Greedy(Node initialState) {

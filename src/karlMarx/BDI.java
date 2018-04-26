@@ -299,7 +299,7 @@ public class BDI {
             }
             IllegalPositions.add(new Position(p));
         }
-
+        IllegalPositions.remove(g);
         return new Pair<>(boxesOnThePath, IllegalPositions);
     }
 
@@ -383,6 +383,63 @@ public class BDI {
         }
 
         return bestGoal;
+    }
+
+    public static int[][] getUselessCellsMap(Node n, Goal currentGoal, Set<Goal> goalSet) {
+        char[][] originalMap = recreateMap(n, true, false, true);
+        for (Goal g : goalSet) {
+            originalMap[g.row][g.col] = '+'; // Make all current goals walls
+        }
+//        for (int i = 0; i < originalMap.length; i++) {
+//            System.err.println(Arrays.toString(originalMap[i]));
+//        }
+        int[][] uselessCellPenalty = new int[Node.MAX_ROW][Node.MAX_COL];
+        for (Goal g : goalSet) {
+            Set<Position> changedPositions = new HashSet<Position>();
+            // Run BFS from g
+            Position[] sidesPositions = g.getNeighbours();
+            for (int i = 0; i < 4; i++) {
+                Queue<Position> queue = new ArrayDeque<>();
+                char c = originalMap[sidesPositions[i].row][sidesPositions[i].col];
+                if (!Box.isBox(c) && c != ' ') {
+                    continue;
+                }
+                queue.add(sidesPositions[i]);
+                char[][] map = new char[originalMap.length][originalMap[0].length];
+                for (int j = 0; j < originalMap.length; j++) {
+                    System.arraycopy(originalMap[j], 0, map[j], 0, originalMap[j].length);
+                }
+                boolean[][] visited = new boolean[originalMap.length][originalMap[0].length];
+                bfsLoop:
+                while (!queue.isEmpty()) {
+                    Position pos = queue.poll();
+                    changedPositions.add(pos);
+                    Position[] neighbours = pos.getNeighbours();
+                    for (Position neighbour : neighbours) {
+                        c = map[neighbour.row][neighbour.col];
+                        if (!visited[neighbour.row][neighbour.col] && c == ' ') {
+                            queue.add(neighbour);
+                            visited[neighbour.row][neighbour.col] = true;
+                        } else if (Box.isBox(c) || Goal.isGoal(c)) {
+                            changedPositions.clear();
+                            break bfsLoop;
+                        }
+                    }
+                }
+                for (Position p : changedPositions) {
+                    uselessCellPenalty[p.row][p.col] = 1;
+                }
+                changedPositions.clear();
+            }
+        }
+        for (int i = 0; i < uselessCellPenalty.length; i++) {
+            for (int j = 0; j < uselessCellPenalty[i].length; j++) {
+                if (uselessCellPenalty[i][j] > 0) {
+                    uselessCellPenalty[i][j] = Heuristic.shortestDistance[i][j][currentGoal.row][currentGoal.col];
+                }
+            }
+        }
+        return uselessCellPenalty;
     }
 
     public static void removeUnreachableBoxesFromBoxlist(Node currentState) {

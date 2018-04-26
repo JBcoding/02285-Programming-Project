@@ -57,6 +57,10 @@ public class Box extends Position implements Comparable<Box> {
         return this._hash;
     }
 
+    public static boolean isBox(char c) {
+        return c >= 'A' && c <= 'Z';
+    }
+
     @Override
     public int compareTo(Box o) {
         return o.hashCode() - hashCode();
