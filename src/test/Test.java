@@ -94,7 +94,7 @@ public class Test {
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
                    long b = System.currentTimeMillis();
-                   System.err.print(entry.getFileName());
+                   System.err.println(entry.getFileName());
                    Pair<String, String> s = runJob(copy);
                    System.err.println(s);
                    try {
@@ -112,7 +112,7 @@ public class Test {
                        System.out.printf(" Time to solve: " + solutionTime + " (%.2f points)\n", timePoint);
                        lengthPoints += lengthPoint;
                        timePoints += timePoint;
-                   } catch (NumberFormatException e) {
+                   } catch (NumberFormatException | NullPointerException e) {
                        System.out.println(" Could not solve this level");
                    }
                    i++;
@@ -143,10 +143,8 @@ public class Test {
 
             String s = null;
             String next = null;
-            String prev = null;
             while ((next = stdError.readLine()) != null) {
                 if (next.contains("Unable to read next action from client")) return null;
-                prev = s;
                 s = next;
                 s = s.substring("[Client said] ".length());
                 try {
@@ -154,7 +152,7 @@ public class Test {
                         return null;
                     }
                     Integer.parseInt(s);
-                    return new Pair<String, String>(s, prev);
+                    return new Pair<String, String>(s, stdError.readLine());
                     
                 } catch (NumberFormatException | StringIndexOutOfBoundsException e) {}
             }
