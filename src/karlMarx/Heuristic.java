@@ -90,6 +90,27 @@ public abstract class Heuristic implements Comparator<Node> {
         }
     }
 
+    protected void initMasterActiveGoalsBoxes(Node initialState) {
+        if (currentGoals == null) {
+            masterActivegoals.addAll(Node.goalSet);
+        } else {
+            masterActivegoals.addAll(currentGoals);
+        }
+
+        for (int i = 0; i < initialState.boxList.size(); i++) {
+            Box b = initialState.boxList.get(i);
+            char letter = Character.toLowerCase(b.letter);
+            if (b.color == initialState.agent.color) {
+                for (Goal goal : masterActivegoals) {
+                    if (goal.letter == letter) {
+                        possibleActiveBoxIndices.add(i);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     public Heuristic(Node initialState) {
         // Here's a chance to pre-process the static parts of the level.
 
@@ -122,25 +143,6 @@ public abstract class Heuristic implements Comparator<Node> {
             }
 
             solvableByColor.put(g, colors);
-        }
-
-        if (currentGoals == null) {
-            masterActivegoals.addAll(Node.goalSet);
-        } else {
-            masterActivegoals.addAll(currentGoals);
-        }
-
-        for (int i = 0; i < initialState.boxList.size(); i++) {
-            Box b = initialState.boxList.get(i);
-            char letter = Character.toLowerCase(b.letter);
-            if (b.color == initialState.agent.color) {
-                for (Goal goal : masterActivegoals) {
-                    if (goal.letter == letter) {
-                        possibleActiveBoxIndices.add(i);
-                        break;
-                    }
-                }
-            }
         }
 
     }
@@ -183,11 +185,6 @@ public abstract class Heuristic implements Comparator<Node> {
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
 
-    public static long t1 = 0;
-    public static long t2 = 0;
-    public static long t3 = 0;
-    public static long t4 = 0;
-
     public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -208,15 +205,11 @@ public abstract class Heuristic implements Comparator<Node> {
             return n.h;
         }
 
-        long t = System.nanoTime();
-
         n.h = 1;
         // start searching from the agent position
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
-        t1 += System.nanoTime() - t;
-        t = System.nanoTime();
 
         HashSet<Box> activeboxes = new HashSet<Box>();
         HashSet<Goal> activegoals = new HashSet<Goal>(masterActivegoals);
@@ -229,12 +222,8 @@ public abstract class Heuristic implements Comparator<Node> {
                 activeboxes.add(b);
             }
         }
-        t2 += System.nanoTime() - t;
-        t = System.nanoTime();
 
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
-        t3 += System.nanoTime() - t;
-        t = System.nanoTime();
 
         n.h += 2 * activegoals.size();
 
@@ -283,10 +272,6 @@ public abstract class Heuristic implements Comparator<Node> {
             currentCol = nearestGoal.col;
         }
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
-
-        t4 += System.nanoTime() - t;
-        // System.err.println(currentGoals);
-        // System.err.println();
 
         if (boxesToMove != null) {
             for (Box b1 : n.boxList) {
@@ -374,6 +359,7 @@ class AStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.uselessCellsMap = uselessCellsMap;
+        initMasterActiveGoalsBoxes(initialState);
     }
 
     public AStar(Node initialState) {
@@ -406,6 +392,7 @@ class WeightedAStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.uselessCellsMap = uselessCellsMap;
+        initMasterActiveGoalsBoxes(initialState);
     }
 
     public WeightedAStar(Node initialState, int W) {
@@ -437,6 +424,7 @@ class Greedy extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.uselessCellsMap = uselessCellsMap;
+        initMasterActiveGoalsBoxes(initialState);
     }
 
     public Greedy(Node initialState) {

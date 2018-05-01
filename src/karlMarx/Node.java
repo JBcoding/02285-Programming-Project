@@ -257,7 +257,10 @@ public class Node {
         return getExpandedNodes(null);
     }
 
+    public static long t1 = 0;
+
     public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
+        long t = System.nanoTime();
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
 
         HashSet<SearchState> statesOfInterest = new HashSet<>();
@@ -394,6 +397,8 @@ public class Node {
             expandedNodes.add(n);
         }
         Collections.shuffle(expandedNodes, RND);
+        t1 += System.nanoTime() - t;
+        System.err.println("Expanded nodes size: " + expandedNodes.size());
         return expandedNodes;
         /*
         for (Command c : Command.EVERY) {
@@ -406,8 +411,6 @@ public class Node {
         Collections.shuffle(expandedNodes, RND);
         return expandedNodes;*/
     }
-
-    public static long t1 = 0;
 
     private Command.Dir getDirectionFromPositions(Position p1, Position p2) {
         if (p1.row > p2.row) {
