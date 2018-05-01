@@ -90,7 +90,7 @@ public class SASearchClient extends SearchClient {
 
         int iterations = 0;
         while (true) {
-            if (iterations == 10) {
+            if (iterations == 10000) {
                 System.err.println(searchStatus());
                 iterations = 0;
             }
