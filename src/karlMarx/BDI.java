@@ -43,7 +43,9 @@ public class BDI {
             }
         }
         for (Goal g : Node.goalSet) {
-            map[g.row][g.col] = g.letter;
+            if (!Node.walls[g.row][g.col]) {
+                map[g.row][g.col] = g.letter;
+            }
         }
 //        for (int i = 0; i < map.length; i++) {
 //            System.err.println(Arrays.toString(map[i]));
@@ -77,6 +79,7 @@ public class BDI {
                 }
             }
         }
+
         return map;
     }
 
@@ -201,8 +204,8 @@ public class BDI {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
-                    if (penaltyMap[i][j] < -numberOfBoxesToMove) {
-                        penaltyMap[i][j] = 0;
+                    if (penaltyMap[i][j] < -numberOfBoxesToMove - 1) {
+                        penaltyMap[i][j] = 1;
                     }
                     //penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
                 }

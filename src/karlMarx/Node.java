@@ -285,10 +285,15 @@ public class Node {
                 seen.add(startState);
             }
         }
+
+        int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
         while (!queue.isEmpty()) {
             SearchState ss = queue.poll();
             seen.add(ss);
             Position p = ss.getPosition();
+
+            // Collections.shuffle(Arrays.asList(deltas), RND);
 
             if (!IS_SINGLE && penaltyMap != null && penaltyMap[p.row][p.col] <= 0) {
                 statesOfInterest.add(ss);
@@ -316,7 +321,7 @@ public class Node {
                     statesOfInterest.add(ss);
                 } else if (penaltyMap != null) {
                     if (penaltyMap[ss.getBoxPosition().row][ss.getBoxPosition().col] <= 0) {
-                        statesOfInterest.add(ss); // TODO: choose states smarter here
+                        statesOfInterest.add(ss);
                     }
                 }
 
