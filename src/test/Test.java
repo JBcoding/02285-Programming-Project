@@ -12,9 +12,31 @@ import java.net.URI;
 import karlMarx.Driver;
 
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Test {
+
+    private static final int[] SA_SOLUTION_LENGTHS = {
+            124, 927, 1930, 3592, 604, 100, 239, 202, 521, 238, 100000, 193, 316,
+            262, 60, 212, 3262, 3687, 12662, 114, 3213, 228, 234, 95, 953
+    };
+
+    private static final int[] SA_SOLUTION_TIMES = {
+            17, 608, 1416, 2307, 203, 3955, 142, 152, 287, 182, 100000, 3341, 252,
+            205, 15, 268, 5970, 433, 1830, 118, 1054, 122, 269, 80, 484
+    };
+
+    private static final int[] MA_SOLUTION_LENGTHS = { // TODO: not added
+            124, 927, 1930, 3592, 604, 100, 239, 202, 521, 238, 100000, 193, 316,
+            262, 60, 212, 3262, 3687, 12662, 114, 3213, 228, 234, 95, 953
+    };
+
+    private static final int[] MA_SOLUTION_TIMES = { // TODO: not added
+            124, 927, 1930, 3592, 604, 100, 239, 202, 521, 238, 100000, 193, 316,
+            262, 60, 212, 3262, 3687, 12662, 114, 3213, 228, 234, 95, 953
+    };
     
     public static void main(String[] args) {
         String arg = "";
@@ -38,11 +60,11 @@ public class Test {
             "-l", 
             "%s", 
             "-c", 
-            "java -cp out karlMarx.Driver", 
+            "java -cp src karlMarx.Driver -wastar", 
             //"-g",
             //"-30",
             "-t", 
-            "30"
+            "10" 
         };
     
     private static void testAllLevels(String saOrMa) throws Exception {
@@ -54,21 +76,43 @@ public class Test {
         
         int totalSolved = 0;
         int totalSolutionLength = 0;
-        
-        long before = System.currentTimeMillis();
+        long totalSolutionTime = 0;
+
+        double lengthPoints = 0;
+        double timePoints = 0;
+
+        List<Integer> solutionLengths = new ArrayList<Integer>();
+        List<Integer> solutionTimes = new ArrayList<Integer>();
+        int[] prevSolutionLengths = saOrMa.equalsIgnoreCase("sa") ? SA_SOLUTION_LENGTHS : MA_SOLUTION_LENGTHS;
+        int[] prevSolutionTimes = saOrMa.equalsIgnoreCase("sa") ? SA_SOLUTION_TIMES : MA_SOLUTION_TIMES;
+        int i = 0;
         try (DirectoryStream<Path> stream =
-           Files.newDirectoryStream(currPath, saOrMa + "SA*.lvl")) {
+           Files.newDirectoryStream(currPath, saOrMa + "*.lvl")) {
                for (Path entry: stream) {
-                   System.out.println(entry.toAbsolutePath().toString().substring(0, entry.toAbsolutePath().toString().lastIndexOf("/")));
+                   System.out.print(entry.getFileName());
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
+                   long b = System.currentTimeMillis();
                    String s = runJob(copy);
+                   long solutionTime = System.currentTimeMillis() - b;
                    System.err.println(s);
                    try {
                        int solutionLength = Integer.parseInt(s);
                        totalSolved++;
                        totalSolutionLength += solutionLength;
-                   } catch (NumberFormatException e) {}
+                       solutionLengths.add(solutionLength);
+                       double lengthPoint = (prevSolutionLengths[i] / (double)solutionLength);
+                       System.out.printf(" Number of steps to solve: " + solutionLength + " (%.2f points)", lengthPoint);
+                       totalSolutionTime += solutionTime;
+                       solutionTimes.add((int)solutionTime);
+                       double timePoint = (prevSolutionTimes[i] / (double)solutionTime);
+                       System.out.printf(" Time to solve: " + solutionTime + " (%.2f points)\n", timePoint);
+                       lengthPoints += lengthPoint;
+                       timePoints += timePoint;
+                   } catch (NumberFormatException e) {
+                       System.out.println(" Could not solve this level");
+                   }
+                   i++;
                }
            } catch (IOException x) {
                // IOException can never be thrown by the iteration.
@@ -79,10 +123,12 @@ public class Test {
         long after = System.currentTimeMillis();
         
         System.out.println("Solved " + totalSolved + " levels");
-        System.out.println("Total length of all solutions is: " + totalSolutionLength);
-        System.out.println("Total time used (ms): " + (after - before));
+        System.out.printf("Total length of all solutions is: " + totalSolutionLength +
+                " (%.2f points)\n", lengthPoints);
+        System.out.printf("Total time used (ms): " + totalSolutionTime +
+                " (%.2f points)\n", timePoints);
     }
-    
+
     private static String runJob(String... job) throws IOException {
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(job);
@@ -117,5 +163,4 @@ public class Test {
         proc.destroyForcibly();
         return "";
     }
-
 }

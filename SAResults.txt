@@ -1,0 +1,28 @@
+SABlinky.lvl Number of steps to solve: 159 (0.78 points) Time to solve: 1806 (0.01 points)
+SAIamGreedy.lvl Number of steps to solve: 769 (1.21 points) Time to solve: 4888 (0.12 points)
+SAAIoliMAsh.lvl Could not solve this level
+SAOmnics.lvl Could not solve this level
+SAMasAiArne.lvl Number of steps to solve: 608 (0.99 points) Time to solve: 1964 (0.10 points)
+SAHALnineK.lvl Could not solve this level
+SATALK.lvl Number of steps to solve: 241 (0.99 points) Time to solve: 1108 (0.13 points)
+SAKalle.lvl Number of steps to solve: 247 (0.82 points) Time to solve: 3318 (0.05 points)
+SAGeneralAI.lvl Could not solve this level
+SANeverMind.lvl Number of steps to solve: 341 (0.70 points) Time to solve: 2178 (0.08 points)
+SAGroupOne.lvl Could not solve this level
+SAFooBar.lvl Could not solve this level
+SABeliebers.lvl Number of steps to solve: 497 (0.64 points) Time to solve: 1878 (0.13 points)
+SAtnrbts.lvl Could not solve this level
+SAJomarki.lvl Number of steps to solve: 60 (1.00 points) Time to solve: 1330 (0.01 points)
+SAMASters.lvl Number of steps to solve: 265 (0.80 points) Time to solve: 4425 (0.06 points)
+SAEvilCorp.lvl Could not solve this level
+SAgroupname.lvl Number of steps to solve: 3959 (0.93 points) Time to solve: 9201 (0.05 points)
+SABronies.lvl Could not solve this level
+SALemmings.lvl Number of steps to solve: 210 (0.54 points) Time to solve: 5774 (0.02 points)
+SABoxBunny.lvl Could not solve this level
+SADoDo.lvl Number of steps to solve: 253 (0.90 points) Time to solve: 2011 (0.06 points)
+SAHiveMind.lvl Number of steps to solve: 264 (0.89 points) Time to solve: 1836 (0.15 points)
+SALiquorice.lvl Number of steps to solve: 818 (0.12 points) Time to solve: 9951 (0.01 points)
+SADAT.lvl Number of steps to solve: 1054 (0.90 points) Time to solve: 5249 (0.09 points)
+Solved 15 levels
+Total length of all solutions is: 9745 (12.20 points)
+Total time used (ms): 56917 (1.08 points)

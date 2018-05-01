@@ -1,0 +1,13 @@
+MABlinky.lvl
+Number of steps to solve: 52
+Time to solve: 877
+MAHALnineK.lvl
+Could not solve this level
+MAMASters.lvl
+Could not solve this level
+MADoDo.lvl
+Number of steps to solve: 4
+Time to solve: 702
+MAtnrbts.lvl
+Could not solve this level
+MATALK.lvl

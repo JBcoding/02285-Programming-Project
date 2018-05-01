@@ -13,6 +13,10 @@ public class Goal extends Position {
         this.letter = letter;
     }
 
+    public static boolean isGoal(char c) {
+        return c >= 'a' && c <= 'z';
+    }
+
     public String toString() {
         return "Goal at (" + col + "," + row + ") with letter " + letter;
     }
