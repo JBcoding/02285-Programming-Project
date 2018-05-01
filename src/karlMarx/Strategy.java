@@ -70,8 +70,23 @@ class StrategyBestFirst extends Strategy {
 
     @Override
     public void addToFrontier(Node n) {
+        if (frontier.size() > 100000) {
+            pruneFrontier();
+        }
         frontier.add(n);
         frontierSet.add(n);
+    }
+
+    private void pruneFrontier() {
+        Node[] newFrontier = new Node[frontier.size() / 10];
+        for (int i = 0; i < newFrontier.length; i++) {
+            newFrontier[i] = frontier.poll();
+        }
+        frontier.clear();
+        frontierSet.clear();
+        for (Node n : newFrontier) {
+            addToFrontier(n);
+        }
     }
 
     @Override

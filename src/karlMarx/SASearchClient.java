@@ -87,6 +87,7 @@ public class SASearchClient extends SearchClient {
         if (!strategy.isExplored(state)) {
             strategy.addToFrontier(state);
         }
+        System.err.println(state);
 
         int iterations = 0;
         while (true) {

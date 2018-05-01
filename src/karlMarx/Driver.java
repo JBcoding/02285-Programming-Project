@@ -51,6 +51,7 @@ public class Driver {
                 for (Command c : solution) {
                     String act = "[" + c + "]";
                     System.out.println(act);
+                    System.err.println(act);
                     String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
