@@ -44,10 +44,9 @@ public class Driver {
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
-                System.err.println("Time to solve (ms) " + (System.currentTimeMillis() - startTime));
                 System.err.println("Found solution of length " + solution.size());
-                System.err.println(searchClient.searchStatus());
                 System.err.println(solution.size());
+                System.err.println(System.currentTimeMillis() - startTime);
 
                 for (Command c : solution) {
                     String act = "[" + c + "]";
@@ -79,8 +78,9 @@ public class Driver {
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
-                System.err.println("Time to solve (ms) " + (System.currentTimeMillis() - startTime));
                 System.err.println("Found solution of length " + solution.length);
+                System.err.println(solution.length);
+                System.err.println(System.currentTimeMillis() - startTime);
 
                 for (Command[] arr : solution) {
                     String act = Arrays.toString(arr);

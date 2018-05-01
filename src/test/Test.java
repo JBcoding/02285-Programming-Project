@@ -152,7 +152,8 @@ public class Test {
                         return null;
                     }
                     Integer.parseInt(s);
-                    return new Pair<String, String>(s, stdError.readLine());
+                    String time = stdError.readLine();
+                    return new Pair<String, String>(s, time.substring("[Client said] ".length()));
                     
                 } catch (NumberFormatException | StringIndexOutOfBoundsException e) {}
             }
