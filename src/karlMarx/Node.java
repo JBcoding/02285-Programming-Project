@@ -5,7 +5,7 @@ import java.util.*;
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(1);
+    private static final Random RND = new Random(4);
 
     public static boolean IS_SINGLE = true;
 
@@ -271,7 +271,7 @@ public class Node {
         seen.add(startState);
         for (Box b : boxList) {
             int distanceSquared = (int) (Math.pow(b.row - agent.row, 2) + Math.pow(b.col - agent.col, 2));
-            if (distanceSquared == 1) {
+            if (distanceSquared == 1 && b.color == agent.color) {
                 startState = new SearchState(agent);
                 startState.setBoxPosition(new Position(b));
                 startState.setBox(b);
