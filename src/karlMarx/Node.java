@@ -5,7 +5,7 @@ import java.util.*;
 import karlMarx.Command.Type;
 
 public class Node {
-    private static final Random RND = new Random(1);
+    private static final Random RND = new Random(4);
 
     public static boolean IS_SINGLE = true;
 
@@ -271,7 +271,7 @@ public class Node {
         seen.add(startState);
         for (Box b : boxList) {
             int distanceSquared = (int) (Math.pow(b.row - agent.row, 2) + Math.pow(b.col - agent.col, 2));
-            if (distanceSquared == 1) {
+            if (distanceSquared == 1 && b.color == agent.color) {
                 startState = new SearchState(agent);
                 startState.setBoxPosition(new Position(b));
                 startState.setBox(b);
@@ -285,10 +285,15 @@ public class Node {
                 seen.add(startState);
             }
         }
+
+        int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
         while (!queue.isEmpty()) {
             SearchState ss = queue.poll();
             seen.add(ss);
             Position p = ss.getPosition();
+
+            // Collections.shuffle(Arrays.asList(deltas), RND);
 
             if (!IS_SINGLE && penaltyMap != null && penaltyMap[p.row][p.col] <= 0) {
                 statesOfInterest.add(ss);
@@ -316,7 +321,7 @@ public class Node {
                     statesOfInterest.add(ss);
                 } else if (penaltyMap != null) {
                     if (penaltyMap[ss.getBoxPosition().row][ss.getBoxPosition().col] <= 0) {
-                        statesOfInterest.add(ss); // TODO: choose states smarter here
+                        statesOfInterest.add(ss);
                     }
                 }
 

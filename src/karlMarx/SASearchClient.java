@@ -111,6 +111,7 @@ public class SASearchClient extends SearchClient {
             }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
+                System.err.println(searchStatus());
                 return leafNode;
             }
             strategy.addToExplored(leafNode);
