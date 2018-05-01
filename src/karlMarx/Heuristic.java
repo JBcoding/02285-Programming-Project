@@ -4,7 +4,6 @@ import java.util.*;
 
 public abstract class Heuristic implements Comparator<Node> {
 
-    protected Goal[] prioritisedgoals;
     public static int[][][][] shortestDistance;
     protected static int maxdist = 0;
     protected int[] isgoalletter = new int[26];
@@ -15,6 +14,8 @@ public abstract class Heuristic implements Comparator<Node> {
     protected int[][] penaltyMap;
     protected List<Box> boxesNotToMoveMuch;
     protected int[][] uselessCellsMap;
+    protected List<Integer> possibleActiveBoxIndices = new ArrayList<Integer>();
+    protected Set<Goal> masterActivegoals = new HashSet<Goal>();
 
     static {
         // All pair shortest distances (by BFS).
@@ -94,7 +95,6 @@ public abstract class Heuristic implements Comparator<Node> {
 
         // Find all goals.
         ArrayList<Goal> goalcells = new ArrayList<>();
-        ArrayList<Goal> prioritisedgoals = new ArrayList<>();
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
@@ -122,6 +122,25 @@ public abstract class Heuristic implements Comparator<Node> {
             }
 
             solvableByColor.put(g, colors);
+        }
+
+        if (currentGoals == null) {
+            masterActivegoals.addAll(Node.goalSet);
+        } else {
+            masterActivegoals.addAll(currentGoals);
+        }
+
+        for (int i = 0; i < initialState.boxList.size(); i++) {
+            Box b = initialState.boxList.get(i);
+            char letter = Character.toLowerCase(b.letter);
+            if (b.color == initialState.agent.color) {
+                for (Goal goal : masterActivegoals) {
+                    if (goal.letter == letter) {
+                        possibleActiveBoxIndices.add(i);
+                        break;
+                    }
+                }
+            }
         }
 
     }
@@ -164,6 +183,11 @@ public abstract class Heuristic implements Comparator<Node> {
      But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
      */
 
+    public static long t1 = 0;
+    public static long t2 = 0;
+    public static long t3 = 0;
+    public static long t4 = 0;
+
     public int hPairingDistance(Node n) {
         /* to improve this further, I could e.g.:
          1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
@@ -191,24 +215,26 @@ public abstract class Heuristic implements Comparator<Node> {
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
         // initialise activegoals with all unsatisfied goals
-        Set<Goal> activegoals = new HashSet<Goal>();
-
-        if (currentGoals == null) {
-            activegoals.addAll(Node.goalSet);
-        } else {
-            activegoals.addAll(currentGoals);
-        }
+        t1 += System.nanoTime() - t;
+        t = System.nanoTime();
 
         HashSet<Box> activeboxes = new HashSet<Box>();
-        for (Box b : n.boxList) {
-            if (Character.toLowerCase(b.letter) == Node.goals[b.row][b.col]) {
-                activegoals.remove(new Goal(b.row, b.col, Character.toLowerCase(b.letter)));
-            } else if (b.color == n.agent.color) {
+        HashSet<Goal> activegoals = new HashSet<Goal>(masterActivegoals);
+        for (int index : possibleActiveBoxIndices) {
+            Box b = n.boxList.get(index);
+            char letter = Character.toLowerCase(b.letter);
+            if (letter == Node.goals[b.row][b.col]) {
+                activegoals.remove(new Goal(b.row, b.col, letter));
+            } else {
                 activeboxes.add(b);
             }
         }
+        t2 += System.nanoTime() - t;
+        t = System.nanoTime();
 
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
+        t3 += System.nanoTime() - t;
+        t = System.nanoTime();
 
         n.h += 2 * activegoals.size();
 
@@ -257,6 +283,8 @@ public abstract class Heuristic implements Comparator<Node> {
             currentCol = nearestGoal.col;
         }
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
+
+        t4 += System.nanoTime() - t;
         // System.err.println(currentGoals);
         // System.err.println();
 

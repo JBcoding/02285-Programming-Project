@@ -92,9 +92,13 @@ public class SASearchClient extends SearchClient {
 
         int iterations = 0;
         while (true) {
-            if (iterations == 10000) {
+            if (iterations > 800) {
                 System.err.println(searchStatus());
                 iterations = 0;
+                System.err.println("t1: " + Heuristic.t1 / 1000000000L);
+                System.err.println("t2: " + Heuristic.t2 / 1000000000L);
+                System.err.println("t3: " + Heuristic.t3 / 1000000000L);
+                System.err.println("t4: " + Heuristic.t4 / 1000000000L);
             }
 
             if (strategy.frontierIsEmpty()) {
@@ -102,6 +106,9 @@ public class SASearchClient extends SearchClient {
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
+            if (iterations == 0) {
+                System.err.println(leafNode);
+            }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
                 return leafNode;
