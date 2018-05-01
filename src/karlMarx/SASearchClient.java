@@ -42,8 +42,7 @@ public class SASearchClient extends SearchClient {
                     penaltyMap = data.b;
                     //System.err.println(currentState);
                     //System.err.println("MOVE BOXES: " + boxesToMove);
-                    int[][] uselessCellsMap = BDI.getUselessCellsMap(currentState, currentGoal, currentGoals);
-                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap);
+                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
                     List<Command> plan = lastNode.extractPlanNew();
                     if (plan.size() == 0) {
                         continue goalStateLoop;
@@ -63,8 +62,7 @@ public class SASearchClient extends SearchClient {
             }
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
-            int[][] uselessCellsMap = BDI.getUselessCellsMap(currentState, currentGoal, currentGoals);
-            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap);
+            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
             List<Command> plan = lastNode.extractPlanNew();
             if (plan.size() == 0) {
                 continue;
@@ -79,12 +77,12 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, int[][] uselessCellsMap) {
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch) {
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch));
         }
         if (!strategy.isExplored(state)) {
             strategy.addToFrontier(state);

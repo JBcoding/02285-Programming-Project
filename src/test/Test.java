@@ -99,7 +99,7 @@ public class Test {
                    System.err.println(s);
                    try {
                        int solutionLength = Integer.parseInt(s.a);
-                       int solutionTime = Integer.parseInt(s.a);
+                       int solutionTime = Integer.parseInt(s.b);
                        totalSolved++;
                        totalSolutionLength += solutionLength;
                        totalSolutionTime += solutionTime;
