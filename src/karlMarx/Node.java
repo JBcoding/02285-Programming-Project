@@ -260,7 +260,7 @@ public class Node {
     public static long t1 = 0;
 
     public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
-        long t = System.nanoTime();
+//        long t = System.nanoTime();
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
 
         HashSet<SearchState> statesOfInterest = new HashSet<>();
@@ -397,7 +397,7 @@ public class Node {
             expandedNodes.add(n);
         }
         Collections.shuffle(expandedNodes, RND);
-        t1 += System.nanoTime() - t;
+//        t1 += System.nanoTime() - t;
         System.err.println("Expanded nodes size: " + expandedNodes.size());
         return expandedNodes;
         /*

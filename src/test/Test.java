@@ -10,6 +10,7 @@ import java.net.URI;
 
 
 import karlMarx.Driver;
+import karlMarx.Pair;
 
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -93,18 +94,20 @@ public class Test {
                    String[] copy = Arrays.copyOf(COMMAND, COMMAND.length);
                    copy[4] = String.format(copy[4], entry.toAbsolutePath());
                    long b = System.currentTimeMillis();
-                   String s = runJob(copy);
-                   long solutionTime = System.currentTimeMillis() - b;
+                   System.err.print(entry.getFileName());
+                   Pair<String, String> s = runJob(copy);
                    System.err.println(s);
                    try {
-                       int solutionLength = Integer.parseInt(s);
+                       int solutionLength = Integer.parseInt(s.a);
+                       int solutionTime = Integer.parseInt(s.a);
                        totalSolved++;
                        totalSolutionLength += solutionLength;
+                       totalSolutionTime += solutionTime;
                        solutionLengths.add(solutionLength);
+                       solutionTimes.add(solutionTime);
+
                        double lengthPoint = (prevSolutionLengths[i] / (double)solutionLength);
                        System.out.printf(" Number of steps to solve: " + solutionLength + " (%.2f points)", lengthPoint);
-                       totalSolutionTime += solutionTime;
-                       solutionTimes.add((int)solutionTime);
                        double timePoint = (prevSolutionTimes[i] / (double)solutionTime);
                        System.out.printf(" Time to solve: " + solutionTime + " (%.2f points)\n", timePoint);
                        lengthPoints += lengthPoint;
@@ -129,7 +132,7 @@ public class Test {
                 " (%.2f points)\n", timePoints);
     }
 
-    private static String runJob(String... job) throws IOException {
+    private static Pair<String, String> runJob(String... job) throws IOException {
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(job);
 
@@ -140,17 +143,18 @@ public class Test {
 
             String s = null;
             String next = null;
+            String prev = null;
             while ((next = stdError.readLine()) != null) {
-                if (next.contains("Unable to read next action from client")) return "";
+                if (next.contains("Unable to read next action from client")) return null;
+                prev = s;
                 s = next;
-                //System.err.println(s);
                 s = s.substring("[Client said] ".length());
                 try {
                     if (s.charAt(0) == Driver.NO_SOLUTION) {
-                        return s;
+                        return null;
                     }
                     Integer.parseInt(s);
-                    return s;
+                    return new Pair<String, String>(s, prev);
                     
                 } catch (NumberFormatException | StringIndexOutOfBoundsException e) {}
             }
@@ -161,6 +165,6 @@ public class Test {
         }
         proc.destroy();
         proc.destroyForcibly();
-        return "";
+        return null;
     }
 }

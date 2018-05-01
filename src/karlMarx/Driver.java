@@ -11,6 +11,7 @@ public class Driver {
     public static final char NO_SOLUTION = '\u0000';
 
     public static void main(String[] args) throws Exception {
+        long startTime = System.currentTimeMillis();
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
 
         // Use stderr to print to console
@@ -43,6 +44,7 @@ public class Driver {
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
+                System.err.println("Time to solve (ms) " + (System.currentTimeMillis() - startTime));
                 System.err.println("Found solution of length " + solution.size());
                 System.err.println(searchClient.searchStatus());
                 System.err.println(solution.size());
@@ -77,6 +79,7 @@ public class Driver {
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + strategy);
+                System.err.println("Time to solve (ms) " + (System.currentTimeMillis() - startTime));
                 System.err.println("Found solution of length " + solution.length);
 
                 for (Command[] arr : solution) {

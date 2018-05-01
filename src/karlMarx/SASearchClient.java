@@ -95,7 +95,6 @@ public class SASearchClient extends SearchClient {
             if (iterations == 10) {
                 System.err.println(searchStatus());
                 iterations = 0;
-                System.err.println("t1: " + Node.t1 / 1000000L);
             }
 
             if (strategy.frontierIsEmpty()) {
