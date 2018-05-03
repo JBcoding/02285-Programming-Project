@@ -110,7 +110,8 @@ public class SASearchClient extends SearchClient {
                 return leafNode;
             }
             strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes(penaltyMap, endPosition)) { // The list of expanded nodes is shuffled randomly; see Node.java.
+
+            for (Node n : leafNode.getExpandedNodes(penaltyMap, null, endPosition)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
