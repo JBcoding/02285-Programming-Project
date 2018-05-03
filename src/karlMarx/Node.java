@@ -254,12 +254,16 @@ public class Node {
     }
 
     public ArrayList<Node> getExpandedNodes() {
-        return getExpandedNodes(null);
+        return getExpandedNodes(null, null);
     }
 
     public static long t1 = 0;
 
-    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
+    public ArrayList<Node> getExpandedNodes(Set<Position> illegalPositions) {
+        return getExpandedNodes(null, illegalPositions);
+    }
+
+    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap, Set<Position> illegalPositions) {
 //        long t = System.nanoTime();
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
 
@@ -303,6 +307,22 @@ public class Node {
             }
 
             if (ss.getBox() == null) {
+                if (illegalPositions != null) {
+                    for (Position illegalPos : illegalPositions) {
+                        for (int i = 0; i < BDI.deltas.length; i++) {
+                            int dr = BDI.deltas[i][0]; // delta row
+                            int dc = BDI.deltas[i][1]; // delta col
+                            if (illegalPos.row + dr < 0 || illegalPos.col + dc < 0 || illegalPos.row + dr >= Node.MAX_ROW || illegalPos.col + dc >= Node.MAX_COL) {
+                                continue;
+                            }
+                            Position possiblePos = new Position(illegalPos.row + dr, illegalPos.col + dc);
+                            if (!illegalPositions.contains(possiblePos)) {
+                                statesOfInterest.add(ss);
+                            }
+                        }
+                    }
+                }
+
                 for (int i = 0; i < BDI.deltas.length; i++) {
                     int dr = BDI.deltas[i][0]; // delta row
                     int dc = BDI.deltas[i][1]; // delta col

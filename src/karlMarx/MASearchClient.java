@@ -123,7 +123,7 @@ public class MASearchClient {
                             }
                         }
 
-//                        System.err.println(clearableIllegalPositions);
+                        System.err.println(clearableIllegalPositions);
 
                         ArrayList<Box> boxesToMove = new ArrayList<>();
                         for (Box box : currentState.boxList) {
@@ -156,7 +156,7 @@ public class MASearchClient {
                             Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
                         }
 
-                        Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true);
+                        Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true, illegalPositions);
                         if (lastNode == null) {
                             System.err.println("Unable to clear path.");
                             continue;
@@ -255,7 +255,7 @@ public class MASearchClient {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
                                 System.err.println("MOVE BOXES: " + boxesToMove);
-                                Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
+                                Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, null);
                                 if (leafNode == null) {
                                     System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
@@ -275,7 +275,7 @@ public class MASearchClient {
                         System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
-                        Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false);
+                        Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, null);
 
                         if (leafNode == null) {
                             System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
@@ -434,7 +434,7 @@ public class MASearchClient {
     }
 
     private Node
-    getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent) {
+    getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent, Set<Position> illegalPositions) {
         Strategy strategy;
 
         switch (strategyArg) {
@@ -468,7 +468,7 @@ public class MASearchClient {
             }
 
             strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+            for (Node n : leafNode.getExpandedNodes(illegalPositions)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
