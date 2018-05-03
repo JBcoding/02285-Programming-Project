@@ -160,6 +160,7 @@ public class MasterPlan {
     }
     
     public void removeRepetitiveStates(Node initState, Position[] initPositions, Agent[] oldAgents, boolean[][] initWalls) {
+//        if (true) return;
         for (int i  = 0; i < initWalls.length; i++) {
             for (int j = 0; j < initWalls[i].length; j++) {
                 Node.walls[i][j] = initWalls[i][j];
@@ -170,25 +171,22 @@ public class MasterPlan {
             agents[i] = new Agent(initPositions[i].row, initPositions[i].col, oldAgents[i].id, oldAgents[i].color);
         }
         MultiNode setNode = new MultiNode(initState, oldAgents);
-        
-        Node n = initState.ChildNode();
+        int stepsTaken = 0;
         Map<MultiNode, Integer> observedNodes = new HashMap<MultiNode, Integer>(); // Nodes and at which step they were observed
+        observedNodes.put(setNode, stepsTaken);
+
         Position[] positions = new Position[numberOfAgents];
         List<Position> oldPositions = new ArrayList<>();
         for (int i = 0; i < numberOfAgents; i++) {
             positions[i] = new Position(initPositions[i]);
         }
-        
-        int stepsTaken = 0;
 
-        observedNodes.put(new MultiNode(n, agents), stepsTaken);
+        Node n = initState.ChildNode();
         
         while (stepsTaken < length) {
             agents = new Agent[oldAgents.length];
-            
             for (int i = 0; i < numberOfAgents; i++) {
                 n.agent = new Agent(positions[i].row, positions[i].col, oldAgents[i].id, oldAgents[i].color);
-                agents[i] = n.agent;
                 // simulate command plan[stepsTaken][i]
                 Command c = plan[stepsTaken][i];
                 if (c == null || c.actionType == Command.Type.NoOp) {
@@ -204,6 +202,10 @@ public class MasterPlan {
                 }
                 Node oldN = n;
                 n = n.getNodeFromCommand(c);
+                if (n == null) {
+                    return;
+                }
+                agents[i] = n.agent;
                 
                 for (int j = 0; j < numberOfAgents; j++) {
                     if (j != i) {
@@ -225,32 +227,17 @@ public class MasterPlan {
             
             oldPositions.clear();
             stepsTaken ++;
-            
+
             setNode = new MultiNode(n, agents);
             if (observedNodes.containsKey(setNode)) {
-                int startOfSlice = observedNodes.get(setNode).intValue();
-                int lengthRemoved = stepsTaken - startOfSlice - 1;
+                int startOfSlice = observedNodes.get(setNode);
+                int lengthRemoved = stepsTaken - startOfSlice;
                 length = length - lengthRemoved;
                 for (int i = 0; i < numberOfAgents; i++) {
-                    for (int j = startOfSlice; j <= length; j++) {
+                    for (int j = startOfSlice; j < length; j++) {
                         plan[j][i] = plan[j+lengthRemoved][i];
                     }
                 }
-                stepsTaken = 0;
-                n = initState.ChildNode();
-                for (int i = 0; i < numberOfAgents; i++) {
-                    positions[i] = new Position(initPositions[i]);
-                }
-                for (int i = 0; i < numberOfAgents; i++) {
-                    agents[i] = new Agent(initPositions[i].row, initPositions[i].col, oldAgents[i].id, oldAgents[i].color);
-                }
-                for (int i  = 0; i < initWalls.length; i++) {
-                    for (int j = 0; j < initWalls[i].length; j++) {
-                        Node.walls[i][j] = initWalls[i][j];
-                    } // TODO: optimise this
-                }
-                observedNodes.clear();
-                continue;
             } else {
                 observedNodes.put(setNode, stepsTaken);
             }
