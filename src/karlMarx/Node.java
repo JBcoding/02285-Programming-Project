@@ -338,6 +338,21 @@ public class Node {
                     }
                 }
                 if (numberOfWallsAroundBox >= 3) {
+                    statesOfInterest.add(ss); // TODO: Can we just continue after this?
+                }
+
+                int numberOfWallsAroundAgent = 0;
+                for (int i = 0; i < BDI.deltas.length; i++) {
+                    int dr = BDI.deltas[i][0]; // delta row
+                    int dc = BDI.deltas[i][1]; // delta col
+                    if (p.row + dr < 0 || p.col + dc < 0 || p.row + dr >= Node.MAX_ROW || p.col + dc >= Node.MAX_COL) {
+                        continue;
+                    }
+                    if (map[p.row + dr][p.col + dc] == '+') {
+                        numberOfWallsAroundAgent += 1;
+                    }
+                }
+                if (numberOfWallsAroundAgent >= 3) {
                     statesOfInterest.add(ss);
                 }
 
@@ -395,6 +410,7 @@ public class Node {
             expandedNodes.add(n);
         }
         Collections.shuffle(expandedNodes, RND);
+//        t1 += System.nanoTime() - t;
         return expandedNodes;
         /*
         for (Command c : Command.EVERY) {
@@ -407,8 +423,6 @@ public class Node {
         Collections.shuffle(expandedNodes, RND);
         return expandedNodes;*/
     }
-
-    public static long t1 = 0;
 
     private Command.Dir getDirectionFromPositions(Position p1, Position p2) {
         if (p1.row > p2.row) {
@@ -423,7 +437,6 @@ public class Node {
     }
 
     private void addToQueue(boolean canTurnAround, SearchState newState, Queue<SearchState> queue, Set<SearchState> seen, SearchState ss, Set<SearchState> statesOfInterest) {
-        t1 ++;
         if (canTurnAround) {
             newState.setHasTurnedAround();
         }

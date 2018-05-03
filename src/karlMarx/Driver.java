@@ -11,6 +11,7 @@ public class Driver {
     public static final char NO_SOLUTION = '\u0000';
 
     public static void main(String[] args) throws Exception {
+        long startTime = System.currentTimeMillis();
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
 
         // Use stderr to print to console
@@ -44,12 +45,13 @@ public class Driver {
             } else {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println("Found solution of length " + solution.size());
-                System.err.println(searchClient.searchStatus());
                 System.err.println(solution.size());
+                System.err.println(System.currentTimeMillis() - startTime);
 
                 for (Command c : solution) {
                     String act = "[" + c + "]";
                     System.out.println(act);
+                    System.err.println(act);
                     String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
@@ -78,6 +80,8 @@ public class Driver {
             } else {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println("Found solution of length " + solution.length);
+                System.err.println(solution.length);
+                System.err.println(System.currentTimeMillis() - startTime);
 
                 for (Command[] arr : solution) {
                     String act = Arrays.toString(arr);

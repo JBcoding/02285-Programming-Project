@@ -156,7 +156,8 @@ public class MASearchClient {
                             Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
                         }
 
-                        Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true, null, null);
+                        Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, true, null);
+
                         if (lastNode == null) {
                             System.err.println("Unable to clear path.");
                             continue;
@@ -249,17 +250,17 @@ public class MASearchClient {
 
                         List<Box> boxesToMove = null;
                         int[][] penaltyMap = null;
-                        int[][] uselessCellsMap;
 
                         while (true) {
                             Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
-                            uselessCellsMap = BDI.getUselessCellsMap(currentState, currentGoal, currentGoals);
 
                             if (data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
                                 System.err.println("MOVE BOXES: " + boxesToMove);
-                                Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, uselessCellsMap, endPosition);
+
+                                Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, endPosition);
+
                                 if (leafNode == null) {
                                     System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue;
@@ -279,7 +280,9 @@ public class MASearchClient {
                         System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
-                        Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, uselessCellsMap, endPosition);
+
+                        Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, endPosition);
+
 
                         if (leafNode == null) {
                             System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
@@ -438,14 +441,15 @@ public class MASearchClient {
     }
 
     private Node
-    getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent, int[][] uselessCellsMap, Position endPosition) {
+    getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, boolean moveAgent, Position endPosition) {
+
         Strategy strategy;
 
         switch (strategyArg) {
-            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap)); break;
-            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap)); break;
+            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null)); break;
+            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null)); break;
             case "-greedy": /* Fall-through */
-            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap));
+            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
         }
 
 //        System.err.println(currentGoals);
@@ -484,7 +488,7 @@ public class MASearchClient {
 
     public String searchStatus(Strategy strategy) {
         StringBuilder s = new StringBuilder();
-        s.append(strategy.searchStatus() + " --- " + Node.t1);
+        s.append(strategy.searchStatus() + " --- ");
         return s.toString();
     }
 
