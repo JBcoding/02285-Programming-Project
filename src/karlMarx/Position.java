@@ -41,8 +41,8 @@ public class Position {
     public Position[] getNeighbours() {
         return new Position[] {
                 new Position(row + 1, col),
-                new Position(row, col + 1),
                 new Position(row - 1, col),
+                new Position(row, col + 1),
                 new Position(row, col - 1)};
     }
 

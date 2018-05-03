@@ -18,6 +18,6 @@ public class Goal extends Position {
     }
 
     public String toString() {
-        return "Goal at (" + col + "," + row + ") with letter " + letter;
+        return "Goal at (" + row + "," + col + ") with letter " + letter;
     }
 }

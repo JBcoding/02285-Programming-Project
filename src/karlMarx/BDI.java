@@ -35,6 +35,9 @@ public class BDI {
     public static final Command.Dir[] deltasDirection = new Command.Dir[]{Command.Dir.S, Command.Dir.N, Command.Dir.E, Command.Dir.W};
 
     public static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls) {
+        return recreateMap(n, differentiateBoxesAndGoals, ignoreGoals, makeCorrectlyPlacedGoalsToWalls, false);
+    }
+    public static char[][] recreateMap(Node n, boolean differentiateBoxesAndGoals, boolean ignoreGoals, boolean makeCorrectlyPlacedGoalsToWalls, boolean goalsOverWalls) {
 //        System.err.println("Node in recreateMap: " + n);
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
@@ -43,7 +46,7 @@ public class BDI {
             }
         }
         for (Goal g : Node.goalSet) {
-            if (!Node.walls[g.row][g.col]) {
+            if (!Node.walls[g.row][g.col] || goalsOverWalls) {
                 map[g.row][g.col] = g.letter;
             }
         }
@@ -86,6 +89,12 @@ public class BDI {
     public static Pair<List<Box>, int[][]> boxToMove(Node n, Goal g) {
         List<Box> boxes = getBoxesToGoal(g, n);
         Box box;
+
+        for (Box b : boxes) {
+            if (b.row == g.row && b.col == g.col) {
+                return null;
+            }
+        }
 
         if (boxes.size() == 1) {
             box = boxes.get(0);
@@ -316,18 +325,19 @@ public class BDI {
         return boxes;
     }
 
-    public static Goal getGoal(Node n) {
+    public static Pair<Goal, Position> getGoal(Node n) {
         return getGoal(n, Node.goalSet);
     }
 
-    public static Goal getGoal(Node n, Set<Goal> goalSet) {
-        char[][] map = recreateMap(n, false, false, true);
+    public static Pair<Goal, Position> getGoal(Node n, Set<Goal> goalSet) {
+        char[][] map = recreateMap(n, false, false, true, true);
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
             System.arraycopy(map[i], 0, originalMap[i], 0, map[i].length);
         }
         Goal bestGoal = null;
         double bestGoalScore = 0;
+        int bestLargestSideIndex = 0;
         for (Goal g : goalSet) {
             // Run BFS from g
             if (originalMap[g.row][g.col] == '+') {
@@ -365,11 +375,12 @@ public class BDI {
                     }
                 }
             }
-            int largestSide = sidesCount[0], secondLargestSide = 0;
+            int largestSide = sidesCount[0], secondLargestSide = 0, largestSideIndex = 0;
             for (int i = 1; i < 4; i++) {
                 if (sidesCount[i] > largestSide) {
                     secondLargestSide = largestSide;
                     largestSide = sidesCount[i];
+                    largestSideIndex = i;
                 } else if (sidesCount[i] > secondLargestSide) {
                     secondLargestSide = sidesCount[i];
                 }
@@ -382,10 +393,18 @@ public class BDI {
             if (goalScore > bestGoalScore) {
                 bestGoalScore = goalScore;
                 bestGoal = g;
+                bestLargestSideIndex = largestSideIndex;
             }
         }
 
-        return bestGoal;
+        Position p = null;
+        if (bestGoal != null) {
+            p = new Position(bestGoal);
+            p.row += Command.dirToRowChange(deltasDirection[bestLargestSideIndex]);
+            p.col += Command.dirToColChange(deltasDirection[bestLargestSideIndex]);
+        }
+
+        return new Pair<Goal, Position>(bestGoal, p);
     }
 
     public static int[][] getUselessCellsMap(Node n, Goal currentGoal, Set<Goal> goalSet) {

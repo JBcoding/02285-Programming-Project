@@ -30,7 +30,8 @@ public class SASearchClient extends SearchClient {
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
-            currentGoal = BDI.getGoal(currentState);
+            Pair<Goal, Position> goalInfo = BDI.getGoal(currentState);
+            currentGoal = goalInfo.a;
             currentGoals.add(currentGoal);
             System.err.println("NEXT GOAL: " + currentGoal);
             List<Box> boxesToMove = null;
@@ -43,7 +44,7 @@ public class SASearchClient extends SearchClient {
                     //System.err.println(currentState);
                     //System.err.println("MOVE BOXES: " + boxesToMove);
                     int[][] uselessCellsMap = BDI.getUselessCellsMap(currentState, currentGoal, currentGoals);
-                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap);
+                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, uselessCellsMap, null);
                     List<Command> plan = lastNode.extractPlanNew();
                     if (plan.size() == 0) {
                         continue goalStateLoop;
@@ -64,7 +65,7 @@ public class SASearchClient extends SearchClient {
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
             int[][] uselessCellsMap = BDI.getUselessCellsMap(currentState, currentGoal, currentGoals);
-            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap);
+            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, uselessCellsMap, goalInfo.b);
             List<Command> plan = lastNode.extractPlanNew();
             if (plan.size() == 0) {
                 continue;
@@ -79,12 +80,12 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, int[][] uselessCellsMap) {
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, int[][] uselessCellsMap, Position endPosition) {
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, boxesNotToMoveMuch, uselessCellsMap));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, uselessCellsMap));
         }
         if (!strategy.isExplored(state)) {
             strategy.addToFrontier(state);
@@ -103,12 +104,12 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap)) {
+            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition)) {
                 System.err.println(searchStatus());
                 return leafNode;
             }
             strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes(penaltyMap)) { // The list of expanded nodes is shuffled randomly; see Node.java.
+            for (Node n : leafNode.getExpandedNodes(penaltyMap, endPosition)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }

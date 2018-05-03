@@ -74,10 +74,16 @@ public class Node {
     }
 
     public boolean isGoalState() {
-        return isGoalState(goalSet, null, null);
+        return isGoalState(goalSet, null, null, null);
     }
 
-    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap) {
+    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap, Position endPos) {
+        if (endPos != null) {
+            if (!(agent.row == endPos.row && agent.col == endPos.col)) {
+                return false;
+            }
+        }
+
         goalLoop:
         for (Goal goal : goals) {
             for (Box box : boxList) {
@@ -105,15 +111,6 @@ public class Node {
         }
 
         return true;
-    }
-
-    public boolean isGoalState(Set<Goal> goals, Set<Pair<Box, Position>> boxPositionGoals) {
-        for (Pair<Box, Position> goal : boxPositionGoals) {
-            if (!goal.a.isOn(goal.b)) {
-                return false;
-            }
-        }
-        return isGoalState(goals, null, null);
     }
 
     public static void quickApplyCommands(Node n, List<Command> cmds, SearchState ss) {
@@ -254,10 +251,10 @@ public class Node {
     }
 
     public ArrayList<Node> getExpandedNodes() {
-        return getExpandedNodes(null);
+        return getExpandedNodes(null, null);
     }
 
-    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap) {
+    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap, Position endPos) {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
 
         HashSet<SearchState> statesOfInterest = new HashSet<>();
@@ -292,6 +289,10 @@ public class Node {
             SearchState ss = queue.poll();
             seen.add(ss);
             Position p = ss.getPosition();
+
+            if (endPos != null && p.row == endPos.row && p.col == endPos.col) {
+                statesOfInterest.add(ss);
+            }
 
             // Collections.shuffle(Arrays.asList(deltas), RND);
 
