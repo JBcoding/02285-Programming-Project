@@ -1,0 +1,70 @@
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                 +                 +  abcdefghijklmnopqrstuvwxyz+AAA+
++                 +                 + +bcdefghijklmnopqrstuvwxyza+AAA+
++                 +                 + +cdefghijklmnopqrstuvwxyzab+AAA+
++                 +                 + +defghijklmnopqrstuvwxyzabc+AAA+
++                 +                 + +efghijklmnopqrstuvwxyzabcd+AAA+
++                 +                 + +fghijklmnopqrstuvwxyzabcde+AAA+
++                 +                 + +ghijklmnopqrstuvwxyzabcdef+AAA+
++                 +                 + +hijklmnopqrstuvwxyzabcdefg+AAA+
++                 +                 + +ijklmnopqrstuvwxyzabcdefgh+AAA+
++                 +                 + +jklmnopqrstuvwxyzabcdefghi+AAA+
++                 +                 + +klmnopqrstuvwxyzabcdefghij+AAA+
++                 +                 + +lmnopqrstuvwxyzabcdefghijk+AAA+
++                 +                 + +mnopqrstuvwxyzabcdefghijkl+AAA+
++                 +                 + +nopqrstuvwxyzabcdefghijklm+AAA+
++                 +                 + +opqrstuvwxyzabcdefghijklmn+AAA+
++                 +                 + +pqrstuvwxyzabcdefghijklmno+AAA+
++++++++++ +++++++++++++++++ +++++++++ +qrstuvwxyzabcdefghijklmnop+AAA+
++  0  +     +     +     +     +     + +rstuvwxyzabcdefghijklmnopq+AAA+
++Y+ +a+Y+ +a+Y+ +a+Y+ +a+Y+ +a+Y+ +a+ +stuvwxyzabcdefghijklmnopqr+AAA+
++W+ +b+W+ +b+W+ +b+W+ +b+W+ +b+W+ +b+ +tuvwxyzabcdefghijklmnopqrs+AAA+
++U+ +c+U+ +c+U+ +c+U+ +c+U+ +c+U+ +c+ +uvwxyzabcdefghijklmnopqrst+AAA+
++S+ +d+S+ +d+S+ +d+S+ +d+S+ +d+S+ +d+ +vwxyzabcdefghijklmnopqrstu+AAA+
++Q+ +e+Q+ +e+Q+ +e+Q+ +e+Q+ +e+Q+ +e+ +wxyzabcdefghijklmnopqrstuv+AAA+
++O+ +f+O+ +f+O+ +f+O+ +f+O+ +f+O+ +f+ +xyzabcdefghijklmnopqrstuvw+AAA+
++M+ +g+M+ +g+M+ +g+M+ +g+M+ +g+M+ +g+ +yzabcdefghijklmnopqrstuvwx+AAA+
++K+ +h+K+ +h+K+ +h+K+ +h+K+ +h+K+ +h+ +zabcdefghijklmnopqrstuvwxy+AAA+
++I+ +i+I+ +i+I+ +i+I+ +i+I+ +i+I+ +i+ +                          +AAA+
++G+ +j+G+ +j+G+ +j+G+ +j+G+ +j+G+ +j+ +ZABCDEFGHIJKLMNOPQRSTUVWXY+AAA+
++E+ +k+E+ +k+E+ +k+E+ +k+E+ +k+E+ +k+ +YZABCDEFGHIJKLMNOPQRSTUVWX+AAA+
++C+ +l+C+ +l+C+ +l+C+ +l+C+ +l+C+ +l+ +XYZABCDEFGHIJKLMNOPQRSTUVW+AAA+
++A+ +m+A+ +m+A+ +m+A+ +m+A+ +m+A+ +m+ +WXYZABCDEFGHIJKLMNOPQRSTUV+AAA+
++B+ +n+B+ +n+B+ +n+B+ +n+B+ +n+B+ +n+ +VWXYZABCDEFGHIJKLMNOPQRSTU+AAA+
++D+ +o+D+ +o+D+ +o+D+ +o+D+ +o+D+ +o+ +UVWXYZABCDEFGHIJKLMNOPQRST+AAA+
++F+ +p+F+ +p+F+ +p+F+ +p+F+ +p+F+ +p+ +TUVWXYZABCDEFGHIJKLMNOPQRS+AAA+
++H+ +q+H+ +q+H+ +q+H+ +q+H+ +q+H+ +q+ +STUVWXYZABCDEFGHIJKLMNOPQR+AAA+
++J+ +r+J+ +r+J+ +r+J+ +r+J+ +r+J+ +r+ +RSTUVWXYZABCDEFGHIJKLMNOPQ+AAA+
++L+ +s+L+ +s+L+ +s+L+ +s+L+ +s+L+ +s+ +QRSTUVWXYZABCDEFGHIJKLMNOP+AAA+
++N+ +t+N+ +t+N+ +t+N+ +t+N+ +t+N+ +t+ +PQRSTUVWXYZABCDEFGHIJKLMNO+AAA+
++P+ +u+P+ +u+P+ +u+P+ +u+P+ +u+P+ +u+ +OPQRSTUVWXYZABCDEFGHIJKLMN+AAA+
++R+ +v+R+ +v+R+ +v+R+ +v+R+ +v+R+ +v+ +NOPQRSTUVWXYZABCDEFGHIJKLM+AAA+
++T+ +w+T+ +w+T+ +w+T+ +w+T+ +w+T+ +w+ +MNOPQRSTUVWXYZABCDEFGHIJKL+AAA+
++V+ +x+V+ +x+V+ +x+V+ +x+V+ +x+V+ +x+ +LMNOPQRSTUVWXYZABCDEFGHIJK+AAA+
++X+ +y+X+ +y+X+ +y+X+ +y+X+ +y+X+ +y+ +KLMNOPQRSTUVWXYZABCDEFGHIJ+AAA+
++Z+ +z+Z+ +z+Z+ +z+Z+ +z+Z+ +z+Z+ +z+ +JKLMNOPQRSTUVWXYZABCDEFGHI+AAA+
++++ +++++ +++++ +++++ +++++ +++++ +++ +IJKLMNOPQRSTUVWXYZABCDEFGH+AAA+
++++                                   +HIJKLMNOPQRSTUVWXYZABCDEFG+AAA+
+++++++++++++++++++ ++++++++++++++++++++GHIJKLMNOPQRSTUVWXYZABCDEF+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++FGHIJKLMNOPQRSTUVWXYZABCDE+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++EFGHIJKLMNOPQRSTUVWXYZABCD+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++DEFGHIJKLMNOPQRSTUVWXYZABC+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++CDEFGHIJKLMNOPQRSTUVWXYZAB+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++BCDEFGHIJKLMNOPQRSTUVWXYZA+AAA+
++AAAAAAAAAAAAAAAAA aaaaaaaaaaaaaaaaa+++ABCDEFGHIJKLMNOPQRSTUVWXYZ+AAA+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++AAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

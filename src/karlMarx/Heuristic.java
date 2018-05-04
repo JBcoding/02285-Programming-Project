@@ -222,6 +222,18 @@ public abstract class Heuristic implements Comparator<Node> {
             }
         }
 
+        boolean[] goalsMissingCompletion = new boolean[26];
+        for (Goal g : activegoals) {
+            goalsMissingCompletion[g.letter - 'a'] = true;
+        }
+        Iterator<Box> i = activeboxes.iterator();
+        while (i.hasNext()) {
+            Box b = i.next();
+            if (!goalsMissingCompletion[b.letter - 'A']) {
+                i.remove();
+            }
+        }
+
         activegoals.removeIf(goal -> !solvableByColor.get(goal).contains(n.agent.color));
 
         n.h += 2 * activegoals.size();

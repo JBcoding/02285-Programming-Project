@@ -75,6 +75,7 @@ public class MASearchClient {
         while (!initialStates.get(0).isGoalState()) {
             boolean solvedSomething = false;
 
+            agentLoop:
             for (int i = 0; i < initialStates.size(); i++) {
                 if (illegalByAgent == i) {
                     illegalPositions.clear();
@@ -261,7 +262,7 @@ public class MASearchClient {
                                 Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, endPosition, null);
                                 if (leafNode == null) {
                                     System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
-                                    continue;
+                                    continue agentLoop;
                                 }
 //                                System.err.println(currentState);
                                 List<Command> plan = leafNode.extractPlanNew();

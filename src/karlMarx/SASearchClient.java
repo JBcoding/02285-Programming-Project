@@ -33,7 +33,7 @@ public class SASearchClient extends SearchClient {
             Pair<Goal, Position> goalInfo = BDI.getGoal(currentState);
             currentGoal = goalInfo.a;
             currentGoals.add(currentGoal);
-            System.err.println("NEXT GOAL: " + currentGoal);
+            System.err.println("NEXT GOAL: " + currentGoal + " (" + currentGoals.size() + " / " + Node.goalSet.size() + ")");
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
