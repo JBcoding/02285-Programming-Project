@@ -331,7 +331,7 @@ public class MASearchClient {
             Box maybeBox = currentState.findBox(curr.row, curr.col);
             if (maybeBox != null &&
                     Character.toLowerCase(maybeBox.letter) == goal.letter &&
-                    Node.goals[maybeBox.row][maybeBox.col] != ' ') {
+                    Node.goals[maybeBox.row][maybeBox.col] != goal.letter) {
                 reachableBoxes.add(maybeBox);
             }
 
@@ -453,6 +453,9 @@ public class MASearchClient {
 
         strategy.addToFrontier(state);
 
+        // TODO: Ugly problem with MAsimple5 where we don't end on the right endPosition
+        System.err.println(endPosition);
+
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
@@ -461,6 +464,7 @@ public class MASearchClient {
             }
 
             if (strategy.frontierIsEmpty()) {
+                System.err.println(searchStatus(strategy));
                 return null;
             }
 
