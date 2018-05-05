@@ -204,7 +204,7 @@ public abstract class Heuristic implements Comparator<Node> {
             return n.h;
         }
 
-        n.h = 1;
+         n.h = 1;
         // start searching from the agent position
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
@@ -285,11 +285,16 @@ public abstract class Heuristic implements Comparator<Node> {
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
 
         if (boxesToMove != null) {
-            for (Box b1 : n.boxList) {
-                if (boxesToMove.contains(b1.id)) {
-                    n.h += 5 * penaltyMap[b1.row][b1.col];
+            for (Box b : n.boxList) {
+                if (boxesToMove.contains(b.id)) {
+                    n.h += penaltyMap[b.row][b.col];
+
+                    if (penaltyMap[b.row][b.col] > 0) {
+                        n.h += shortestDistance[n.agent.row][n.agent.col][b.row][b.col];
+                    }
                 }
             }
+
             /*List<Pair<Integer, Integer>> boxesToMoveData = new ArrayList<>();
             for (Box b1 : n.boxList) {
                 for (Box b2 : boxesToMove) {

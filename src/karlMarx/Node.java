@@ -296,8 +296,11 @@ public class Node {
 
             // Collections.shuffle(Arrays.asList(deltas), RND);
 
-            if (!IS_SINGLE && penaltyMap != null && penaltyMap[p.row][p.col] <= 0) {
-                statesOfInterest.add(ss);
+            if (!IS_SINGLE && penaltyMap != null) {
+                if (boxList.stream().noneMatch(box -> penaltyMap[box.row][box.col] > 0)
+                        && penaltyMap[p.row][p.col] <= 0) {
+                    statesOfInterest.add(ss);
+                }
             }
 
             if (ss.getBox() == null) {
@@ -478,7 +481,7 @@ public class Node {
                 pos.col < MAX_COL;
     }
 
-    private boolean cellIsFree(int row, int col) {
+    public boolean cellIsFree(int row, int col) {
         return !Node.walls[row][col] && !boxAt(row, col);
 
     }
@@ -569,6 +572,33 @@ public class Node {
                     s.append(goal.letter);
                 } else if (Node.walls[row][col]) {
                     s.append("+");
+                } else {
+                    s.append(" ");
+                }
+            }
+            s.append("\n");
+        }
+        return s.toString();
+    }
+
+    public String toString(Set<Position> marks) {
+        StringBuilder s = new StringBuilder();
+        for (int row = 0; row < MAX_ROW; row++) {
+            for (int col = 0; col < MAX_COL; col++) {
+                Box box = findBox(row, col);
+                Goal goal = findGoal(row, col);
+                if (box != null) {
+                    s.append(box.letter);
+                } else if (row == this.agent.row && col == this.agent.col) {
+                    s.append(agent.id);
+                } else if (Node.walls[row][col] && goal != null) {
+                    s.append("@");
+                } else if (goal != null) {
+                    s.append(goal.letter);
+                } else if (Node.walls[row][col]) {
+                    s.append("+");
+                } else if (marks.contains(new Position(row, col))) {
+                    s.append("!");
                 } else {
                     s.append(" ");
                 }
