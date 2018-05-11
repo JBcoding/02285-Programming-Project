@@ -160,7 +160,7 @@ public class MasterPlan {
     }
     
     public void removeRepetitiveStates(Node initState, Position[] initPositions, Agent[] oldAgents, boolean[][] initWalls) {
-//        if (true) return;
+        // if (true) return;
         for (int i  = 0; i < initWalls.length; i++) {
             for (int j = 0; j < initWalls[i].length; j++) {
                 Node.walls[i][j] = initWalls[i][j];
@@ -226,7 +226,7 @@ public class MasterPlan {
             }            
             
             oldPositions.clear();
-            stepsTaken ++;
+            stepsTaken += 2;
 
             setNode = new MultiNode(n, agents);
             if (observedNodes.containsKey(setNode)) {

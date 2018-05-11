@@ -30,7 +30,7 @@ public class MAPlanMerger {
         }
     }
 
-    public void mergePlan(int agent, List<Command> plan) {
+    public Pair<Node, Position[]> mergePlan(int agent, List<Command> plan) {
         boolean[][] initWallsBackup = new boolean[Node.walls.length][Node.walls[0].length];
         for (int i = 0; i < Node.walls.length; i++) {
             System.arraycopy(Node.walls[i], 0, initWallsBackup[i], 0, Node.walls[i].length);
@@ -45,10 +45,13 @@ public class MAPlanMerger {
         }
         MasterPlan backup = masterPlan.copy();
         int offset = 0;
+
+        Pair<Node, Position[]> res;
+
         while (true) {
             masterPlan.insertPlanAtTime(agent, masterPlan.getNextMoveTimeFromAgent(agent) + offset, arr);
             try {
-                masterPlan.simulateFromNode(initState, initPositions, agents);
+                res = masterPlan.simulateFromNode(initState, initPositions, agents);
                 break;
             } catch (conflictException e) {
                 masterPlan = backup.copy();
@@ -94,7 +97,9 @@ public class MAPlanMerger {
 
         for (int j = 0; j < Node.walls.length; j++) {
             System.arraycopy(initWallsBackup[j], 0, Node.walls[j], 0, Node.walls[j].length);
-        }        
+        }
+
+        return res;
     }
 
     public Command[] tryPlanOfLength(MasterPlan backup, Command[] plan, int agent, int length, int offset, boolean doRestore) {
