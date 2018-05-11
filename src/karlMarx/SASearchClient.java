@@ -30,9 +30,25 @@ public class SASearchClient extends SearchClient {
         while (!currentState.isGoalState()) {
             //System.err.println(currentState);
 
-            Pair<Goal, Position> goalInfo = BDI.getGoal(currentState);
-            currentGoal = goalInfo.a;
+            Pair<Pair<Goal, Position>, Pair<List<Box>, Set<Position>>> goalInfo = BDI.getGoal(currentState);
+            currentGoal = goalInfo.a.a;
+
+            List<Box> boxesToMoveFirst = goalInfo.b.a;
+            Set<Position> illegalPositionsFirst = goalInfo.b.b;
+            int[][] penaltyMapFirst = new int[Node.MAX_ROW][Node.MAX_COL];
+            if (boxesToMoveFirst.size() != 0) {
+                penaltyMapFirst = BDI.calculatePenaltyMap(currentState, illegalPositionsFirst, boxesToMoveFirst.size(), true);
+
+                System.err.println("Moving boxes out of the way: " + boxesToMoveFirst);
+                Node lastNode = getPlan(currentState, currentGoals, boxesToMoveFirst, penaltyMapFirst, null, null);
+                List<Command> plan = lastNode.extractPlanNew();
+                solution.addAll(plan);
+                currentState = lastNode;
+                // This is a new initialState so it must not have a parent for isInitialState method to work
+                currentState.parent = null;
+            }
             currentGoals.add(currentGoal);
+
             System.err.println("NEXT GOAL: " + currentGoal + " (" + currentGoals.size() + " / " + Node.goalSet.size() + ")");
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
@@ -43,7 +59,7 @@ public class SASearchClient extends SearchClient {
                     penaltyMap = data.b;
                     //System.err.println(currentState);
                     //System.err.println("MOVE BOXES: " + boxesToMove);
-                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null);
+                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, illegalPositionsFirst);
 
                     List<Command> plan = lastNode.extractPlanNew();
                     if (plan.size() == 0) {
@@ -64,7 +80,7 @@ public class SASearchClient extends SearchClient {
             }
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
-            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, goalInfo.b);
+            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, goalInfo.a.b, null);
 
             List<Command> plan = lastNode.extractPlanNew();
             if (plan.size() == 0) {
@@ -80,12 +96,12 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition) {
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions) {
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions));
 
         }
         if (!strategy.isExplored(state)) {
@@ -105,7 +121,7 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition)) {
+            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions)) {
                 System.err.println(searchStatus());
                 return leafNode;
             }

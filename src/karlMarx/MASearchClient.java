@@ -179,7 +179,7 @@ public class MASearchClient {
 //                        System.err.println("No solvable goals /for agent: " + currentState.agent.id);
                         continue;
                     } else {
-                        Pair<Goal, Position> goalInfo = BDI.getGoal(currentState, solvableGoals);
+                        Pair<Goal, Position> goalInfo = BDI.getGoal(currentState, solvableGoals).a;
                         Goal currentGoal = goalInfo.a;
                         Position endPosition = goalInfo.b;
 
@@ -443,10 +443,10 @@ public class MASearchClient {
         Strategy strategy;
 
         switch (strategyArg) {
-            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null)); break;
-            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null)); break;
+            case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, null)); break;
+            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, null)); break;
             case "-greedy": /* Fall-through */
-            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null));
+            default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, null));
         }
 
 //        System.err.println(currentGoals);
@@ -466,7 +466,7 @@ public class MASearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition) &&
+            if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, null) &&
                     (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {
                 System.err.println(searchStatus(strategy));
                 return leafNode;

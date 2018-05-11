@@ -158,6 +158,10 @@ public class BDI {
     }
 
     public static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove) {
+        return calculatePenaltyMap(n, illegalPositions, numberOfBoxesToMove, false);
+    }
+
+    public static int[][] calculatePenaltyMap(Node n, Set<Position> illegalPositions, int numberOfBoxesToMove, boolean ignoreCutOff) {
         char[][] map = new char[Node.walls.length][Node.walls[0].length];
         int[][] penaltyMap = new int[Node.walls.length][Node.walls[0].length];
         Queue<Position> queue = new ArrayDeque<>();
@@ -213,7 +217,7 @@ public class BDI {
             for (int j = 0; j < Node.walls[i].length; j++) {
                 if (!illegalPositions.contains(new Position(i, j))) {
                     penaltyMap[i][j] *= -1;
-                    if (penaltyMap[i][j] < -numberOfBoxesToMove - 3) {
+                    if (penaltyMap[i][j] < -numberOfBoxesToMove - 3 && !ignoreCutOff) {
                         penaltyMap[i][j] = 1;
                     }
                     //penaltyMap[i][j] = Math.max(-numberOfBoxesToMove, penaltyMap[i][j]);
@@ -325,11 +329,11 @@ public class BDI {
         return boxes;
     }
 
-    public static Pair<Goal, Position> getGoal(Node n) {
+    public static Pair<Pair<Goal, Position>, Pair<List<Box>, Set<Position>>> getGoal(Node n) {
         return getGoal(n, Node.goalSet);
     }
 
-    public static Pair<Goal, Position> getGoal(Node n, Set<Goal> goalSet) {
+    public static Pair<Pair<Goal, Position>, Pair<List<Box>, Set<Position>>> getGoal(Node n, Set<Goal> goalSet) {
         char[][] map = recreateMap(n, false, false, true, true);
         char[][] originalMap = new char[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
@@ -338,6 +342,8 @@ public class BDI {
         Goal bestGoal = null;
         double bestGoalScore = 0;
         int bestLargestSideIndex = 0;
+        Set<Position> bestIllegalPositions = null;
+        Set<Position> bestPossibleHits = null;
         for (Goal g : goalSet) {
             // Run BFS from g
             if (originalMap[g.row][g.col] == '+') {
@@ -349,15 +355,21 @@ public class BDI {
             }
             map[g.row][g.col] = 'X';
             int[] sidesCount = new int[4];
+            Set<Position>[] hitPositions = new Set[4];
+            Set<Position>[] allPositions = new Set[4];
             Position[] sidesPositions = g.getNeighbours();
             for (int i = 0; i < 4; i++) {
+                hitPositions[i] = new HashSet<>();
+                allPositions[i] = new HashSet<>();
                 Queue<Position> queue = new ArrayDeque<>();
                 if (map[sidesPositions[i].row][sidesPositions[i].col] == 'o') {
                     map[sidesPositions[i].row][sidesPositions[i].col] = ' ';
                     sidesCount[i] ++;
+                    hitPositions[i].add(new Position(sidesPositions[i].row, sidesPositions[i].col));
                 }
                 if (map[sidesPositions[i].row][sidesPositions[i].col] == ' ') {
                     queue.add(sidesPositions[i]);
+                    allPositions[i].add(sidesPositions[i]);
                 }
                 while (!queue.isEmpty()) {
                     Position pos = queue.poll();
@@ -366,10 +378,12 @@ public class BDI {
                         int dc = deltas[j][1]; // delta col
                         if (map[pos.row + dr][pos.col + dc] == 'o') {
                             sidesCount[i] ++;
+                            hitPositions[i].add(new Position(pos.row + dr, pos.col + dc));
                             map[pos.row + dr][pos.col + dc] = ' ';
                         }
                         if (map[pos.row + dr][pos.col + dc] == ' ') {
                             queue.add(new Position(pos.row + dr, pos.col + dc));
+                            allPositions[i].add(new Position(pos.row + dr, pos.col + dc));
                             map[pos.row + dr][pos.col + dc] = '0';
                         }
                     }
@@ -394,6 +408,14 @@ public class BDI {
                 bestGoalScore = goalScore;
                 bestGoal = g;
                 bestLargestSideIndex = largestSideIndex;
+                bestIllegalPositions = new HashSet<>();
+                bestPossibleHits = new HashSet<>();
+                for (int i = 0; i < 4; i++) {
+                    if (i != largestSideIndex) {
+                        bestIllegalPositions.addAll(allPositions[i]);
+                        bestPossibleHits.addAll(hitPositions[i]);
+                    }
+                }
             }
         }
 
@@ -404,7 +426,17 @@ public class BDI {
             p.col += Command.dirToColChange(deltasDirection[bestLargestSideIndex]);
         }
 
-        return new Pair<Goal, Position>(bestGoal, p);
+        List<Box> boxesToMove = new ArrayList<>();
+        for (Position pp : bestPossibleHits) {
+            for (Box b : n.boxList) {
+                if (pp.row == b.row && pp.col == b.col) {
+                    boxesToMove.add(b);
+                }
+            }
+        }
+
+
+        return new Pair<Pair<Goal, Position>, Pair<List<Box>, Set<Position>>>(new Pair<>(bestGoal, p), new Pair<>(boxesToMove, bestIllegalPositions));
     }
 
     public static int[][] getUselessCellsMap(Node n, Goal currentGoal, Set<Goal> goalSet) {

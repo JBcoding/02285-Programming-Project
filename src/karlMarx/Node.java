@@ -74,10 +74,10 @@ public class Node {
     }
 
     public boolean isGoalState() {
-        return isGoalState(goalSet, null, null, null);
+        return isGoalState(goalSet, null, null, null, null);
     }
 
-    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap, Position endPos) {
+    public boolean isGoalState(Set<Goal> goals, List<Box> boxesToMove, int[][] penaltyMap, Position endPos, Set<Position> illegalPositions) {
         if (endPos != null) {
             if (!(agent.row == endPos.row && agent.col == endPos.col)) {
                 return false;
@@ -106,6 +106,14 @@ public class Node {
                             return false;
                         }
                     }
+                }
+            }
+        }
+
+        if (illegalPositions != null) {
+            for (Box b : this.boxList) {
+                if (illegalPositions.contains(new Position(b))) {
+                    return false;
                 }
             }
         }
