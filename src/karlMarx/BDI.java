@@ -206,6 +206,9 @@ public class BDI {
             for (int j = 0; j < 4; j++) {
                 int dr = deltas[j][0]; // delta row
                 int dc = deltas[j][1]; // delta col
+                if (pos.row + dr < 0 || pos.col + dc < 0 || pos.row + dr >= Node.MAX_ROW || pos.col + dc >= Node.MAX_COL) {
+                    continue;
+                }
                 if (map[pos.row + dr][pos.col + dc] == ' ') {
                     penaltyMap[pos.row + dr][pos.col + dc] = penalty;
                     map[pos.row + dr][pos.col + dc] = '0';
@@ -280,6 +283,9 @@ public class BDI {
                     int dr = deltas[j][0]; // delta row
                     int dc = deltas[j][1]; // delta col
                     int queueIndex = i;
+                    if (pos.row + dr < 0 || pos.col + dc < 0 || pos.row + dr >= Node.MAX_ROW || pos.col + dc >= Node.MAX_COL) {
+                        continue;
+                    }
                     if (Character.isAlphabetic(map[pos.row + dr][pos.col + dc])) {
                         queueIndex ++;
                         map[pos.row + dr][pos.col + dc] = ' ';
@@ -382,6 +388,9 @@ public class BDI {
                     for (int j = 0; j < 4; j++) {
                         int dr = deltas[j][0]; // delta row
                         int dc = deltas[j][1]; // delta col
+                        if (pos.row + dr < 0 || pos.col + dc < 0 || pos.row + dr >= Node.MAX_ROW || pos.col + dc >= Node.MAX_COL) {
+                            continue;
+                        }
                         if (map[pos.row + dr][pos.col + dc] == 'o') {
                             sidesCount[i] ++;
                             hitPositions[i].add(new Position(pos.row + dr, pos.col + dc));
