@@ -110,7 +110,7 @@ public class SASearchClient extends SearchClient {
 
         int iterations = 0;
         while (true) {
-            if (iterations == 10000) {
+            if (iterations == 100) {
                 System.err.println(searchStatus());
                 iterations = 0;
             }
@@ -127,7 +127,7 @@ public class SASearchClient extends SearchClient {
             }
             strategy.addToExplored(leafNode);
 
-            for (Node n : leafNode.getExpandedNodes(penaltyMap, null, endPosition)) { // The list of expanded nodes is shuffled randomly; see Node.java.
+            for (Node n : leafNode.getExpandedNodes(penaltyMap, null, endPosition, boxesToMove)) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }

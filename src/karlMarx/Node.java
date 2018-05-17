@@ -259,11 +259,18 @@ public class Node {
     }
 
     public ArrayList<Node> getExpandedNodes() {
-        return getExpandedNodes(null, null, null);
+        return getExpandedNodes(null, null, null, null);
     }
 
-    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap, Set<Position> illegalPositions, Position endPos) {
+    public ArrayList<Node> getExpandedNodes(int[][] penaltyMap, Set<Position> illegalPositions, Position endPos, List<Box> boxesToMove) {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.EVERY.length);
+
+        HashSet<Integer> boxesToMoveIds = new HashSet<>();
+        if (boxesToMove != null) {
+            for (Box b : boxesToMove) {
+                boxesToMoveIds.add(b.id);
+            }
+        }
 
         HashSet<SearchState> statesOfInterest = new HashSet<>();
 
@@ -349,7 +356,9 @@ public class Node {
                     statesOfInterest.add(ss);
                 } else if (penaltyMap != null) {
                     if (penaltyMap[ss.getBoxPosition().row][ss.getBoxPosition().col] <= 0) {
-                        statesOfInterest.add(ss);
+                        if (boxesToMove == null || boxesToMoveIds.contains(ss.getBox().id)) {
+                            statesOfInterest.add(ss);
+                        }
                     }
                 }
 

@@ -294,13 +294,9 @@ public abstract class Heuristic implements Comparator<Node> {
         }
 
         if (boxesToMove != null) {
-            for (Box b : n.boxList) {
-                if (boxesToMove.contains(b.id)) {
-                    n.h += penaltyMap[b.row][b.col];
-
-                    if (penaltyMap[b.row][b.col] > 0) {
-                        n.h += shortestDistance[n.agent.row][n.agent.col][b.row][b.col];
-                    }
+            for (Box b1 : n.boxList) {
+                if (boxesToMove.contains(b1.id)) {
+                    n.h += 5 * penaltyMap[b1.row][b1.col];
                 }
             }
 

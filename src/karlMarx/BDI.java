@@ -301,11 +301,17 @@ public class BDI {
         Set<Position> IllegalPositions = new HashSet<>();
         IllegalPositions.add(new Position(p));
         while (!p.equals(g)) {
+            if (p.row < 0 || p.col < 0 || p.row >= Node.MAX_ROW || p.col >= Node.MAX_COL) {
+                break;
+            }
             int direction = map[p.row][p.col];
             int dr = ((direction - 48) % 3) - 1;
             int dc = ((direction - 48) / 3) - 1;
             p.row -= dr;
             p.col -= dc;
+            if (p.row < 0 || p.col < 0 || p.row >= Node.MAX_ROW || p.col >= Node.MAX_COL) {
+                break;
+            }
             if (Character.isAlphabetic(originalMap[p.row][p.col])) {
                 for (Box box : n.boxList) {
                     if (p.equals(box)) {
@@ -420,20 +426,20 @@ public class BDI {
         }
 
         Position p = null;
+        List<Box> boxesToMove = new ArrayList<>();
         if (bestGoal != null) {
             p = new Position(bestGoal);
             p.row += Command.dirToRowChange(deltasDirection[bestLargestSideIndex]);
             p.col += Command.dirToColChange(deltasDirection[bestLargestSideIndex]);
-        }
-
-        List<Box> boxesToMove = new ArrayList<>();
-        for (Position pp : bestPossibleHits) {
-            for (Box b : n.boxList) {
-                if (pp.row == b.row && pp.col == b.col) {
-                    boxesToMove.add(b);
+            for (Position pp : bestPossibleHits) {
+                for (Box b : n.boxList) {
+                    if (pp.row == b.row && pp.col == b.col) {
+                        boxesToMove.add(b);
+                    }
                 }
             }
         }
+
 
 
         return new Pair<Pair<Goal, Position>, Pair<List<Box>, Set<Position>>>(new Pair<>(bestGoal, p), new Pair<>(boxesToMove, bestIllegalPositions));

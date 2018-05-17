@@ -642,7 +642,7 @@ public class MASearchClient {
             }
 
             strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes(penaltyMap, illegalPositions, endPosition)) {
+            for (Node n : leafNode.getExpandedNodes(penaltyMap, illegalPositions, endPosition, boxesToMove)) {
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     /*
                     if (n.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition) &&
