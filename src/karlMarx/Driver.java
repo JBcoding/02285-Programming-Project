@@ -38,20 +38,20 @@ public class Driver {
             }
 
             if (solution == null) {
-                System.err.println(searchClient.searchStatus());
-                System.err.println("Unable to solve level.");
+                //System.err.println(searchClient.searchStatus());
+                //System.err.println("Unable to solve level.");
                 System.err.println(NO_SOLUTION);
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + strategy);
-                System.err.println("Found solution of length " + solution.size());
+                //System.err.println("\nSummary for " + strategy);
+                //System.err.println("Found solution of length " + solution.size());
                 System.err.println(solution.size());
                 System.err.println(System.currentTimeMillis() - startTime);
 
                 for (Command c : solution) {
                     String act = "[" + c + "]";
                     System.out.println(act);
-                    System.err.println(act);
+                    //System.err.println(act);
                     String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
@@ -74,12 +74,12 @@ public class Driver {
 
             if (solution == null) {
                 // System.err.println(searchClient.searchStatus());
-                System.err.println("Unable to solve level.");
+                //System.err.println("Unable to solve level.");
                 System.out.println(NO_SOLUTION);
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + strategy);
-                System.err.println("Found solution of length " + solution.length);
+                //System.err.println("\nSummary for " + strategy);
+                //System.err.println("Found solution of length " + solution.length);
                 System.err.println(solution.length);
                 System.err.println(System.currentTimeMillis() - startTime);
 
@@ -87,7 +87,7 @@ public class Driver {
                     String act = Arrays.toString(arr);
 
                     System.out.println(act);
-                    System.err.println(act);
+                    //System.err.println(act);
                     String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, act);
@@ -98,7 +98,7 @@ public class Driver {
             }
 
             // Print stuff finally for tests to read
-            System.err.println(solution == null ? NO_SOLUTION : solution.length);
+            //System.err.println(solution == null ? NO_SOLUTION : solution.length);
             System.exit(0);
         }
     }

@@ -19,7 +19,7 @@ public class SASearchClient extends SearchClient {
         
         this.strategyArg = strategyArg;
         
-        System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
+        //System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
         
         Node currentState = initialStates.get(0);
         BDI.removeUnreachableBoxesFromBoxlist(currentState);
@@ -39,7 +39,7 @@ public class SASearchClient extends SearchClient {
             if (boxesToMoveFirst.size() != 0) {
                 penaltyMapFirst = BDI.calculatePenaltyMap(currentState, illegalPositionsFirst, boxesToMoveFirst.size(), true);
 
-                System.err.println("Moving boxes out of the way: " + boxesToMoveFirst);
+                //System.err.println("Moving boxes out of the way: " + boxesToMoveFirst);
                 Node lastNode = getPlan(currentState, currentGoals, boxesToMoveFirst, penaltyMapFirst, null, null);
                 List<Command> plan = lastNode.extractPlanNew();
                 solution.addAll(plan);
@@ -50,7 +50,7 @@ public class SASearchClient extends SearchClient {
 
             currentGoals.add(currentGoal);
 
-            System.err.println("NEXT GOAL: " + currentGoal + " (" + currentGoals.size() + " / " + Node.goalSet.size() + ")");
+            //System.err.println("NEXT GOAL: " + currentGoal + " (" + currentGoals.size() + " / " + Node.goalSet.size() + ")");
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
@@ -59,7 +59,12 @@ public class SASearchClient extends SearchClient {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
                     //System.err.println(currentState);
-                    System.err.println("MOVE BOXES: " + boxesToMove);
+                    //System.err.println("MOVE BOXES: " + boxesToMove);
+
+                    //for (int[] arr : penaltyMap) {
+                    //    System.err.println(Arrays.toString(arr));
+                    //}
+
                     Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, illegalPositionsFirst);
 
                     List<Command> plan = lastNode.extractPlanNew();
@@ -100,6 +105,8 @@ public class SASearchClient extends SearchClient {
 
     private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions) {
 
+        //System.err.println(state);
+
         switch (strategyArg) {
         case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
         case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
@@ -114,7 +121,7 @@ public class SASearchClient extends SearchClient {
         int iterations = 0;
         while (true) {
             if (iterations == 100) {
-                System.err.println(searchStatus());
+                //System.err.println(searchStatus());
                 iterations = 0;
             }
 
@@ -124,14 +131,12 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            /*
-            System.err.println("_________________________________________________________");
-            System.err.println(leafNode);
-            System.err.println("_________________________________________________________");
-            */
+            if (iterations == 0) {
+                //System.err.println(leafNode);
+            }
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions)) {
-                System.err.println(searchStatus());
+                //System.err.println(searchStatus());
                 return leafNode;
             }
             strategy.addToExplored(leafNode);

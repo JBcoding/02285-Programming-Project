@@ -285,7 +285,7 @@ public abstract class Heuristic implements Comparator<Node> {
         }
         n.h *= 2; // TODO: Is this nice? // yes it is, do not remove - MOB // Is this still nice?
 
-        if (illegalPositions != null) {
+        if (illegalPositions != null && illegalPositions.size() > 0) {
             for (Box b : n.boxList) {
                 if (illegalPositions.contains(new Position(b))) {
                     n.h -= 25;
@@ -299,32 +299,6 @@ public abstract class Heuristic implements Comparator<Node> {
                     n.h += 5 * penaltyMap[b1.row][b1.col];
                 }
             }
-
-            /*List<Pair<Integer, Integer>> boxesToMoveData = new ArrayList<>();
-            for (Box b1 : n.boxList) {
-                for (Box b2 : boxesToMove) {
-                    if (b1.id == b2.id) {
-                        int distanceToBox = shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col];
-                        boxesToMoveData.add(new Pair<>(distanceToBox, penaltyMap[b1.row][b1.col]));
-                    }
-                }
-            }
-            if (boxesToMoveData.size() > 0) {
-                Collections.sort(boxesToMoveData, new PairIntegerDistanceDataComp());
-                int p = 0;
-                for (Pair<Integer, Integer> aBoxesToMoveData : boxesToMoveData) {
-                    p += aBoxesToMoveData.b;
-                }
-                for (Pair<Integer, Integer> aBoxesToMoveData : boxesToMoveData) {
-                    int distance = aBoxesToMoveData.a;
-                    int penaltyFromMap = aBoxesToMoveData.b;
-                    if (penaltyFromMap > 0) {
-                        p += ((distance - 1) + penaltyFromMap);
-                    }
-                    p *= 2;
-                }
-                n.h += p;
-            }*/
         }
 
 //        n.h += uselessCellsMap[n.agent.row][n.agent.col] * 10;

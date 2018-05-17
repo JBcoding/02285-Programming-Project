@@ -41,7 +41,7 @@ public class MASearchClient {
                 }
         }
 
-        System.err.format("Search multi agent starting with strategy %s.\n", strategyArg);
+        //System.err.format("Search multi agent starting with strategy %s.\n", strategyArg);
 
         solvableByColor = new HashMap<>();
 
@@ -114,10 +114,10 @@ public class MASearchClient {
                     }
                 }
 
-                System.err.println();
-                System.err.println("Agent: " + currentState.agent);
-                System.err.println("STARTING FROM:");
-                System.err.println(currentState);
+                //System.err.println();
+                //System.err.println("Agent: " + currentState.agent);
+                //System.err.println("STARTING FROM:");
+                //System.err.println(currentState);
 
                 Pair<HashSet<Position>, HashSet<Box>> reachableData = reachable(currentState, agents);
 
@@ -141,9 +141,9 @@ public class MASearchClient {
                 try {
                     if ((!reachableBoxes.isEmpty()
                             || clearableIllegalPositions.contains(new Position(currentState.agent)))) {
-                        System.err.println("Trying to clear path.");
+                        //System.err.println("Trying to clear path.");
 
-                        System.err.println(reachableBoxes);
+                        //System.err.println(reachableBoxes);
 
                         ArrayList<Pair<Position, Character>> removedGoals = new ArrayList<>();
 
@@ -162,7 +162,7 @@ public class MASearchClient {
 
                         Node lastNode = getPlan(currentState, currentGoals, new ArrayList<>(reachableBoxes), penaltyMap, true, null, clearableIllegalPositions);
                         if (lastNode == null) {
-                            System.err.println("Unable to clear path.");
+                            //System.err.println("Unable to clear path.");
                             continue;
                         }
 
@@ -205,11 +205,11 @@ public class MASearchClient {
                         Position endPosition = goalInfo.b;
 
                         if (currentGoal == null) {
-                            System.err.println("NO GOAL");
+                            //System.err.println("NO GOAL");
                             continue;
                         }
 
-                        System.err.println("NEXT GOAL: " + currentGoal);
+                        //System.err.println("NEXT GOAL: " + currentGoal);
 
 
                         // Try to find the easiest accessible box matching the goal
@@ -218,7 +218,7 @@ public class MASearchClient {
                                 bestBox(currentState, agents, removed, currentGoal);
 
                         Box bestBox = bestBoxData.a;
-                        System.err.println("Best box: " + bestBox);
+                        //System.err.println("Best box: " + bestBox);
 
                         // And the path from that to the current goal
 
@@ -234,7 +234,7 @@ public class MASearchClient {
                         illegalPositions.addAll(boxToGoalData.b);
                         illegalPositions.add(new Position(currentGoal));
 
-                        System.err.println("ILLEGAL BOXES: " + illegalBoxes);
+                        //System.err.println("ILLEGAL BOXES: " + illegalBoxes);
 
                         if (!illegalBoxes.isEmpty()) {
                             illegalByAgent = i;
@@ -258,12 +258,12 @@ public class MASearchClient {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
                                 penaltyMap[currentGoal.row][currentGoal.col] = 1; // TODO: hack
-                                System.err.println("MOVE BOXES: " + boxesToMove);
+                                //System.err.println("MOVE BOXES: " + boxesToMove);
 
 
                                 Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, endPosition, null);
                                 if (leafNode == null) {
-                                    System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
+                                    //System.err.println("UNABLE TO MOVE BOXES: " + boxesToMove);
                                     continue agentLoop;
                                 }
                                 List<Command> plan = leafNode.extractPlanNew();
@@ -290,15 +290,15 @@ public class MASearchClient {
                             }
                         }
 
-                        System.err.println("SOLVE GOAL: " + currentGoal);
+                        //System.err.println("SOLVE GOAL: " + currentGoal);
 
                         currentGoals.add(currentGoal);
 
-                        System.err.println(currentState);
+                        //System.err.println(currentState);
                         Node leafNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, false, endPosition, null);
 
                         if (leafNode == null) {
-                            System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
+                            //System.err.println("UNABLE TO SOLVE GOAL: " + currentGoal);
                             continue;
                         }
 
@@ -608,7 +608,7 @@ public class MASearchClient {
 
         // System.err.println(currentGoals);
         if (illegalPositions != null) {
-            System.err.println(state.toString(illegalPositions));
+            //System.err.println(state.toString(illegalPositions));
         }
 
         strategy.addToFrontier(state);
@@ -617,19 +617,19 @@ public class MASearchClient {
         // TODO: Same problem in some cases with MABeliebers
         // TODO: HACK does not always work
         if (endPosition != null && Node.walls[endPosition.row][endPosition.col]) {
-            System.err.println("Illegal endPosition: " + endPosition);
+            //System.err.println("Illegal endPosition: " + endPosition);
             endPosition = null;
         }
 
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(searchStatus(strategy));
+                //System.err.println(searchStatus(strategy));
                 iterations = 0;
             }
 
             if (strategy.frontierIsEmpty()) {
-                System.err.println(searchStatus(strategy));
+                //System.err.println(searchStatus(strategy));
                 return null;
             }
 
@@ -637,7 +637,7 @@ public class MASearchClient {
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, null) &&
                     (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {
-                System.err.println(searchStatus(strategy));
+                //System.err.println(searchStatus(strategy));
                 return leafNode;
             }
 

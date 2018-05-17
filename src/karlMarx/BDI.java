@@ -190,7 +190,7 @@ public class BDI {
                 }
             }
         }
-        
+
         Position nullPos = new Position(-1, -1);
         queue.add(nullPos);
         int penalty = 1;

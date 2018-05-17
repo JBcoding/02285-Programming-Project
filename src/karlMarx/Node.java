@@ -643,5 +643,8 @@ public class Node {
         }
         return null;
     }
-    
+
+    public Set<Goal> getGoalSet() {
+        return goalSet;
+    }
 }
