@@ -446,6 +446,7 @@ public class Node {
             expandedNodes.add(n);
         }
         Collections.shuffle(expandedNodes, RND);
+
 //        t1 += System.nanoTime() - t;
         return expandedNodes;
         /*

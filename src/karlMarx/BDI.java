@@ -190,6 +190,7 @@ public class BDI {
                 }
             }
         }
+        
         Position nullPos = new Position(-1, -1);
         queue.add(nullPos);
         int penalty = 1;
@@ -327,7 +328,7 @@ public class BDI {
             }
             IllegalPositions.add(new Position(p));
         }
-        IllegalPositions.remove(g);
+        //IllegalPositions.remove(g);
         return new Pair<>(boxesOnThePath, IllegalPositions);
     }
 

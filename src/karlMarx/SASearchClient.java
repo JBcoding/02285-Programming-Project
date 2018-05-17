@@ -47,6 +47,7 @@ public class SASearchClient extends SearchClient {
                 // This is a new initialState so it must not have a parent for isInitialState method to work
                 currentState.parent = null;
             }
+
             currentGoals.add(currentGoal);
 
             System.err.println("NEXT GOAL: " + currentGoal + " (" + currentGoals.size() + " / " + Node.goalSet.size() + ")");
@@ -58,7 +59,7 @@ public class SASearchClient extends SearchClient {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
                     //System.err.println(currentState);
-                    //System.err.println("MOVE BOXES: " + boxesToMove);
+                    System.err.println("MOVE BOXES: " + boxesToMove);
                     Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, illegalPositionsFirst);
 
                     List<Command> plan = lastNode.extractPlanNew();
@@ -78,6 +79,7 @@ public class SASearchClient extends SearchClient {
                     break;
                 }
             }
+
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
             Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, goalInfo.a.b, null);
@@ -97,6 +99,7 @@ public class SASearchClient extends SearchClient {
     }
 
     private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions) {
+
         switch (strategyArg) {
         case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
         case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
@@ -121,6 +124,12 @@ public class SASearchClient extends SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
+            /*
+            System.err.println("_________________________________________________________");
+            System.err.println(leafNode);
+            System.err.println("_________________________________________________________");
+            */
+
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions)) {
                 System.err.println(searchStatus());
                 return leafNode;
@@ -131,6 +140,12 @@ public class SASearchClient extends SearchClient {
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
+                /*
+                System.err.println(n);
+                System.err.println(n.h + " " + n.g() + " " + (n.h + n.g()));
+                System.err.println(ff);
+                System.err.println("\n");
+                */
             }
             
             iterations++;
