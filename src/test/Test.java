@@ -20,23 +20,27 @@ import java.util.List;
 public class Test {
 
     private static final int[] SA_SOLUTION_LENGTHS = {
-            124, 927, 1930, 3592, 604, 100, 239, 202, 521, 238, 100000, 193, 316,
-            262, 60, 212, 3262, 3687, 12662, 114, 3213, 228, 234, 95, 953
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
     };
 
     private static final int[] SA_SOLUTION_TIMES = {
-            17, 608, 1416, 2307, 203, 3955, 142, 152, 287, 182, 100000, 3341, 252,
-            205, 15, 268, 5970, 433, 1830, 118, 1054, 122, 269, 80, 484
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
     };
 
-    private static final int[] MA_SOLUTION_LENGTHS = { // TODO: not added
-            52, 100000, 214, 4, 1108, 100000, 188, 41, 1563, 107, 53, 80, 12, 31, 27,
-            32, 231, 579, 1004, 192, 69, 99, 842, 128, 214
+    private static final int[] MA_SOLUTION_LENGTHS = {
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
     };
 
-    private static final int[] MA_SOLUTION_TIMES = { // TODO: not added
-            46, 100000, 526, 15, 1714, 100000, 1168, 71, 2073, 264, 71, 281, 106, 128, 114,
-            104, 216, 658, 700, 253, 151, 385, 902, 265, 530
+    private static final int[] MA_SOLUTION_TIMES = {
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100, 100, 100, 100, 100,
     };
     
     public static void main(String[] args) {
@@ -72,7 +76,7 @@ public class Test {
         String topDir = new java.io.File( "." ).getCanonicalPath();
         COMMAND[2] = String.format(COMMAND[2], topDir);
 
-        String levelDir = "/environment/comp_levels_2017/";
+        String levelDir = "/environment/real_levels/";
         Path currPath = Paths.get(topDir + levelDir);
         
         int totalSolved = 0;
