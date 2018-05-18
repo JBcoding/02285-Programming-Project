@@ -160,9 +160,7 @@ public class MasterPlan {
     }
     
     public void removeRepetitiveStates(Node initState, Position[] initPositions, Agent[] oldAgents, boolean[][] initWalls) {
-        MultiNode[] nodeAtStep = new MultiNode[length + 1];
         int length = this.length;
-        System.err.println("Step for agent 7 at step 259: " + plan[258][7]);
         Command[][] newPlan = new Command[plan.length][plan[0].length];
         for (int i = 0; i < plan.length; i++) {
             for (int j = 0; j < plan[i].length; j++) {
@@ -249,7 +247,6 @@ public class MasterPlan {
                 stepsTaken = startOfSlice;
             } else {
                 observedNodes.put(setNode, stepsTaken);
-                nodeAtStep[stepsTaken] = setNode;
             }
         }
 
