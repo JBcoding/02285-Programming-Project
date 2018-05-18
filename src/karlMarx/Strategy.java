@@ -5,19 +5,19 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 
 public abstract class Strategy {
-    private HashSet<Node> explored;
+    private HashSet<GeneralNode> explored;
     private final long startTime;
 
     public Strategy() {
-        this.explored = new HashSet<Node>(131072, 0.5f);
+        this.explored = new HashSet<GeneralNode>(131072, 0.5f);
         this.startTime = System.currentTimeMillis();
     }
 
-    public void addToExplored(Node n) {
+    public void addToExplored(GeneralNode n) {
         this.explored.add(n);
     }
 
-    public boolean isExplored(Node n) {
+    public boolean isExplored(GeneralNode n) {
         return this.explored.contains(n);
     }
 
@@ -33,11 +33,11 @@ public abstract class Strategy {
         return (System.currentTimeMillis() - this.startTime) / 1000f;
     }
 
-    public abstract Node getAndRemoveLeaf();
+    public abstract GeneralNode getAndRemoveLeaf();
 
-    public abstract void addToFrontier(Node n);
+    public abstract void addToFrontier(GeneralNode n);
 
-    public abstract boolean inFrontier(Node n);
+    public abstract boolean inFrontier(GeneralNode n);
 
     public abstract int countFrontier();
 
@@ -51,25 +51,25 @@ public abstract class Strategy {
 
 class StrategyBestFirst extends Strategy {
     private Heuristic heuristic;
-    private PriorityQueue<Node> frontier;
-    private HashSet<Node> frontierSet;
+    private PriorityQueue<GeneralNode> frontier;
+    private HashSet<GeneralNode> frontierSet;
 
     public StrategyBestFirst(Heuristic h) {
         super();
         heuristic = h;
-        frontier = new PriorityQueue<Node>(131072, h);
-        frontierSet = new HashSet<Node>(131072, 0.5f);
+        frontier = new PriorityQueue<GeneralNode>(131072, h);
+        frontierSet = new HashSet<GeneralNode>(131072, 0.5f);
     }
 
     @Override
-    public Node getAndRemoveLeaf() {
-        Node n = frontier.poll();
+    public GeneralNode getAndRemoveLeaf() {
+        GeneralNode n = frontier.poll();
         frontierSet.remove(n);
         return n;
     }
 
     @Override
-    public void addToFrontier(Node n) {
+    public void addToFrontier(GeneralNode n) {
         if (frontier.size() > 100000) {
             pruneFrontier();
         }
@@ -78,13 +78,13 @@ class StrategyBestFirst extends Strategy {
     }
 
     private void pruneFrontier() {
-        Node[] newFrontier = new Node[frontier.size() / 10];
+        GeneralNode[] newFrontier = new GeneralNode[frontier.size() / 10];
         for (int i = 0; i < newFrontier.length; i++) {
             newFrontier[i] = frontier.poll();
         }
         frontier.clear();
         frontierSet.clear();
-        for (Node n : newFrontier) {
+        for (GeneralNode n : newFrontier) {
             addToFrontier(n);
         }
     }
@@ -100,7 +100,7 @@ class StrategyBestFirst extends Strategy {
     }
 
     @Override
-    public boolean inFrontier(Node n) {
+    public boolean inFrontier(GeneralNode n) {
         return frontierSet.contains(n);
     }
 

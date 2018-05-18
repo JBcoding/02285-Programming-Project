@@ -129,7 +129,7 @@ public class SASearchClient extends SearchClient {
                 return null;
             }
 
-            Node leafNode = strategy.getAndRemoveLeaf();
+            Node leafNode = (Node)strategy.getAndRemoveLeaf();
 
             if (iterations == 0) {
                 //System.err.println(leafNode);

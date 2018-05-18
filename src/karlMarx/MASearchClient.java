@@ -633,7 +633,7 @@ public class MASearchClient {
                 return null;
             }
 
-            Node leafNode = strategy.getAndRemoveLeaf();
+            Node leafNode = (Node)strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, null) &&
                     (!moveAgent || penaltyMap[leafNode.agent.row][leafNode.agent.col] <= 0)) {

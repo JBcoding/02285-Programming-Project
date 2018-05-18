@@ -4,7 +4,7 @@ import java.util.*;
 
 import karlMarx.Command.Type;
 
-public class Node {
+public class Node implements GeneralNode {
     private static final Random RND = new Random(4);
 
     public static boolean IS_SINGLE = true;
@@ -13,16 +13,6 @@ public class Node {
     public static int MAX_COL;
 
     public Agent agent;
-
-    // Arrays are indexed from the top-left of the level, with first index being row and second being column.
-    // Row 0: (0,0) (0,1) (0,2) (0,3) ...
-    // Row 1: (1,0) (1,1) (1,2) (1,3) ...
-    // Row 2: (2,0) (2,1) (2,2) (2,3) ...
-    // ...
-    // (Start in the top left corner, first go down, then go right)
-    // E.g. this.walls[2] is an array of booleans having size MAX_COL.
-    // this.walls[row][col] is true if there's a wall at (row, col)
-    //
 
     public static boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
     public ArrayList<Box> boxList = new ArrayList<>();
@@ -40,11 +30,9 @@ public class Node {
 
     private int _hash = 0;
 
-    // Added as part of solution.
-    public int h = -1; // cache heuristics value.
+    public int h = -1;
 
     public static void setSize(int rows, int cols) {
-        // Dynamic level size.
         Node.MAX_ROW = rows;
         Node.MAX_COL = cols;
         Node.walls = new boolean[rows][cols];

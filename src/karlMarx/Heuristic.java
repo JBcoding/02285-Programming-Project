@@ -2,7 +2,7 @@ package karlMarx;
 
 import java.util.*;
 
-public abstract class Heuristic implements Comparator<Node> {
+public abstract class Heuristic implements Comparator<GeneralNode> {
 
     public static int[][][][] shortestDistance;
     protected static int maxdist = 0;
@@ -186,21 +186,6 @@ public abstract class Heuristic implements Comparator<Node> {
      */
 
     public int hPairingDistance(Node n) {
-        /* to improve this further, I could e.g.:
-         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
-         and then shortest paths can be checked for whether the contain other goal cells,
-         e.g. The current heuristics work very well when there are no conflicts,
-         but breaks down when there is a lot of conflicts between subgoals.
-
-         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals.
-         This can be computed by checking whether putting a box on the goal
-         would make some unfulfilled goals be in a connected component distinct from the one containing the agent.
-         This would however require computing connected components in each state,
-         that is, run a BFS or DFS, which might turn out to be too computationally expensive.
-
-         3) Choose more efficient data structures if possible,
-         in particular the HashSet for active goals and active boxes.
-         */
         if (n.h != -1) {
             return n.h;
         }
@@ -322,20 +307,80 @@ public abstract class Heuristic implements Comparator<Node> {
         return n.h;
     }
 
-    public int h(Node n) {
+    public int hPairingDistance(MultiBodyNode n) {
+        if (n.h != -1) {
+            return n.h;
+        }
+
+        n.h = 1;
+        HashSet<Box> activeboxes = new HashSet<Box>();
+        HashSet<Goal> activegoals = new HashSet<Goal>(masterActivegoals);
+        for (int index : possibleActiveBoxIndices) {
+            Box b = n.boxList.get(index);
+            char letter = Character.toLowerCase(b.letter);
+            if (letter == Node.goals[b.row][b.col]) {
+                activegoals.remove(new Goal(b.row, b.col, letter));
+            } else {
+                activeboxes.add(b);
+            }
+        }
+
+        boolean[] goalsMissingCompletion = new boolean[26];
+        for (Goal g : activegoals) {
+            goalsMissingCompletion[g.letter - 'a'] = true;
+        }
+        Iterator<Box> i = activeboxes.iterator();
+        while (i.hasNext()) {
+            Box b = i.next();
+            if (!goalsMissingCompletion[b.letter - 'A']) {
+                i.remove();
+            }
+        }
+
+        n.h += 2 * activegoals.size();
+
+        Set<Goal> tempActiveGoals = activegoals;
+        Set<Box> tempActiveBoxes = activeboxes;
+
+        while (!tempActiveGoals.isEmpty()) {
+            Box nearestBox;
+            Goal nearestGoal = null;
+            int distToBox = Integer.MAX_VALUE;
+            if (tempActiveBoxes.isEmpty()) {
+                break;
+            }
+            nearestBox = tempActiveBoxes.iterator().next();
+
+            tempActiveBoxes.remove(nearestBox);
+            int distToGoal = Integer.MAX_VALUE;
+            for (Goal g : tempActiveGoals) {
+                if (Character.toLowerCase(nearestBox.letter) == g.letter
+                        && shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col] < distToGoal) {
+                    nearestGoal = g;
+                    distToGoal = shortestDistance[g.row][g.col][nearestBox.row][nearestBox.col];
+                }
+            }
+            tempActiveGoals.remove(nearestGoal);
+            n.h = n.h
+                    + shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col] - 2;
+        }
+        return n.h;
+    }
+
+    public int h(GeneralNode n) {
         //return 0;
-        return hPairingDistance(n); // default heuristics. Best performing on warmup levels
-        //return hPairingDistanceFurthestGoal(n);
-        //return hPairingDistanceDeadlockPenalty(n);
-        //return hGoalCount(n);
-        // return hGoalCountPlusNearest(n);
+        if (n.getClass() == Node.class) {
+            return hPairingDistance((Node)n);
+        } else {
+            return hPairingDistance((MultiBodyNode) n);
+        }
     }
 
 
-    public abstract int f(Node n);
+    public abstract int f(GeneralNode n);
 
     @Override
-    public int compare(Node n1, Node n2) {
+    public int compare(GeneralNode n1, GeneralNode n2) {
         return this.f(n1) - this.f(n2);
     }
 
@@ -362,7 +407,7 @@ class AStar extends Heuristic {
     }
 
     @Override
-    public int f(Node n) {
+    public int f(GeneralNode n) {
         return n.g() + this.h(n);
     }
 
@@ -396,7 +441,7 @@ class WeightedAStar extends Heuristic {
     }
 
     @Override
-    public int f(Node n) {
+    public int f(GeneralNode n) {
         return n.g() + this.W * this.h(n);
     }
 
@@ -427,32 +472,12 @@ class Greedy extends Heuristic {
     }
 
     @Override
-    public int f(Node n) {
+    public int f(GeneralNode n) {
         return this.h(n);
     }
 
     @Override
     public String toString() {
         return "Greedy evaluation";
-    }
-}
-
-
-class PairIntegerDistanceDataComp implements Comparator<Pair<Integer, Integer>> {
-    @Override
-    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-        if (o1.b < 0 && o2.b < 0) {
-            return o1.b - o2.b;
-        } else if (o1.b < 0) {
-            return o1.b - o2.b;
-        } else if (o2.b < 0) {
-            return o1.b - o2.b;
-        } else {
-            if (o1.b.equals(o2.b)) {
-                return o1.a - o2.a;
-            } else {
-                return o1.b - o2.b;
-            }
-        }
     }
 }

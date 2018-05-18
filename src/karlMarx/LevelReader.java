@@ -10,6 +10,7 @@ public class LevelReader {
 
 
     public static ArrayList<Node> readLevel(BufferedReader serverMessages) throws Exception {
+        long t = System.nanoTime();
         ArrayList<Node> initialStates = new ArrayList<>();
         ArrayList<Box> boxList = new ArrayList<>();
         List<Agent> agentList = new LinkedList<>();
@@ -35,6 +36,8 @@ public class LevelReader {
             lines.add(line);
             line = serverMessages.readLine();
         }
+
+
         Node.setSize(lines.size(), cols);
 
         for (int row = 0; row < lines.size(); row++) {
@@ -72,11 +75,13 @@ public class LevelReader {
 //        boxList.forEach(box -> level.getBoxColors().put(box.id,box.color));
 //        agentList.forEach(agent -> level.getColorToAgents().get(agent.color).add(agent));
 
-        boxList.forEach(box -> LevelInfo.getBoxIdToColors().put(box.id,box.color));
-        agentList.forEach(agent -> {
+        for (Box b : boxList) {
+            LevelInfo.getBoxIdToColors().put(b.id, b.color);
+        }
+        for (Agent agent : agentList) {
             LevelInfo.getColorToAgents().putIfAbsent(agent.color, new HashSet<>());
             LevelInfo.getColorToAgents().get(agent.color).add(agent);
-        });
+        }
 
         for (Node state : initialStates) {
             ArrayList<Box> boxListCopy = new ArrayList<Box>();
@@ -89,7 +94,7 @@ public class LevelReader {
             Collections.sort(state.boxListSorted);
             state.boxListSortedHashCode = state.boxListSorted.hashCode();
         }
-        
+
         return initialStates;
     }
 }

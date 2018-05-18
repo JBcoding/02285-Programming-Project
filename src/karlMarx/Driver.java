@@ -5,13 +5,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.Semaphore;
 
 public class Driver {
 
     public static final char NO_SOLUTION = '\u0000';
 
     public static void main(String[] args) throws Exception {
-        long startTime = System.currentTimeMillis();
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
 
         // Use stderr to print to console
@@ -19,7 +20,8 @@ public class Driver {
 
         // Read level and create the initial state of the problem
         ArrayList<Node> initialStates = LevelReader.readLevel(serverMessages);
-        
+        long startTime = System.currentTimeMillis();
+
         String strategy = "";
         if (args.length > 0) {
             strategy = args[0];
@@ -52,24 +54,49 @@ public class Driver {
                     String act = "[" + c + "]";
                     System.out.println(act);
                     //System.err.println(act);
-                    String response = serverMessages.readLine();
+                    /*String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
                         System.err.format("%s was attempted in \n%s\n", act, c.toString());
                         break;
-                    }
+                    }*/
                 }
             }
         } else {
+            final Command[][][] tempSolution1 = new Command[1][1][1];
+            final Command[][][] tempSolution2 = new Command[1][1][1];
+            tempSolution1[0] = null;
+            tempSolution2[0] = null;
+            Semaphore semaphore = new Semaphore(0);
             MASearchClient searchClient = new MASearchClient();
+            String finalStrategy = strategy;
+            Thread threadNormal = new Thread(){
+                public void run(){
+                    try {
+                        tempSolution1[0] = (new MultiBody(initialStates.get(0))).Search(finalStrategy, initialStates);
+                        semaphore.release();
+                    } catch (Exception e) {}
+                }
+            };
+            String finalStrategy1 = strategy;
+            Thread threadMultiBody = new Thread(){
+                public void run(){
+                    try {
+                        tempSolution2[0] = searchClient.Search(finalStrategy1, initialStates); // ezpzlmnsqz
+                        semaphore.release();
+                    } catch (Exception e) {}
+                }
+            };
 
+            threadNormal.start();
+            threadMultiBody.start();
+
+            semaphore.acquire();
             Command[][] solution;
-
-            try {
-                solution = searchClient.Search(strategy, initialStates); // ezpzlmnsqz
-            } catch (OutOfMemoryError ex) {
-                System.err.println("Maximum memory usage exceeded.");
-                solution = null;
+            if (tempSolution1[0] != null) {
+                solution = tempSolution1[0];
+            } else {
+                solution = tempSolution2[0];
             }
 
             if (solution == null) {
@@ -88,12 +115,12 @@ public class Driver {
 
                     System.out.println(act);
                     //System.err.println(act);
-                    String response = serverMessages.readLine();
+                    /*String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, act);
                         System.err.format("%s was attempted\n", act);
                         break;
-                    }
+                    }*/
                 }
             }
 
