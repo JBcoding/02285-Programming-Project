@@ -89,6 +89,7 @@ public class MASearchClient {
         while (true) {
             agentLoop:
             for (int i = 0; i < agents.length; i++) {
+
                 if (illegalByAgent == i) {
                     illegalPositions.clear();
                     illegalByAgent = -1;
@@ -181,10 +182,10 @@ public class MASearchClient {
 
                         currentBoxList = new ArrayList<>(mergeData.a.boxList);
 
-                        for (int idx = 0; idx < mergeData.b.length; idx++) {
-                            Position pos = mergeData.b[idx];
-                            agents[idx].row = pos.row;
-                            agents[idx].col = pos.col;
+                        for (int j = 0; j < mergeData.b.length; j++) {
+                            Position pos = mergeData.b[j];
+                            agents[j].row = pos.row;
+                            agents[j].col = pos.col;
                         }
 
                         rounds = 0;
@@ -256,7 +257,7 @@ public class MASearchClient {
                         while (true) {
                             Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
 
-                            if (data.a.size() > 0) {
+                            if (data != null && data.a.size() > 0) {
                                 boxesToMove = data.a;
                                 penaltyMap = data.b;
                                 penaltyMap[currentGoal.row][currentGoal.col] = 1; // TODO: hack
@@ -279,10 +280,10 @@ public class MASearchClient {
                                 currentState.boxList = new ArrayList<>(currentBoxList);
                                 pruneBoxList(currentState, agents, solvedGoals);
 
-                                for (int idx = 0; idx < mergeData.b.length; idx++) {
-                                    Position pos = mergeData.b[idx];
-                                    agents[idx].row = pos.row;
-                                    agents[idx].col = pos.col;
+                                for (int j = 0; j < mergeData.b.length; j++) {
+                                    Position pos = mergeData.b[j];
+                                    agents[j].row = pos.row;
+                                    agents[j].col = pos.col;
                                 }
 
                                 currentState.agent.row = mergeData.b[i].row;
@@ -316,10 +317,10 @@ public class MASearchClient {
 
                         currentBoxList = new ArrayList<>(mergeData.a.boxList);
 
-                        for (int idx = 0; idx < mergeData.b.length; idx++) {
-                            Position pos = mergeData.b[idx];
-                            agents[idx].row = pos.row;
-                            agents[idx].col = pos.col;
+                        for (int j = 0; j < mergeData.b.length; j++) {
+                            Position pos = mergeData.b[j];
+                            agents[j].row = pos.row;
+                            agents[j].col = pos.col;
                         }
 
                         rounds = 0;
