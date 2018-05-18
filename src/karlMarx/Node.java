@@ -5,7 +5,7 @@ import java.util.*;
 import karlMarx.Command.Type;
 
 public class Node implements GeneralNode {
-    private static final Random RND = new Random(4);
+    private static final Random RND = new Random(1);
 
     public static boolean IS_SINGLE = true;
 

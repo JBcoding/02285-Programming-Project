@@ -22,10 +22,10 @@ public class MultiBody {
         Strategy strategy;
 
         switch (strategyArg) {
-            case "-astar": strategy = new StrategyBestFirst(new AStar(initialStates.get(0), initialStates.get(0).getGoalSet(), null, null, null, null)); break;
-            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(initialStates.get(0), 5, initialStates.get(0).getGoalSet(), null, null, null, null)); break;
+            case "-astar": strategy = new StrategyBestFirst(new AStar(initialStates.get(0), initialStates.get(0).getGoalSet(), null, null, null, null, false)); break;
+            case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(initialStates.get(0), 5, initialStates.get(0).getGoalSet(), null, null, null, null, false)); break;
             case "-greedy": /* Fall-through */
-            default: strategy = new StrategyBestFirst(new Greedy(initialStates.get(0), initialStates.get(0).getGoalSet(), null, null, null, null));
+            default: strategy = new StrategyBestFirst(new Greedy(initialStates.get(0), initialStates.get(0).getGoalSet(), null, null, null, null, false));
 
         }
 

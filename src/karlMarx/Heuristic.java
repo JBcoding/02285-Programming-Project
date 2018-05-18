@@ -17,8 +17,9 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
     protected Set<Goal> masterActivegoals = new HashSet<Goal>();
     protected Set<Position> illegalPositions;
 
+    protected boolean clearPathForOtherAgent;
+
     static {
-        // All pair shortest distances (by BFS).
 
         shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
         Cell[][] cells = new Cell[Node.MAX_ROW][Node.MAX_COL];
@@ -112,16 +113,13 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
     }
 
     public Heuristic(Node initialState) {
-        // Here's a chance to pre-process the static parts of the level.
 
-        // Find all goals.
         ArrayList<Goal> goalcells = new ArrayList<>();
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
                     goalcells.add(new Goal(row, col, Node.goals[row][col]));
-                    // isgoalletter is a simple array keeping track of which letters occur on goal cells,
-                    // so that we can quickly discard the boxes having other letters
+
                     isgoalletter[Node.goals[row][col] - 'a'] = 1;
 
                 }
@@ -147,54 +145,17 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
 
     }
 
-    /* Below are some heuristics:
-     1) hPairingDistance sums the distance of the agent to the nearest relevant box,
-     the distance from that box to the nearest relevant goal,
-     the distance from that goal to the next nearest relevant box, etc.
-     It hence computes a pairing of boxes with goals
-     and computes the total distance required to put all boxes into the designated goals
-     (assuming shortest distances are always available, that is, that no other objects block the shortest paths).
-     It adds a goal count heuristics which either adds 1 for each unsatisfied goal or maxdist for each unsatisfied goal.
-     Adding maxdist gives a very high penalty for moving a box away from a corresponding goal cell.
-     It gives quicker and shorter solutions when there are no potentiel conflicts
-     and all boxes can immediately be moved straight to their corresponding goals.
-     However, it sometimes breaks down when there are conflicts
-     and fulfilled goals can potentially block for other goals.
-     Adding maxdist for every unfulfilled goal makes warmup/SALazarus unsolvable in 150s and 8GB,
-     whereas adding 1 for every fulfilled goal makes it solvable in under 1s.
-     With goal count factor 1, a level like SAsorting can however not be solved.
-     Goal count factor 5 makes it solvable, but makes SAbispebjergHospital unsolvable.
-     A goal count factor of 2 seems to be the sweet spot.
-
-     2) hGoalCount is a simple goal count of unfulfilled goals.
-     It is mainly there for pedagogical purposes.
-     Running greedy on this heuristics makes the client do a random walk until getting a box into a goal
-     and then it starts doing another random walk to find the next box
-     (leaving the original one in its goal position).
-     It works acceptably on small, relatively simple levels (like SACrunch)
-     and levels that are not too big and have no conflicts (like SAsoko3_12 and SAanagram).
-     It can't solve bigger soko3 levels or something like SALazarus.
-
-
-     3) hGoalCountPlusNearest is a simplification of hPairingDistance
-     where only the distance to the nearest relevant box and its distance to a relevant goal is added to the goal count.
-     None of the heuristics are admissible,
-     so it doesn't really make sense to compare them in terms of which one dominates the other.
-     They each have strengths and weaknesses on different types of levels.
-     hGoalCountPlusNearest easily solves SAsorting, that hPairingDistance with goalcount factor 1 can't.
-     But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
-     */
-
-    public int hPairingDistance(Node n) {
+    public int h1(Node n) {
         if (n.h != -1) {
             return n.h;
         }
 
-         n.h = 1;
+        n.h = 1;
+
         // start searching from the agent position
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
-        // initialise activegoals with all unsatisfied goals
+
 
         HashSet<Box> activeboxes = new HashSet<Box>();
         HashSet<Goal> activegoals = new HashSet<Goal>(masterActivegoals);
@@ -231,7 +192,7 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
             Box nearestBox = null;
             Goal nearestGoal = null;
             while (nearestGoal == null) {
-                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
+
                 int distToBox = Integer.MAX_VALUE;
                 for (Box b : tempActiveBoxes) {
                     if (shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
@@ -240,9 +201,9 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
                     }
                 }
 
-                // remove the chosen box from the list of active boxes
+
                 tempActiveBoxes.remove(nearestBox);
-                // find the nearest same-letter active goal to the chosen box (if exists)
+
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g : tempActiveGoals) {
                     if (Character.toLowerCase(nearestBox.letter) == g.letter
@@ -253,10 +214,8 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
                     }
                 }
             }
-            // remove the chosen goal from the list of active goals
+
             tempActiveGoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a
-            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
             //System.err.println(nearestBox);
             //System.err.println(nearestGoal);
             //System.err.println(shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col]);
@@ -282,9 +241,14 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
             for (Box b1 : n.boxList) {
                 if (boxesToMove.contains(b1.id)) {
                     n.h += 5 * penaltyMap[b1.row][b1.col];
+
+                    if (clearPathForOtherAgent && penaltyMap[b1.row][b1.col] > 0) {
+                        n.h += shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col] * 100;
+                    }
                 }
             }
         }
+
 
 //        n.h += uselessCellsMap[n.agent.row][n.agent.col] * 10;
 //        for (Box box : n.boxList) {
@@ -307,7 +271,7 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
         return n.h;
     }
 
-    public int hPairingDistance(MultiBodyNode n) {
+    public int h1(MultiBodyNode n) {
         if (n.h != -1) {
             return n.h;
         }
@@ -370,12 +334,11 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
     public int h(GeneralNode n) {
         //return 0;
         if (n.getClass() == Node.class) {
-            return hPairingDistance((Node)n);
+            return h1((Node)n);
         } else {
-            return hPairingDistance((MultiBodyNode) n);
+            return h1((MultiBodyNode) n);
         }
     }
-
 
     public abstract int f(GeneralNode n);
 
@@ -387,7 +350,8 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                 List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -399,6 +363,7 @@ class AStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 
@@ -420,7 +385,8 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                         List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState, W);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -432,6 +398,7 @@ class WeightedAStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 
@@ -452,7 +419,8 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                  List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -464,6 +432,7 @@ class Greedy extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 
