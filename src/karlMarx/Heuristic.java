@@ -17,6 +17,8 @@ public abstract class Heuristic implements Comparator<Node> {
     protected Set<Goal> masterActivegoals = new HashSet<Goal>();
     protected Set<Position> illegalPositions;
 
+    protected boolean clearPathForOtherAgent;
+
     static {
         // All pair shortest distances (by BFS).
 
@@ -205,7 +207,7 @@ public abstract class Heuristic implements Comparator<Node> {
             return n.h;
         }
 
-         n.h = 1;
+        n.h = 1;
         // start searching from the agent position
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
@@ -297,9 +299,14 @@ public abstract class Heuristic implements Comparator<Node> {
             for (Box b1 : n.boxList) {
                 if (boxesToMove.contains(b1.id)) {
                     n.h += 5 * penaltyMap[b1.row][b1.col];
+
+                    if (clearPathForOtherAgent && penaltyMap[b1.row][b1.col] > 0) {
+                        n.h += shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col];
+                    }
                 }
             }
         }
+
 
 //        n.h += uselessCellsMap[n.agent.row][n.agent.col] * 10;
 //        for (Box box : n.boxList) {
@@ -342,7 +349,8 @@ public abstract class Heuristic implements Comparator<Node> {
 }
 
 class AStar extends Heuristic {
-    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public AStar(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                 List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -354,6 +362,7 @@ class AStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 
@@ -375,7 +384,8 @@ class AStar extends Heuristic {
 class WeightedAStar extends Heuristic {
     private int W;
 
-    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public WeightedAStar(Node initialState, int W, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                         List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState, W);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -387,6 +397,7 @@ class WeightedAStar extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 
@@ -407,7 +418,8 @@ class WeightedAStar extends Heuristic {
 }
 
 class Greedy extends Heuristic {
-    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions) {
+    public Greedy(Node initialState, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap,
+                  List<Box> boxesNotToMoveMuch, Set<Position> illegalPositions, boolean clearPathForOtherAgent) {
         this(initialState);
         this.currentGoals = currentGoals;
         this.boxesToMove = new HashSet<>();
@@ -419,6 +431,7 @@ class Greedy extends Heuristic {
         this.penaltyMap = penaltyMap;
         this.boxesNotToMoveMuch = boxesNotToMoveMuch;
         this.illegalPositions = illegalPositions;
+        this.clearPathForOtherAgent = clearPathForOtherAgent;
         initMasterActiveGoalsBoxes(initialState);
     }
 

@@ -108,10 +108,10 @@ public class SASearchClient extends SearchClient {
         //System.err.println(state);
 
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false));
 
         }
         if (!strategy.isExplored(state)) {
@@ -179,7 +179,6 @@ public class SASearchClient extends SearchClient {
                 observedNodes.put(n, stepsTaken);
             }
         }
-        // TODO: Prune this even more aggressively, finding BFS shortest paths between states
 //        boolean[] removedIndices = new boolean[solution.size()];
 //        for (Pair<Integer, Integer> slice : allSlicesToRemove) {
 //            for (int i = slice.a; i < slice.b; i++) {
