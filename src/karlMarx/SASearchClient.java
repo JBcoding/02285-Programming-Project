@@ -54,7 +54,7 @@ public class SASearchClient extends SearchClient {
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
-                Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
+                Pair<List<Box>, int[][]> data = BDI.boxToMoveWithAgent(currentState, currentGoal, currentState.agent);
                 if (data != null && data.a.size() > 0) {
                     boxesToMove = data.a;
                     penaltyMap = data.b;
@@ -107,7 +107,7 @@ public class SASearchClient extends SearchClient {
 
         //System.err.println(state);
 
-        boolean extra = false;
+        boolean extra = true;
 
         if (penaltyMap != null) {
             int max = 0;

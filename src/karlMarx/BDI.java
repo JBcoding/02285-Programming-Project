@@ -86,6 +86,57 @@ public class BDI {
         return map;
     }
 
+    public static Pair<List<Box>, int[][]> boxToMoveWithAgent(Node n, Goal g, Agent a) {
+        List<Box> boxes = getBoxesToGoal(g, n);
+        Box box;
+
+        for (Box b : boxes) {
+            if (b.row == g.row && b.col == g.col) {
+                return null;
+            }
+        }
+
+        if (boxes.size() == 1) {
+            box = boxes.get(0);
+        } else {
+            Box closestBox = null;
+            int distance = Integer.MAX_VALUE;
+
+            for (Box b : boxes) {
+                if (Character.toLowerCase(b.letter) != Node.goals[b.row][b.col]) {
+                    int dist = Heuristic.shortestDistance[b.row][b.col][g.row][g.col];
+                    if (dist > -1 && dist < distance) {
+                        closestBox = b;
+                        distance = dist;
+                    }
+                }
+            }
+
+            if (closestBox == null) {
+//                for (int i = 0; i < tempMap.length; i++) {
+//                    System.err.println(Arrays.toString(tempMap[i]));
+//                }
+//                System.err.println(tempNode);
+//                System.err.println(g);
+//                System.err.println(boxes);
+//                System.err.println(n);
+//                throw new IllegalStateException("TODO: No closest box.");
+                return null;
+            }
+
+            box = closestBox;
+        }
+
+        Pair<List<Box>, Set<Position>> data1 = boxesOnThePathToGoal(g, box, n);
+        Pair<List<Box>, Set<Position>> data2 = boxesOnThePathToGoal(a, box, n);
+        List<Box> boxesToMove = data1.a;
+        Set<Position> IllegalPositions = data1.b;
+        boxesToMove.addAll(data2.a);
+        IllegalPositions.addAll(data2.b);
+        int[][] penaltyMap = calculatePenaltyMap(n, IllegalPositions, boxesToMove.size());
+        return new Pair<>(boxesToMove, penaltyMap);
+    }
+
     public static Pair<List<Box>, int[][]> boxToMove(Node n, Goal g) {
         List<Box> boxes = getBoxesToGoal(g, n);
         Box box;
