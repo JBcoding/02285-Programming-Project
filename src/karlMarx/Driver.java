@@ -53,13 +53,12 @@ public class Driver {
                 for (Command c : solution) {
                     String act = "[" + c + "]";
                     System.out.println(act);
-                    //System.err.println(act);
-                    /*String response = serverMessages.readLine();
+                    String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
                         System.err.format("%s was attempted in \n%s\n", act, c.toString());
                         break;
-                    }*/
+                    }
                 }
             }
         } else {
@@ -115,12 +114,12 @@ public class Driver {
 
                     System.out.println(act);
                     //System.err.println(act);
-                    /*String response = serverMessages.readLine();
+                    String response = serverMessages.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, act);
                         System.err.format("%s was attempted\n", act);
                         break;
-                    }*/
+                    }
                 }
             }
 
