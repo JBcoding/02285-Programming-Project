@@ -162,9 +162,7 @@ public class MASearchClient {
                             Node.goals[posGoal.a.row][posGoal.a.col] = posGoal.b;
                         }
 
-                        debug = true;
                         Node lastNode = getPlan(currentState, currentGoals, new ArrayList<>(reachableBoxes), penaltyMap, true, null, clearableIllegalPositions, true);
-                        debug = false;
                         if (lastNode == null) {
 //                            System.err.println("Unable to clear path.");
                             continue;
