@@ -2,11 +2,11 @@ package karlMarx;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class SASearchClient extends SearchClient {
 
     private String strategyArg;
-    private Strategy strategy;
 
     private List<Command> solution = new ArrayList<Command>();
 
@@ -16,11 +16,11 @@ public class SASearchClient extends SearchClient {
         if (initialStates.size() != 1) {
             throw new IllegalArgumentException("There can only be one initial state in single agent levels.");
         }
-        
+
         this.strategyArg = strategyArg;
-        
+
         //System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
-        
+
         Node currentState = initialStates.get(0);
         BDI.removeUnreachableBoxesFromBoxlist(currentState);
         Goal currentGoal;
@@ -76,7 +76,7 @@ public class SASearchClient extends SearchClient {
                     currentState = lastNode;
                     // This is a new initialState so it must not have a parent for isInitialState method to work
                     currentState.parent = null;
-                    if (currentState.isGoalState()){
+                    if (currentState.isGoalState()) {
                         removeRepetitiveStates(initialStates.get(0));
                         return solution;
                     }
@@ -103,34 +103,72 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
+    @Override
+    public String searchStatus() {
+        return null;
+    }
+
     private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions) {
+        Semaphore semaphore = new Semaphore(0);
+        final Node[] temp1 = {null};
+        final Node[] temp2 = {null};
+        Thread threadTrue = new Thread() {
+            public void run() {
+                try {
+                    temp1[0] = getPlan(state, currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions, true);
+                    semaphore.release();
+                } catch (Exception e) {
+                }
+            }
+        };
+        Thread threadFalse = new Thread() {
+            public void run() {
+                try {
+                    temp2[0] = getPlan(state, currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions, false);
+                    semaphore.release();
+                } catch (Exception e) {
+                }
+            }
+        };
+
+        threadTrue.start();
+        threadFalse.start();
+
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+        }
+
+        threadTrue.interrupt();
+        threadFalse.interrupt();
+
+        Node solve;
+        if (temp1[0] != null) {
+            solve = temp1[0];
+        } else {
+            solve = temp2[0];
+        }
+
+
+        return solve;
+    }
+
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions, boolean extra) {
 
         //System.err.println(state);
 
-        boolean extra = true;
 
-        if (penaltyMap != null) {
-            int max = 0;
-            outer:
-            for (int i = 0; i < penaltyMap.length; i++) {
-                for (int j = 0; j < penaltyMap[i].length; j++) {
-                    if (penaltyMap[i][j] > 100) {
-                        extra = true;
-                        break outer;
-                    }
-                    max = Math.max(max, penaltyMap[i][j]);
-                }
-            }
-            if (max > 16 && Node.MAX_COL > 45) {
-                extra = true;
-            }
-        }
-
+        Strategy strategy;
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra)); break;
-        case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
+            case "-astar":
+                strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
+                break;
+            case "-wastar":
+                strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
+                break;
+            case "-greedy": /* Fall-through */
+            default:
+                strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
 
         }
         if (!strategy.isExplored(state)) {
@@ -148,11 +186,7 @@ public class SASearchClient extends SearchClient {
                 return null;
             }
 
-            Node leafNode = (Node)strategy.getAndRemoveLeaf();
-
-            if (iterations == 0) {
-                //System.err.println(leafNode);
-            }
+            Node leafNode = (Node) strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions)) {
                 //System.err.println(searchStatus());
@@ -164,14 +198,14 @@ public class SASearchClient extends SearchClient {
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
-                /*
-                System.err.println(n);
-                System.err.println(n.h + " " + n.g() + " " + (n.h + n.g()));
-                System.err.println(ff);
-                System.err.println("\n");
-                */
+            /*
+            System.err.println(n);
+            System.err.println(n.h + " " + n.g() + " " + (n.h + n.g()));
+            System.err.println(ff);
+            System.err.println("\n");
+            */
             }
-            
+
             iterations++;
         }
     }
@@ -211,10 +245,5 @@ public class SASearchClient extends SearchClient {
 //            }
 //        }
 //        solution = newSolution;
-    }
-
-    @Override
-    public String searchStatus() {
-        return strategy.searchStatus();
     }
 }

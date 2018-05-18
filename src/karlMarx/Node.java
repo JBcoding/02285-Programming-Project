@@ -286,7 +286,6 @@ public class Node implements GeneralNode {
             }
         }
 
-        int[][] deltas = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
         while (!queue.isEmpty()) {
             SearchState ss = queue.poll();
@@ -296,8 +295,6 @@ public class Node implements GeneralNode {
             if (endPos != null && p.row == endPos.row && p.col == endPos.col) {
                 statesOfInterest.add(ss);
             }
-
-            // Collections.shuffle(Arrays.asList(deltas), RND);
 
             if (!IS_SINGLE && penaltyMap != null) {
                 if (boxList.stream().noneMatch(box -> penaltyMap[box.row][box.col] > 0)
