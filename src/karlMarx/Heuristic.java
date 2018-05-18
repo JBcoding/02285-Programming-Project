@@ -245,7 +245,7 @@ public abstract class Heuristic implements Comparator<Node> {
                     n.h += 5 * penaltyMap[b1.row][b1.col];
 
                     if (clearPathForOtherAgent && penaltyMap[b1.row][b1.col] > 0) {
-                        n.h += shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col];
+                        n.h += shortestDistance[n.agent.row][n.agent.col][b1.row][b1.col] * 100;
                     }
                 }
             }
