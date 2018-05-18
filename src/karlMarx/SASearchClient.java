@@ -107,11 +107,23 @@ public class SASearchClient extends SearchClient {
 
         //System.err.println(state);
 
+        boolean extra = false;
+
+        outer:
+        for (int i = 0; i < penaltyMap.length; i++) {
+            for (int j = 0; j < penaltyMap[i].length; j++) {
+                if (penaltyMap[i][j] > 100) {
+                    extra = true;
+                    break outer;
+                }
+            }
+        }
+
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
+        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra)); break;
+        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra)); break;
         case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false));
+        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
 
         }
         if (!strategy.isExplored(state)) {
