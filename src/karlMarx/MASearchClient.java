@@ -73,8 +73,10 @@ public class MASearchClient {
 
         // TODO: MAEvilCorp shows that we actually need a stack of these or similar.
         // Note: illegalBoxes can also contain boxes with color AGENT
+
         Set<Position> illegalPositions = new HashSet<>();
         int illegalByAgent = -1;
+        int oldIllegalByAgent = -1;
         int rounds = 0;
 
         Agent[] agents = new Agent[initialStates.size()];
@@ -93,6 +95,10 @@ public class MASearchClient {
                 if (illegalByAgent == i) {
                     illegalPositions.clear();
                     illegalByAgent = -1;
+                    if (oldIllegalByAgent != -1) {
+                        i = oldIllegalByAgent;
+                        oldIllegalByAgent = -1;
+                    }
                 }
 
                 currentState.boxList = new ArrayList<>(currentBoxList);
@@ -190,8 +196,7 @@ public class MASearchClient {
 
                         rounds = 0;
                     } else if (!remainingIllegalBoxes.isEmpty() || illegalPositions.contains(new Position(currentState.agent))) {
-                        // TODO: Take rounds into consideration
-                        HashSet<Position> newIllegalPositions = new HashSet<>();
+                        final HashSet<Position> newIllegalPositions = new HashSet<>(clearableIllegalPositions);
 
                         for (Box box : remainingIllegalBoxes) {
                             Pair<Set<Box>, Set<Position>> illegalData = illegalsToPosition(
@@ -201,6 +206,7 @@ public class MASearchClient {
                         }
 
                         illegalPositions = newIllegalPositions;
+                        oldIllegalByAgent = illegalByAgent;
                         illegalByAgent = i;
                     } else if (illegalByAgent == -1) {
                         Pair<Goal, Position> goalInfo = BDI.getGoal(currentState, solvableGoals).a;
