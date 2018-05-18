@@ -18,7 +18,6 @@ public abstract class Heuristic implements Comparator<Node> {
     protected Set<Position> illegalPositions;
 
     static {
-        // All pair shortest distances (by BFS).
 
         shortestDistance = new int[Node.MAX_ROW][Node.MAX_COL][Node.MAX_ROW][Node.MAX_COL];
         Cell[][] cells = new Cell[Node.MAX_ROW][Node.MAX_COL];
@@ -112,16 +111,13 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     public Heuristic(Node initialState) {
-        // Here's a chance to pre-process the static parts of the level.
 
-        // Find all goals.
         ArrayList<Goal> goalcells = new ArrayList<>();
         for (int row = 0; row < Node.MAX_ROW; row++) {
             for (int col = 0; col < Node.MAX_COL; col++) {
                 if (Node.goals[row][col] >= 'a' && Node.goals[row][col] <= 'z') {
                     goalcells.add(new Goal(row, col, Node.goals[row][col]));
-                    // isgoalletter is a simple array keeping track of which letters occur on goal cells,
-                    // so that we can quickly discard the boxes having other letters
+
                     isgoalletter[Node.goals[row][col] - 'a'] = 1;
 
                 }
@@ -147,69 +143,18 @@ public abstract class Heuristic implements Comparator<Node> {
 
     }
 
-    /* Below are some heuristics:
-     1) hPairingDistance sums the distance of the agent to the nearest relevant box,
-     the distance from that box to the nearest relevant goal,
-     the distance from that goal to the next nearest relevant box, etc.
-     It hence computes a pairing of boxes with goals
-     and computes the total distance required to put all boxes into the designated goals
-     (assuming shortest distances are always available, that is, that no other objects block the shortest paths).
-     It adds a goal count heuristics which either adds 1 for each unsatisfied goal or maxdist for each unsatisfied goal.
-     Adding maxdist gives a very high penalty for moving a box away from a corresponding goal cell.
-     It gives quicker and shorter solutions when there are no potentiel conflicts
-     and all boxes can immediately be moved straight to their corresponding goals.
-     However, it sometimes breaks down when there are conflicts
-     and fulfilled goals can potentially block for other goals.
-     Adding maxdist for every unfulfilled goal makes warmup/SALazarus unsolvable in 150s and 8GB,
-     whereas adding 1 for every fulfilled goal makes it solvable in under 1s.
-     With goal count factor 1, a level like SAsorting can however not be solved.
-     Goal count factor 5 makes it solvable, but makes SAbispebjergHospital unsolvable.
-     A goal count factor of 2 seems to be the sweet spot.
 
-     2) hGoalCount is a simple goal count of unfulfilled goals.
-     It is mainly there for pedagogical purposes.
-     Running greedy on this heuristics makes the client do a random walk until getting a box into a goal
-     and then it starts doing another random walk to find the next box
-     (leaving the original one in its goal position).
-     It works acceptably on small, relatively simple levels (like SACrunch)
-     and levels that are not too big and have no conflicts (like SAsoko3_12 and SAanagram).
-     It can't solve bigger soko3 levels or something like SALazarus.
+    public int h(Node n) {
 
-
-     3) hGoalCountPlusNearest is a simplification of hPairingDistance
-     where only the distance to the nearest relevant box and its distance to a relevant goal is added to the goal count.
-     None of the heuristics are admissible,
-     so it doesn't really make sense to compare them in terms of which one dominates the other.
-     They each have strengths and weaknesses on different types of levels.
-     hGoalCountPlusNearest easily solves SAsorting, that hPairingDistance with goalcount factor 1 can't.
-     But hGoalCountPlusNearest can't solve SALazarus, no matter how the goalcount factor is set.
-     */
-
-    public int hPairingDistance(Node n) {
-        /* to improve this further, I could e.g.:
-         1) Look at actual shortest paths: make sure the all-pairs-shortest path algorithm output actual shortest paths,
-         and then shortest paths can be checked for whether the contain other goal cells,
-         e.g. The current heuristics work very well when there are no conflicts,
-         but breaks down when there is a lot of conflicts between subgoals.
-
-         2) Compute prioritised goals. A goal is non-prioritised if it blocks access of the agent to other goals.
-         This can be computed by checking whether putting a box on the goal
-         would make some unfulfilled goals be in a connected component distinct from the one containing the agent.
-         This would however require computing connected components in each state,
-         that is, run a BFS or DFS, which might turn out to be too computationally expensive.
-
-         3) Choose more efficient data structures if possible,
-         in particular the HashSet for active goals and active boxes.
-         */
         if (n.h != -1) {
             return n.h;
         }
 
          n.h = 1;
-        // start searching from the agent position
+
         int currentRow = n.agent.row;
         int currentCol = n.agent.col;
-        // initialise activegoals with all unsatisfied goals
+
 
         HashSet<Box> activeboxes = new HashSet<Box>();
         HashSet<Goal> activegoals = new HashSet<Goal>(masterActivegoals);
@@ -246,7 +191,7 @@ public abstract class Heuristic implements Comparator<Node> {
             Box nearestBox = null;
             Goal nearestGoal = null;
             while (nearestGoal == null) {
-                // find the nearest active box to coordinates (currentRow, currentCol) and find the distance to it
+
                 int distToBox = Integer.MAX_VALUE;
                 for (Box b : tempActiveBoxes) {
                     if (shortestDistance[b.row][b.col][currentRow][currentCol] < distToBox) {
@@ -255,9 +200,9 @@ public abstract class Heuristic implements Comparator<Node> {
                     }
                 }
 
-                // remove the chosen box from the list of active boxes
+
                 tempActiveBoxes.remove(nearestBox);
-                // find the nearest same-letter active goal to the chosen box (if exists)
+
                 int distToGoal = Integer.MAX_VALUE;
                 for (Goal g : tempActiveGoals) {
                     if (Character.toLowerCase(nearestBox.letter) == g.letter
@@ -268,10 +213,8 @@ public abstract class Heuristic implements Comparator<Node> {
                     }
                 }
             }
-            // remove the chosen goal from the list of active goals
+
             tempActiveGoals.remove(nearestGoal);
-            // add to the heuristics the number of actions required to go from a
-            // cell neighbouring (currentRow, currentCol) to the nearest box and push that box to nearest goal
             //System.err.println(nearestBox);
             //System.err.println(nearestGoal);
             //System.err.println(shortestDistance[nearestBox.row][nearestBox.col][nearestGoal.row][nearestGoal.col]);
@@ -322,14 +265,6 @@ public abstract class Heuristic implements Comparator<Node> {
         return n.h;
     }
 
-    public int h(Node n) {
-        //return 0;
-        return hPairingDistance(n); // default heuristics. Best performing on warmup levels
-        //return hPairingDistanceFurthestGoal(n);
-        //return hPairingDistanceDeadlockPenalty(n);
-        //return hGoalCount(n);
-        // return hGoalCountPlusNearest(n);
-    }
 
 
     public abstract int f(Node n);
@@ -434,25 +369,5 @@ class Greedy extends Heuristic {
     @Override
     public String toString() {
         return "Greedy evaluation";
-    }
-}
-
-
-class PairIntegerDistanceDataComp implements Comparator<Pair<Integer, Integer>> {
-    @Override
-    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-        if (o1.b < 0 && o2.b < 0) {
-            return o1.b - o2.b;
-        } else if (o1.b < 0) {
-            return o1.b - o2.b;
-        } else if (o2.b < 0) {
-            return o1.b - o2.b;
-        } else {
-            if (o1.b.equals(o2.b)) {
-                return o1.a - o2.a;
-            } else {
-                return o1.b - o2.b;
-            }
-        }
     }
 }
