@@ -34,7 +34,7 @@ public class MultiBody {
         int iterations = 0;
         while (true) {
             if (iterations == 10000) {
-                System.err.println(strategy.searchStatus());
+                //System.err.println(strategy.searchStatus());
                 iterations = 0;
             }
 
@@ -55,8 +55,8 @@ public class MultiBody {
                         }
                     }
                 }
-                System.err.println(leafNode);
-                System.err.println(strategy.searchStatus());
+                //System.err.println(leafNode);
+                //System.err.println(strategy.searchStatus());
                 return finalPlan;
             }
             strategy.addToExplored(leafNode);

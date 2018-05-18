@@ -110,6 +110,7 @@ public class SASearchClient extends SearchClient {
         boolean extra = false;
 
         if (penaltyMap != null) {
+            int max = 0;
             outer:
             for (int i = 0; i < penaltyMap.length; i++) {
                 for (int j = 0; j < penaltyMap[i].length; j++) {
@@ -117,7 +118,11 @@ public class SASearchClient extends SearchClient {
                         extra = true;
                         break outer;
                     }
+                    max = Math.max(max, penaltyMap[i][j]);
                 }
+            }
+            if (max > 16 && Node.MAX_COL > 45) {
+                extra = true;
             }
         }
 
