@@ -109,12 +109,14 @@ public class SASearchClient extends SearchClient {
 
         boolean extra = false;
 
-        outer:
-        for (int i = 0; i < penaltyMap.length; i++) {
-            for (int j = 0; j < penaltyMap[i].length; j++) {
-                if (penaltyMap[i][j] > 100) {
-                    extra = true;
-                    break outer;
+        if (penaltyMap != null) {
+            outer:
+            for (int i = 0; i < penaltyMap.length; i++) {
+                for (int j = 0; j < penaltyMap[i].length; j++) {
+                    if (penaltyMap[i][j] > 100) {
+                        extra = true;
+                        break outer;
+                    }
                 }
             }
         }
