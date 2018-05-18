@@ -160,7 +160,15 @@ public class MasterPlan {
     }
     
     public void removeRepetitiveStates(Node initState, Position[] initPositions, Agent[] oldAgents, boolean[][] initWalls) {
-        // if (true) return;
+        MultiNode[] nodeAtStep = new MultiNode[length + 1];
+        int length = this.length;
+        System.err.println("Step for agent 7 at step 259: " + plan[258][7]);
+        Command[][] newPlan = new Command[plan.length][plan[0].length];
+        for (int i = 0; i < plan.length; i++) {
+            for (int j = 0; j < plan[i].length; j++) {
+                newPlan[i][j] = plan[i][j];
+            }
+        }
         for (int i  = 0; i < initWalls.length; i++) {
             for (int j = 0; j < initWalls[i].length; j++) {
                 Node.walls[i][j] = initWalls[i][j];
@@ -187,8 +195,8 @@ public class MasterPlan {
             agents = new Agent[oldAgents.length];
             for (int i = 0; i < numberOfAgents; i++) {
                 n.agent = new Agent(positions[i].row, positions[i].col, oldAgents[i].id, oldAgents[i].color);
-                // simulate command plan[stepsTaken][i]
-                Command c = plan[stepsTaken][i];
+                // simulate command newPlan[stepsTaken][i]
+                Command c = newPlan[stepsTaken][i];
                 if (c == null || c.actionType == Command.Type.NoOp) {
                     continue;
                 }
@@ -226,7 +234,7 @@ public class MasterPlan {
             }            
             
             oldPositions.clear();
-            stepsTaken += 2;
+            stepsTaken ++;
 
             setNode = new MultiNode(n, agents);
             if (observedNodes.containsKey(setNode)) {
@@ -235,12 +243,17 @@ public class MasterPlan {
                 length = length - lengthRemoved;
                 for (int i = 0; i < numberOfAgents; i++) {
                     for (int j = startOfSlice; j < length; j++) {
-                        plan[j][i] = plan[j+lengthRemoved][i];
+                        newPlan[j][i] = newPlan[j+lengthRemoved][i];
                     }
                 }
+                stepsTaken = startOfSlice;
             } else {
                 observedNodes.put(setNode, stepsTaken);
+                nodeAtStep[stepsTaken] = setNode;
             }
         }
+
+        plan = newPlan;
+        this.length = length;
     }
 }
