@@ -309,7 +309,6 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
         while (!tempActiveGoals.isEmpty()) {
             Box nearestBox;
             Goal nearestGoal = null;
-            int distToBox = Integer.MAX_VALUE;
             if (tempActiveBoxes.isEmpty()) {
                 break;
             }
