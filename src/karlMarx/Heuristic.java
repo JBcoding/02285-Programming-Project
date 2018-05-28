@@ -232,7 +232,7 @@ public abstract class Heuristic implements Comparator<GeneralNode> {
         if (illegalPositions != null && illegalPositions.size() > 0) {
             for (Box b : n.boxList) {
                 if (illegalPositions.contains(new Position(b))) {
-                    n.h -= 25;
+                    n.h += 25;
                 }
             }
         }
