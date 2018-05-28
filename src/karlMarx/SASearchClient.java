@@ -2,11 +2,11 @@ package karlMarx;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class SASearchClient extends SearchClient {
 
     private String strategyArg;
-    private Strategy strategy;
 
     private List<Command> solution = new ArrayList<Command>();
 
@@ -16,11 +16,11 @@ public class SASearchClient extends SearchClient {
         if (initialStates.size() != 1) {
             throw new IllegalArgumentException("There can only be one initial state in single agent levels.");
         }
-        
+
         this.strategyArg = strategyArg;
-        
+
         //System.err.format("Search single agent starting with strategy %s.\n", strategyArg.toString());
-        
+
         Node currentState = initialStates.get(0);
         BDI.removeUnreachableBoxesFromBoxlist(currentState);
         Goal currentGoal;
@@ -40,7 +40,7 @@ public class SASearchClient extends SearchClient {
                 penaltyMapFirst = BDI.calculatePenaltyMap(currentState, illegalPositionsFirst, boxesToMoveFirst.size(), true);
 
                 //System.err.println("Moving boxes out of the way: " + boxesToMoveFirst);
-                Node lastNode = getPlan(currentState, currentGoals, boxesToMoveFirst, penaltyMapFirst, null, null);
+                Node lastNode = getPlan(currentState, currentGoals, boxesToMoveFirst, penaltyMapFirst, null, null, false);
                 List<Command> plan = lastNode.extractPlanNew();
                 solution.addAll(plan);
                 currentState = lastNode;
@@ -54,19 +54,21 @@ public class SASearchClient extends SearchClient {
             List<Box> boxesToMove = null;
             int[][] penaltyMap = null;
             while (true) {
-                Pair<List<Box>, int[][]> data = BDI.boxToMove(currentState, currentGoal);
-                if (data != null && data.a.size() > 0) {
-                    boxesToMove = data.a;
-                    penaltyMap = data.b;
-                    //System.err.println(currentState);
-                    //System.err.println("MOVE BOXES: " + boxesToMove);
+                Node lastNode = null;
+                Pair<List<Box>, int[][]> data1 = BDI.boxToMove(currentState, currentGoal);
+                Pair<List<Box>, int[][]> data2 = BDI.boxToMoveWithAgent(currentState, currentGoal, currentState.agent);
+                if (data1 != null && data1.a.size() > 0 && data2 != null && data2.a.size() > 0) {
+                    lastNode = getPlan(currentState, currentGoals, data1.a, data1.b, data2.a, data2.b, null, illegalPositionsFirst);
+                } else if (data1 != null && data1.a.size() > 0) {
+                    lastNode = getPlan(currentState, currentGoals, data1.a, data1.b, null, illegalPositionsFirst, false);
+                } else if (data2 != null && data2.a.size() > 0) {
+                    lastNode = getPlan(currentState, currentGoals, data2.a, data2.b, null, illegalPositionsFirst, true);
+                }
+                else {
+                    break;
+                }
 
-                    //for (int[] arr : penaltyMap) {
-                    //    System.err.println(Arrays.toString(arr));
-                    //}
-
-                    Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, null, illegalPositionsFirst);
-
+                if (lastNode != null) {
                     List<Command> plan = lastNode.extractPlanNew();
                     if (plan.size() == 0) {
                         continue goalStateLoop;
@@ -76,18 +78,17 @@ public class SASearchClient extends SearchClient {
                     currentState = lastNode;
                     // This is a new initialState so it must not have a parent for isInitialState method to work
                     currentState.parent = null;
-                    if (currentState.isGoalState()){
+                    if (currentState.isGoalState()) {
                         removeRepetitiveStates(initialStates.get(0));
                         return solution;
                     }
-                } else {
-                    break;
                 }
+
             }
 
             //System.err.println(currentState);
             //System.err.println("SOLVE GOAL: " + currentGoal);
-            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, goalInfo.a.b, null);
+            Node lastNode = getPlan(currentState, currentGoals, boxesToMove, penaltyMap, goalInfo.a.b, null, false);
 
             List<Command> plan = lastNode.extractPlanNew();
             if (plan.size() == 0) {
@@ -103,15 +104,71 @@ public class SASearchClient extends SearchClient {
         return solution;
     }
 
-    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions) {
+    @Override
+    public String searchStatus() {
+        return null;
+    }
+
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove1, int[][] penaltyMap1, List<Box> boxesToMove2, int[][] penaltyMap2, Position endPosition, Set<Position> illegalPositions) {
+        Semaphore semaphore = new Semaphore(0);
+        final Node[] temp1 = {null};
+        final Node[] temp2 = {null};
+        Thread threadTrue = new Thread() {
+            public void run() {
+                try {
+                    temp1[0] = getPlan(state, currentGoals, boxesToMove2, penaltyMap2, endPosition, illegalPositions, true);
+                    semaphore.release();
+                } catch (Exception e) {
+                }
+            }
+        };
+        Thread threadFalse = new Thread() {
+            public void run() {
+                try {
+                    temp2[0] = getPlan(state, currentGoals, boxesToMove1, penaltyMap1, endPosition, illegalPositions, false);
+                    semaphore.release();
+                } catch (Exception e) {
+                }
+            }
+        };
+
+        threadTrue.start();
+        threadFalse.start();
+
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+        }
+
+        threadTrue.interrupt();
+        threadFalse.interrupt();
+
+        Node solve;
+        if (temp1[0] != null) {
+            solve = temp1[0];
+        } else {
+            solve = temp2[0];
+        }
+
+        return solve;
+    }
+
+    private Node getPlan(Node state, Set<Goal> currentGoals, List<Box> boxesToMove, int[][] penaltyMap, Position endPosition, Set<Position> illegalPositions, boolean extra) {
 
         //System.err.println(state);
 
+
+        Strategy strategy;
         switch (strategyArg) {
-        case "-astar": strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
-        case "-wastar": strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false)); break;
-        case "-greedy": /* Fall-through */
-        default: strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, false));
+            case "-astar":
+                strategy = new StrategyBestFirst(new AStar(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
+                break;
+            case "-wastar":
+                strategy = new StrategyBestFirst(new WeightedAStar(state, 5, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
+                break;
+            case "-greedy": /* Fall-through */
+            default:
+                strategy = new StrategyBestFirst(new Greedy(state, currentGoals, boxesToMove, penaltyMap, null, illegalPositions, extra));
 
         }
         if (!strategy.isExplored(state)) {
@@ -125,15 +182,15 @@ public class SASearchClient extends SearchClient {
                 iterations = 0;
             }
 
+            if (Thread.interrupted()) {
+                return null;
+            }
+
             if (strategy.frontierIsEmpty()) {
                 return null;
             }
 
-            Node leafNode = (Node)strategy.getAndRemoveLeaf();
-
-            if (iterations == 0) {
-                //System.err.println(leafNode);
-            }
+            Node leafNode = (Node) strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState(currentGoals, boxesToMove, penaltyMap, endPosition, illegalPositions)) {
                 //System.err.println(searchStatus());
@@ -145,14 +202,14 @@ public class SASearchClient extends SearchClient {
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
                 }
-                /*
-                System.err.println(n);
-                System.err.println(n.h + " " + n.g() + " " + (n.h + n.g()));
-                System.err.println(ff);
-                System.err.println("\n");
-                */
+            /*
+            System.err.println(n);
+            System.err.println(n.h + " " + n.g() + " " + (n.h + n.g()));
+            System.err.println(ff);
+            System.err.println("\n");
+            */
             }
-            
+
             iterations++;
         }
     }
@@ -192,10 +249,5 @@ public class SASearchClient extends SearchClient {
 //            }
 //        }
 //        solution = newSolution;
-    }
-
-    @Override
-    public String searchStatus() {
-        return strategy.searchStatus();
     }
 }
