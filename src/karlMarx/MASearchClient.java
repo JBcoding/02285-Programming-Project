@@ -242,6 +242,7 @@ public class MASearchClient {
                         illegalPositions = new HashSet<>(bestBoxData.b.b);
                         illegalPositions.addAll(boxToGoalData.b);
                         illegalPositions.add(new Position(currentGoal));
+                        illegalPositions.remove(new Position(bestBox));
 
                         System.err.println("ILLEGAL BOXES: " + illegalBoxes);
 
